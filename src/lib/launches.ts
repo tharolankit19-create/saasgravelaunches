@@ -42,16 +42,21 @@ export type LaunchProduct = {
   launched_at: string | null;
   tier: string;
   verified: boolean;
+  /** Editor's pick. A badge only — it never moves a product up the board. */
+  featured: boolean;
+  featured_at: string | null;
   upvote_count: number;
   comment_count: number;
   view_count: number;
   click_count: number;
+  /** Arrivals from the maker's own embedded badge. */
+  badge_clicks: number;
   created_at: string;
   profiles?: Maker | null;
 };
 
 export const PRODUCT_FIELDS =
-  "id, slug, maker_id, name, tagline, description, website_url, logo_url, gallery_urls, categories, pricing_model, who_for, problem, solution, unique_edge, seo_title, seo_description, keywords, alternatives, faq, maker_note, status, launch_week, launched_at, tier, verified, upvote_count, comment_count, view_count, click_count, created_at";
+  "id, slug, maker_id, name, tagline, description, website_url, logo_url, gallery_urls, categories, pricing_model, who_for, problem, solution, unique_edge, seo_title, seo_description, keywords, alternatives, faq, maker_note, status, launch_week, launched_at, tier, verified, featured, featured_at, upvote_count, comment_count, view_count, click_count, badge_clicks, created_at";
 
 const WITH_MAKER = `${PRODUCT_FIELDS}, profiles:maker_id (id, full_name, avatar_url, bio, x_handle, website_url, maker_headline)`;
 

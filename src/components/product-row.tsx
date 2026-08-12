@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MessageSquare, BadgeCheck, Tag } from "lucide-react";
+import { MessageSquare, BadgeCheck, Tag, Sparkles } from "lucide-react";
 import { ProductLogo } from "@/components/avatar";
 import { UpvoteButton } from "@/components/upvote-button";
 import { cn } from "@/lib/utils";
@@ -63,6 +63,11 @@ export function ProductRow({
           </Link>
           {product.verified && (
             <BadgeCheck className="h-4 w-4 text-medal-500" aria-label="Verified" />
+          )}
+          {product.featured && (
+            <span title="Editor's pick" className="inline-flex">
+              <Sparkles className="h-3.5 w-3.5 text-violet-500" aria-label="Editor's pick" />
+            </span>
           )}
         </div>
 

@@ -34,6 +34,10 @@ export const TRACKED_EVENTS = new Set([
   "signin_success",
   "pricing_view",
   "checkout_start",
+  // The growth loop: a maker sharing the launch, and a maker taking the
+  // embeddable badge. Both are worth knowing per product.
+  "share",
+  "badge_copy",
 ]);
 
 export type TrackInput = {

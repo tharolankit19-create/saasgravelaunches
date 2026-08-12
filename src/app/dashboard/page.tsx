@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Eye, MousePointerClick, ArrowUp, MessageSquare, Plus } from "lucide-react";
+import { Eye, MousePointerClick, ArrowUp, MessageSquare, Plus, Sparkles } from "lucide-react";
 import { Card, Eyebrow, Empty, LinkButton, Stat, Badge } from "@/components/ui";
 import { ProductLogo } from "@/components/avatar";
 import { ProfileForm } from "@/components/profile-form";
@@ -41,8 +41,9 @@ export default async function DashboardPage() {
       upvotes: acc.upvotes + p.upvote_count,
       comments: acc.comments + p.comment_count,
       clicks: acc.clicks + p.click_count,
+      badge: acc.badge + (p.badge_clicks || 0),
     }),
-    { views: 0, upvotes: 0, comments: 0, clicks: 0 }
+    { views: 0, upvotes: 0, comments: 0, clicks: 0, badge: 0 }
   );
 
   return (
@@ -62,11 +63,12 @@ export default async function DashboardPage() {
         </LinkButton>
       </div>
 
-      <Card className="mt-7 grid grid-cols-2 gap-6 p-6 sm:grid-cols-4">
+      <Card className="mt-7 grid grid-cols-2 gap-6 p-6 sm:grid-cols-5">
         <Stat value={totals.views} label="Page views" />
         <Stat value={totals.upvotes} label="Upvotes" />
         <Stat value={totals.comments} label="Comments" />
         <Stat value={totals.clicks} label="Clicks to your site" />
+        <Stat value={totals.badge} label="From your badge" />
       </Card>
 
       {supported < SUPPORT_THRESHOLD && (
@@ -130,18 +132,32 @@ export default async function DashboardPage() {
                       <span className="inline-flex items-center gap-1.5">
                         <MousePointerClick className="h-3.5 w-3.5" /> {p.click_count}
                       </span>
+                      {(p.badge_clicks || 0) > 0 && (
+                        <span
+                          className="inline-flex items-center gap-1.5"
+                          title="Visits from your embedded badge"
+                        >
+                          <Sparkles className="h-3.5 w-3.5" /> {p.badge_clicks}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
 
                 {p.status === "live" && (
-                  <div className="mt-4 border-t border-ink-900/8 pt-4">
+                  <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-ink-900/8 pt-4">
                     <ShareRow
                       url={`${SITE}/products/${p.slug}`}
                       name={p.name}
                       tagline={p.tagline}
                       slug={p.slug}
                     />
+                    <Link
+                      href={`/products/${p.slug}`}
+                      className="text-[12px] font-medium text-violet-600 hover:underline"
+                    >
+                      Get your badge &amp; ready-made posts →
+                    </Link>
                   </div>
                 )}
               </Card>

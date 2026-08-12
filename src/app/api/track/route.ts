@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     if (!body?.event || typeof body.event !== "string") {
       return new NextResponse(null, { status: 204 });
     }
-    if (!TRACKED_EVENTS.has(body.event) && body.event !== "share") {
+    if (!TRACKED_EVENTS.has(body.event)) {
       return new NextResponse(null, { status: 204 });
     }
 

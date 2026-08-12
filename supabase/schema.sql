@@ -1,20 +1,43 @@
 -- ============================================================
 --  SAASGRAVE LAUNCHES — schema for the weekly launchpad
 --
---  This runs against the SAME Supabase project as Saasgrave. It only ever
---  ADDS `launch_*` tables and reuses `public.profiles` (and its
---  auth.users trigger) so one account works across both products.
+--  This runs against the SAME Supabase project as Saasgrave. Launches is not
+--  a separate product; it's a launchpad feature of Saasgrave that happens to
+--  live on its own subdomain. One account, one `profiles` row, both surfaces.
 --
---  Nothing here touches or drops a Saasgrave table. Safe to re-run.
+--  ── SAFETY CONTRACT ────────────────────────────────────────
+--  This file is STRICTLY ADDITIVE. It may only:
+--    • create `launch_*` tables, indexes, policies and functions
+--    • ADD nullable columns to `profiles`
+--    • create shared plumbing (the signup trigger, storage policies) ONLY
+--      when it is missing, so a fresh project still works
+--
+--  It must never DROP, REPLACE or ALTER anything Saasgrave owns — not
+--  `startups`, `payments`, `offers`, `community_*`, `ad_slots`, not the
+--  `handle_new_user` function, not the `on_auth_user_created` trigger, and
+--  not the `storage.objects` policies. Those are live and carry real data.
+--
+--  Everything shared is guarded by an existence check rather than the usual
+--  DROP-then-CREATE, because a DROP that succeeds and a CREATE that fails
+--  would take Saasgrave's signups or uploads down with it.
+--
+--  Safe to run on the live project. Safe to re-run.
 --  Paste into Supabase → SQL Editor → Run.
 -- ============================================================
 
 create extension if not exists "pgcrypto";
 
 -- ─────────────────────────────────────────────────────────────
---  PROFILES — shared with Saasgrave.
---  Created there; these columns are the launchpad's additions, so
---  running this file on a fresh project (or an old one) is safe.
+--  PROFILES — shared with Saasgrave, and deliberately so.
+--
+--  Saasgrave created this table. We only add the two columns the maker
+--  profile needs. `add column if not exists` cannot touch existing data, and
+--  both columns are nullable, so every one of Saasgrave's existing rows stays
+--  exactly as it is.
+--
+--  The split in what each surface *asks for* and *shows* is handled in the
+--  apps, not here: Saasgrave collects and renders its founder fields,
+--  Launches collects and renders its maker fields, off one row.
 -- ─────────────────────────────────────────────────────────────
 create table if not exists public.profiles (
   id          uuid primary key references auth.users(id) on delete cascade,
@@ -70,10 +93,13 @@ create table if not exists public.launch_products (
   -- tiers & counters
   tier          text default 'free',               -- free | premium
   verified      boolean default false,
+  featured      boolean default false,             -- editor's pick, never for sale
+  featured_at   timestamptz,
   upvote_count  int default 0,
   comment_count int default 0,
   view_count    int default 0,
   click_count   int default 0,
+  badge_clicks  int default 0,                     -- hits on the embeddable badge
 
   -- provenance of the autofill, so we can debug bad scrapes
   autofill_source jsonb,
@@ -82,11 +108,18 @@ create table if not exists public.launch_products (
   updated_at    timestamptz default now()
 );
 
+-- Columns added after the first release — repeated here so re-running this
+-- file upgrades an older launchpad install in place.
+alter table public.launch_products add column if not exists featured     boolean default false;
+alter table public.launch_products add column if not exists featured_at  timestamptz;
+alter table public.launch_products add column if not exists badge_clicks int default 0;
+
 create index if not exists launch_products_week_idx
   on public.launch_products(launch_week, upvote_count desc);
-create index if not exists launch_products_maker_idx  on public.launch_products(maker_id);
-create index if not exists launch_products_status_idx on public.launch_products(status);
-create index if not exists launch_products_cat_idx    on public.launch_products using gin(categories);
+create index if not exists launch_products_maker_idx    on public.launch_products(maker_id);
+create index if not exists launch_products_status_idx   on public.launch_products(status);
+create index if not exists launch_products_featured_idx on public.launch_products(featured);
+create index if not exists launch_products_cat_idx      on public.launch_products using gin(categories);
 
 -- ─────────────────────────────────────────────────────────────
 --  UPVOTES — one per (product, user). The counter on the product
@@ -116,6 +149,9 @@ create index if not exists launch_comments_product_idx on public.launch_comments
 -- ─────────────────────────────────────────────────────────────
 --  AD SLOTS — the paid rail beside the feed. Priced per calendar
 --  month; `month_key` is 'YYYY-MM'. Slot counts are the scarcity.
+--
+--  Note this is `launch_ads`, NOT Saasgrave's `ad_slots`. Two separate
+--  inventories that happen to share a database.
 -- ─────────────────────────────────────────────────────────────
 create table if not exists public.launch_ads (
   id         uuid primary key default gen_random_uuid(),
@@ -136,8 +172,9 @@ create table if not exists public.launch_ads (
 create index if not exists launch_ads_live_idx on public.launch_ads(month_key, placement, active);
 
 -- ─────────────────────────────────────────────────────────────
---  PAYMENTS — Dodo transactions for this product. Kept separate
---  from Saasgrave's `payments` so the two ledgers never collide.
+--  PAYMENTS — Dodo transactions for the launchpad. Deliberately
+--  separate from Saasgrave's `payments` (108 rows and counting) so
+--  the two ledgers can never collide or confuse a reconciliation.
 -- ─────────────────────────────────────────────────────────────
 create table if not exists public.launch_payments (
   id              uuid primary key default gen_random_uuid(),
@@ -174,7 +211,8 @@ create index if not exists launch_events_event_idx    on public.launch_events(ev
 create index if not exists launch_events_session_idx  on public.launch_events(session_id, created_at);
 
 -- ─────────────────────────────────────────────────────────────
---  NEWSLETTER
+--  NEWSLETTER — the launchpad's own list, separate from
+--  Saasgrave's `newsletter_subscribers`.
 -- ─────────────────────────────────────────────────────────────
 create table if not exists public.launch_subscribers (
   email      text primary key,
@@ -183,38 +221,76 @@ create table if not exists public.launch_subscribers (
 );
 
 -- ─────────────────────────────────────────────────────────────
---  TRIGGERS
+--  SHARED PLUMBING — created ONLY if missing.
+--
+--  On the live project all of this already exists and these blocks do
+--  nothing. On a fresh project they bootstrap it. What they must never do is
+--  replace a working `handle_new_user` or drop a live trigger: that function
+--  is what turns a signup into a profile row, and Launches depends on it
+--  exactly as much as Saasgrave does.
 -- ─────────────────────────────────────────────────────────────
-create or replace function public.handle_new_user()
-returns trigger language plpgsql security definer set search_path = public as $$
+do $$
 begin
-  insert into public.profiles (id, full_name, avatar_url)
-  values (
-    new.id,
-    coalesce(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name'),
-    new.raw_user_meta_data->>'avatar_url'
-  )
-  on conflict (id) do nothing;
-  return new;
-end;
+  if not exists (
+    select 1 from pg_proc p
+    join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public' and p.proname = 'handle_new_user'
+  ) then
+    execute $fn$
+      create function public.handle_new_user()
+      returns trigger language plpgsql security definer set search_path = public as $body$
+      begin
+        insert into public.profiles (id, full_name, avatar_url)
+        values (
+          new.id,
+          coalesce(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name'),
+          new.raw_user_meta_data->>'avatar_url'
+        )
+        on conflict (id) do nothing;
+        return new;
+      end;
+      $body$;
+    $fn$;
+  end if;
+
+  if not exists (
+    select 1 from pg_trigger t
+    join pg_class c on c.oid = t.tgrelid
+    join pg_namespace n on n.oid = c.relnamespace
+    where n.nspname = 'auth' and c.relname = 'users'
+      and t.tgname = 'on_auth_user_created' and not t.tgisinternal
+  ) then
+    execute $tg$
+      create trigger on_auth_user_created
+        after insert on auth.users
+        for each row execute function public.handle_new_user();
+    $tg$;
+  end if;
+
+  if not exists (
+    select 1 from pg_proc p
+    join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public' and p.proname = 'touch_updated_at'
+  ) then
+    execute $fn$
+      create function public.touch_updated_at()
+      returns trigger language plpgsql as $body$
+      begin new.updated_at = now(); return new; end;
+      $body$;
+    $fn$;
+  end if;
+end
 $$;
 
-drop trigger if exists on_auth_user_created on auth.users;
-create trigger on_auth_user_created
-  after insert on auth.users
-  for each row execute function public.handle_new_user();
-
-create or replace function public.touch_updated_at()
-returns trigger language plpgsql as $$
-begin new.updated_at = now(); return new; end; $$;
-
+-- Our own table's trigger, reusing whichever `touch_updated_at` is there.
 drop trigger if exists launch_products_touch on public.launch_products;
 create trigger launch_products_touch
   before update on public.launch_products
   for each row execute function public.touch_updated_at();
 
 -- ─────────────────────────────────────────────────────────────
---  ROW LEVEL SECURITY
+--  ROW LEVEL SECURITY — launch_* tables only.
+--  `profiles` RLS is Saasgrave's and is left exactly as it is.
 -- ─────────────────────────────────────────────────────────────
 alter table public.launch_products    enable row level security;
 alter table public.launch_upvotes     enable row level security;
@@ -272,7 +348,8 @@ drop policy if exists "launch subscribers insert" on public.launch_subscribers;
 create policy "launch subscribers insert" on public.launch_subscribers for insert with check (true);
 
 -- ─────────────────────────────────────────────────────────────
---  RPCs
+--  RPCs — all `launch_`-prefixed so they can't collide with
+--  Saasgrave's `increment_view` / `toggle_post_like`.
 -- ─────────────────────────────────────────────────────────────
 
 -- Toggle an upvote and keep the denormalised counter honest, atomically.
@@ -332,6 +409,11 @@ returns void language sql security definer set search_path = public as $$
   update public.launch_products set click_count = click_count + 1 where slug = p_slug;
 $$;
 
+create or replace function public.increment_launch_badge(p_slug text)
+returns void language sql security definer set search_path = public as $$
+  update public.launch_products set badge_clicks = badge_clicks + 1 where slug = p_slug;
+$$;
+
 create or replace function public.increment_ad_click(p_ad uuid)
 returns void language sql security definer set search_path = public as $$
   update public.launch_ads set click_count = click_count + 1 where id = p_ad;
@@ -358,37 +440,70 @@ create trigger launch_comments_count
   for each row execute function public.sync_launch_comment_count();
 
 -- ─────────────────────────────────────────────────────────────
---  STORAGE — reuses the buckets Saasgrave already created, and
---  creates them if this is a fresh project.
+--  STORAGE — Saasgrave already created these buckets and policies.
+--  We reuse them as-is. Each statement is guarded so nothing live is
+--  ever dropped; on a fresh project they get created.
 -- ─────────────────────────────────────────────────────────────
 insert into storage.buckets (id, name, public)
 values ('avatars','avatars',true), ('logos','logos',true), ('screenshots','screenshots',true)
 on conflict (id) do nothing;
 
-drop policy if exists "storage public read" on storage.objects;
-create policy "storage public read" on storage.objects
-  for select using (bucket_id in ('avatars','logos','screenshots'));
+do $$
+begin
+  if not exists (
+    select 1 from pg_policy p join pg_class c on c.oid = p.polrelid
+    join pg_namespace n on n.oid = c.relnamespace
+    where n.nspname = 'storage' and c.relname = 'objects' and p.polname = 'storage public read'
+  ) then
+    execute $p$
+      create policy "storage public read" on storage.objects
+        for select using (bucket_id in ('avatars','logos','screenshots'));
+    $p$;
+  end if;
 
-drop policy if exists "storage user upload" on storage.objects;
-create policy "storage user upload" on storage.objects
-  for insert to authenticated
-  with check (
-    bucket_id in ('avatars','logos','screenshots')
-    and (storage.foldername(name))[1] = auth.uid()::text
-  );
+  if not exists (
+    select 1 from pg_policy p join pg_class c on c.oid = p.polrelid
+    join pg_namespace n on n.oid = c.relnamespace
+    where n.nspname = 'storage' and c.relname = 'objects' and p.polname = 'storage user upload'
+  ) then
+    execute $p$
+      create policy "storage user upload" on storage.objects
+        for insert to authenticated
+        with check (
+          bucket_id in ('avatars','logos','screenshots')
+          and (storage.foldername(name))[1] = auth.uid()::text
+        );
+    $p$;
+  end if;
 
-drop policy if exists "storage user update" on storage.objects;
-create policy "storage user update" on storage.objects
-  for update to authenticated
-  using (
-    bucket_id in ('avatars','logos','screenshots')
-    and (storage.foldername(name))[1] = auth.uid()::text
-  );
+  if not exists (
+    select 1 from pg_policy p join pg_class c on c.oid = p.polrelid
+    join pg_namespace n on n.oid = c.relnamespace
+    where n.nspname = 'storage' and c.relname = 'objects' and p.polname = 'storage user update'
+  ) then
+    execute $p$
+      create policy "storage user update" on storage.objects
+        for update to authenticated
+        using (
+          bucket_id in ('avatars','logos','screenshots')
+          and (storage.foldername(name))[1] = auth.uid()::text
+        );
+    $p$;
+  end if;
 
-drop policy if exists "storage user delete" on storage.objects;
-create policy "storage user delete" on storage.objects
-  for delete to authenticated
-  using (
-    bucket_id in ('avatars','logos','screenshots')
-    and (storage.foldername(name))[1] = auth.uid()::text
-  );
+  if not exists (
+    select 1 from pg_policy p join pg_class c on c.oid = p.polrelid
+    join pg_namespace n on n.oid = c.relnamespace
+    where n.nspname = 'storage' and c.relname = 'objects' and p.polname = 'storage user delete'
+  ) then
+    execute $p$
+      create policy "storage user delete" on storage.objects
+        for delete to authenticated
+        using (
+          bucket_id in ('avatars','logos','screenshots')
+          and (storage.foldername(name))[1] = auth.uid()::text
+        );
+    $p$;
+  end if;
+end
+$$;
