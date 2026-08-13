@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Sparkles, Loader2, ChevronDown, Check } from "lucide-react";
 import { toast } from "sonner";
@@ -55,21 +55,36 @@ export function SubmitForm({
   canPublish,
   supported,
   threshold,
+  initialUrl,
 }: {
   canPublish: boolean;
   supported: number;
   threshold: number;
+  /** URL carried from the landing hero — autofill fires against it on mount. */
+  initialUrl?: string;
 }) {
   const router = useRouter();
   const [draft, setDraft] = useState<Draft>(EMPTY);
-  const [sourceUrl, setSourceUrl] = useState("");
+  const [sourceUrl, setSourceUrl] = useState(initialUrl || "");
   const [filling, setFilling] = useState(false);
   const [filled, setFilled] = useState(false);
   const [more, setMore] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const autoRan = useRef(false);
 
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) =>
     setDraft((d) => ({ ...d, [key]: value }));
+
+  // If the maker arrived from the hero with a URL, fill from it immediately —
+  // the guard stops React's dev double-mount from firing autofill twice.
+  useEffect(() => {
+    if (autoRan.current) return;
+    if (initialUrl && initialUrl.trim()) {
+      autoRan.current = true;
+      autofill();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function autofill() {
     const url = sourceUrl.trim();

@@ -68,15 +68,13 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   }
 
   return (
-    <div className="w-full max-w-sm">
-      <div className="mb-6">
-        <h1 className="text-3xl font-semibold tracking-tight text-ink-900">
-          {isRegister ? "Create your maker account" : "Welcome back"}
+    <div className="w-full">
+      <div className="mb-6 text-center">
+        <h1 className="font-serif text-2xl font-semibold text-ink-900">
+          {isRegister ? "Create your account" : "Welcome back"}
         </h1>
-        <p className="mt-2 text-sm text-ink-500">
-          {isRegister
-            ? "One account for launching, upvoting and your maker profile. Free, no card."
-            : "Sign in to launch, upvote and manage your products."}
+        <p className="mt-1.5 text-[13px] text-ink-500">
+          {isRegister ? "Free, no card. Works on Saasgrave too." : "Sign in to launch and upvote."}
         </p>
       </div>
 

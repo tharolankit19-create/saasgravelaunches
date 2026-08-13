@@ -87,6 +87,13 @@ body {
   height: 1px;
   background: rgba(23, 21, 15, 0.14);
 }
+/* Centered rubrics (section intros) drop the trailing rule. */
+.rubric.justify-center {
+  justify-content: center;
+}
+.rubric.justify-center::after {
+  display: none;
+}
 
 /* Small-caps figure, for counts and ranks. */
 .figure {
