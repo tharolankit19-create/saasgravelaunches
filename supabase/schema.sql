@@ -507,3 +507,127 @@ begin
   end if;
 end
 $$;
+
+-- ============================================================
+--  ADDITIONS — Premium subscription, weekly Featured, reputation
+--  Same safety contract as everything above: additive only.
+-- ============================================================
+
+-- $9 Featured runs for one ISO week, so it needs an expiry rather than a flag.
+alter table public.launch_products add column if not exists featured_until timestamptz;
+alter table public.launch_products add column if not exists featured_week   text;
+
+create index if not exists launch_products_featured_week_idx
+  on public.launch_products(featured_week, featured_until);
+
+-- ─────────────────────────────────────────────────────────────
+--  SUBSCRIPTIONS — the $29/month Premium tier.
+--  One active row per user. The webhook is the source of truth for
+--  `status`; nothing in the browser can grant it.
+-- ─────────────────────────────────────────────────────────────
+create table if not exists public.launch_subscriptions (
+  id                   uuid primary key default gen_random_uuid(),
+  user_id              uuid not null references public.profiles(id) on delete cascade,
+  status               text not null default 'pending',   -- pending | active | cancelled | expired
+  dodo_subscription_id text,
+  dodo_payment_id      text,
+  current_period_end   timestamptz,
+  created_at           timestamptz default now(),
+  updated_at           timestamptz default now()
+);
+
+create index if not exists launch_subs_user_idx on public.launch_subscriptions(user_id, status);
+
+alter table public.launch_subscriptions enable row level security;
+
+drop policy if exists "launch subs read own" on public.launch_subscriptions;
+create policy "launch subs read own" on public.launch_subscriptions
+  for select using (auth.uid() = user_id);
+
+drop trigger if exists launch_subs_touch on public.launch_subscriptions;
+create trigger launch_subs_touch
+  before update on public.launch_subscriptions
+  for each row execute function public.touch_updated_at();
+
+-- Is this user on Premium right now? One place, so every gate agrees.
+create or replace function public.launch_is_premium(p_user uuid)
+returns boolean language sql security definer set search_path = public as $$
+  select exists (
+    select 1 from public.launch_subscriptions
+    where user_id = p_user
+      and status = 'active'
+      and (current_period_end is null or current_period_end > now())
+  );
+$$;
+
+-- ─────────────────────────────────────────────────────────────
+--  REPUTATION — computed, never stored.
+--
+--  Storing a score means every upvote has to write to `profiles`, which is a
+--  table Saasgrave also writes to. Computing it on read keeps the launchpad's
+--  gamification entirely out of the shared row.
+--
+--  `streak` counts consecutive ISO weeks the maker launched in, ending at the
+--  current or previous week — miss two weeks and it resets, which is what
+--  makes it worth keeping.
+-- ─────────────────────────────────────────────────────────────
+create or replace function public.launch_maker_stats(p_user uuid)
+returns table (
+  launches         int,
+  upvotes_received int,
+  upvotes_given    int,
+  comments_made    int,
+  streak_weeks     int,
+  reputation       int
+)
+language plpgsql security definer set search_path = public as $$
+declare
+  v_launches int;
+  v_recv     int;
+  v_given    int;
+  v_comments int;
+  v_streak   int := 0;
+  v_cursor   date;
+  v_week     text;
+begin
+  select count(*)::int, coalesce(sum(upvote_count), 0)::int
+    into v_launches, v_recv
+    from public.launch_products
+    where maker_id = p_user and status = 'live';
+
+  select count(*)::int into v_given
+    from public.launch_upvotes u
+    join public.launch_products p on p.id = u.product_id
+    where u.user_id = p_user and p.maker_id <> p_user;
+
+  select count(*)::int into v_comments
+    from public.launch_comments
+    where author_id = p_user;
+
+  -- Walk back week by week from the current one. Allow the current week to be
+  -- empty (it may not be over yet) without breaking the run.
+  v_cursor := (date_trunc('week', now()))::date;
+  for i in 0..200 loop
+    v_week := to_char(v_cursor, 'IYYY') || '-W' || to_char(v_cursor, 'IW');
+    if exists (
+      select 1 from public.launch_products
+      where maker_id = p_user and status = 'live' and launch_week = v_week
+    ) then
+      v_streak := v_streak + 1;
+    elsif i > 0 then
+      exit;
+    end if;
+    v_cursor := v_cursor - interval '7 days';
+  end loop;
+
+  return query select
+    v_launches,
+    v_recv,
+    v_given,
+    v_comments,
+    v_streak,
+    -- Weighted so that supporting other makers and getting real votes both
+    -- count, and simply submitting a lot does not.
+    (v_launches * 10 + v_recv * 3 + v_given * 2 + v_comments * 2 + v_streak * 15)::int;
+end;
+$$;

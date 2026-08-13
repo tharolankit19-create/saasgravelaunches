@@ -1,5 +1,5 @@
 import { Check } from "lucide-react";
-import { Card, Eyebrow } from "@/components/ui";
+import { Card, Rubric } from "@/components/ui";
 import { getSiteStats } from "@/lib/launches";
 import { FREE_PERKS, SUPPORT_THRESHOLD } from "@/lib/pricing";
 
@@ -9,7 +9,7 @@ export async function AuthAside() {
 
   return (
     <div className="hidden self-center lg:block">
-      <Eyebrow className="mb-3">One account, both products</Eyebrow>
+      <Rubric className="mb-3">One account, both products</Rubric>
       <h2 className="text-2xl font-semibold tracking-tight text-ink-900">
         Launch, upvote, and keep the backlink.
       </h2>
@@ -20,7 +20,7 @@ export async function AuthAside() {
       <ul className="mt-6 space-y-2.5">
         {FREE_PERKS.map((p) => (
           <li key={p} className="flex items-start gap-2.5 text-sm text-ink-700">
-            <Check className="mt-0.5 h-4 w-4 shrink-0 text-signal-500" />
+            <Check className="mt-0.5 h-4 w-4 shrink-0 text-moss-500" />
             {p}
           </li>
         ))}

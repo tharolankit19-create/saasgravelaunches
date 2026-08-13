@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Trophy } from "lucide-react";
-import { Card, Eyebrow, Empty, LinkButton, Badge } from "@/components/ui";
+import { Card, Rubric, Empty, LinkButton, Badge } from "@/components/ui";
 import { ProductRow } from "@/components/product-row";
 import { ProductLogo } from "@/components/avatar";
 import { AdRail } from "@/components/ad-rail";
@@ -36,7 +36,7 @@ export default async function LeaderboardPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-      <Eyebrow className="mb-3">Hall of fame</Eyebrow>
+      <Rubric className="mb-3">Hall of fame</Rubric>
       <h1 className="text-3xl font-semibold tracking-tight text-ink-900 sm:text-4xl">
         The leaderboard
       </h1>
@@ -49,7 +49,7 @@ export default async function LeaderboardPage() {
         <div className="space-y-10">
           <section>
             <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold tracking-tight text-ink-900">
-              <Trophy className="h-5 w-5 text-medal-500" /> All time
+              <Trophy className="h-5 w-5 text-brass-500" /> All time
             </h2>
             {allTime.length === 0 ? (
               <Empty
@@ -84,7 +84,7 @@ export default async function LeaderboardPage() {
                     <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
                       <Link
                         href={`/?w=${week}`}
-                        className="text-[15px] font-semibold text-ink-900 hover:text-violet-600"
+                        className="text-[15px] font-semibold text-ink-900 hover:text-oxblood-600"
                       >
                         {weekLabel(week)}
                       </Link>
@@ -97,7 +97,7 @@ export default async function LeaderboardPage() {
                             <span className="w-5 text-center text-sm">{["🥇", "🥈", "🥉"][i]}</span>
                             <ProductLogo src={p.logo_url} name={p.name} size={30} />
                             <span className="min-w-0 flex-1">
-                              <span className="block truncate text-[13px] font-semibold text-ink-900 group-hover:text-violet-600">
+                              <span className="block truncate text-[13px] font-semibold text-ink-900 group-hover:text-oxblood-600">
                                 {p.name}
                               </span>
                               <span className="block truncate text-[12px] text-ink-400">

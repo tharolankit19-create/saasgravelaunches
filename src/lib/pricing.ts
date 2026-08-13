@@ -1,24 +1,34 @@
 // ─── What we sell ───────────────────────────────────────────
-// Launching is free, forever — that's the whole acquisition engine. The only
-// money on the table is the rail beside the feed, sold by the calendar month,
-// and one optional per-product upgrade.
+// Four things, and no more. Every extra option is a decision between a maker
+// and a finished launch, and the board only grows if launching itself is free.
 //
-// Every price lives here and nowhere else. Each one resolves to its OWN Dodo
-// product: there is deliberately no shared fallback, because a fallback is how
-// a $9 slot ends up charging $39.
+//   Launch            free, forever          — one launch a week
+//   Featured          $9  / launch week      — pinned to the top of that week
+//   Sidebar Slot      $19 / month            — the rail beside every page
+//   Directory Blast   $99 one-off            — 100+ directories, submitted by hand
+//   Premium           $29 / month            — unlimited launches + full analytics
+//
+// Every price lives here and nowhere else, and each resolves to its OWN Dodo
+// product. There is deliberately no shared fallback: a fallback is how a $9
+// upgrade ends up charging $99.
 
-export type ProductKey = "sidebar" | "feed" | "premium";
+export type ProductKey = "featured" | "sidebar" | "directory" | "premium";
+
+/** How a purchase is charged, which decides how it expires. */
+export type Billing = "week" | "month" | "once" | "subscription";
 
 export type ProductSpec = {
   key: ProductKey;
   name: string;
   dollars: number;
-  /** How the price is charged. */
+  billing: Billing;
+  /** Short human unit, e.g. "/ launch week". */
   unit: string;
   /** Hard cap on concurrent slots. `null` = nothing to sell out. */
   slots: number | null;
   /** The row in `launch_ads.placement`, when this is an ad. */
-  placement: "sidebar" | "feed" | null;
+  placement: "sidebar" | null;
+  /** One line: what the buyer actually gets. */
   tagline: string;
   perks: string[];
   /** The ONE env var naming this price's Dodo product. */
@@ -26,59 +36,85 @@ export type ProductSpec = {
 };
 
 export const PRODUCTS: Record<ProductKey, ProductSpec> = {
+  featured: {
+    key: "featured",
+    name: "Featured",
+    dollars: 9,
+    billing: "week",
+    unit: "/ launch week",
+    slots: 3,
+    placement: null,
+    tagline: "Pinned above the board for your whole launch week.",
+    perks: [
+      "Pinned to the top of the week's board",
+      "A Featured rule and label on your row",
+      "Runs the full ISO week, then releases the slot",
+      "Only 3 exist per week — genuinely scarce",
+    ],
+    envKey: "DODO_PRODUCT_ID_FEATURED_9",
+  },
   sidebar: {
     key: "sidebar",
     name: "Sidebar Slot",
-    dollars: 9,
+    dollars: 19,
+    billing: "month",
     unit: "/ month",
     slots: 3,
     placement: "sidebar",
-    tagline: "Your product in the rail beside every launch, all month.",
+    tagline: "Your product in the rail beside every page, all month.",
     perks: [
       "Logo, headline and CTA in the right rail",
-      "Shown on every page — feed, product pages, leaderboard",
+      "On every page — board, product pages, archive",
       "Dofollow link to your site",
       "Click analytics in your dashboard",
       "A whole month · only 3 slots exist",
     ],
-    envKey: "DODO_PRODUCT_ID_SIDEBAR_9",
+    envKey: "DODO_PRODUCT_ID_SIDEBAR_19",
   },
-  feed: {
-    key: "feed",
-    name: "Feed Banner",
-    dollars: 29,
-    unit: "/ month",
-    slots: 1,
-    placement: "feed",
-    tagline: "One banner inside the weekly board itself. Impossible to scroll past.",
+  directory: {
+    key: "directory",
+    name: "Directory Blast",
+    dollars: 99,
+    billing: "once",
+    unit: "one-off",
+    slots: null,
+    placement: null,
+    tagline: "We submit your product to 100+ directories by hand.",
     perks: [
-      "A full-width sponsored card mid-feed",
-      "The single most-seen block on the site",
-      "Dofollow link to your site",
-      "Exclusive — one banner per month, no rotation",
+      "Submitted to 100+ startup and SaaS directories",
+      "Done manually, by a human — no bots, no spam",
+      "A report with every live link when it's finished",
+      "Turnaround within 7 days",
+      "Roughly 70 hours of work you don't do",
     ],
-    envKey: "DODO_PRODUCT_ID_FEED_29",
+    envKey: "DODO_PRODUCT_ID_DIRECTORY_99",
   },
   premium: {
     key: "premium",
-    name: "Premium Launch",
-    dollars: 19,
-    unit: "one-off, per product",
+    name: "Premium",
+    dollars: 29,
+    billing: "subscription",
+    unit: "/ month",
     slots: null,
     placement: null,
-    tagline: "A verified badge and a richer SEO page that keeps earning after launch week.",
+    tagline: "Launch as often as you like, and see exactly what each one did.",
     perks: [
-      "Verified badge on the board and your product page",
-      "Priority placement among equal upvotes",
-      "Full SEO block — FAQ, keywords, “alternative to” pages",
-      "Keeps working long after your week ends",
+      "Unlimited launches — no one-a-week limit",
+      "Full maker analytics: views, clicks, upvote velocity, referrers",
+      "Verified badge on the board and your product pages",
+      "AI Launch Copilot on every draft",
+      "Live embed widgets for your own site",
+      "Cancel any time — nothing is locked behind renewal",
     ],
-    envKey: "DODO_PRODUCT_ID_PREMIUM_19",
+    envKey: "DODO_PRODUCT_ID_PREMIUM_29",
   },
 };
 
-export const AD_PRODUCTS: ProductKey[] = ["sidebar", "feed"];
-export const ALL_PRODUCTS: ProductKey[] = ["sidebar", "feed", "premium"];
+/** Display order on the pricing page: cheapest commitment first. */
+export const PRODUCT_ORDER: ProductKey[] = ["featured", "sidebar", "premium", "directory"];
+
+/** The one we steer people towards. */
+export const MOST_PICKED: ProductKey = "premium";
 
 export function isProductKey(v: unknown): v is ProductKey {
   return typeof v === "string" && v in PRODUCTS;
@@ -102,29 +138,45 @@ export function productEnvName(key: ProductKey): string {
 
 /** The payment `kind` a product settles into. */
 export function kindFor(key: ProductKey): string {
-  return key === "premium" ? "premium" : `ad_${key}`;
+  return key === "sidebar" ? "ad_sidebar" : key;
 }
 
 /** Slot indexes that exist for a placement, e.g. [1,2,3]. */
-export function slotIndexes(key: Exclude<ProductKey, "premium">): number[] {
+export function slotIndexes(key: ProductKey): number[] {
   const n = PRODUCTS[key].slots ?? 1;
   return Array.from({ length: n }, (_, i) => i + 1);
 }
 
-// ─── The free tier, spelled out ─────────────────────────────
-// Written here so the landing page, the pricing page and the submit flow all
-// promise exactly the same thing.
+// ─── Free vs paid, stated once ──────────────────────────────
+
+/**
+ * Launches per ISO week on the free tier. Premium lifts this entirely — it's
+ * the clearest thing a subscription can buy without touching the ranking.
+ */
+export const FREE_LAUNCHES_PER_WEEK = 1;
+
+/** Written here so the landing page, pricing page and submit flow agree. */
 export const FREE_PERKS = [
   "A permanent product page with a dofollow backlink",
-  "A spot on this week's board, ranked by real upvotes",
-  "Comments from other makers, and a maker profile",
+  "A ranked place on the week's board",
+  "Comments and feedback from other makers",
   "AI autofill — paste your URL, we write the listing",
   "Views, upvotes and outbound clicks in your dashboard",
+  "An embeddable badge for your own site",
+];
+
+/** What only Premium unlocks — the honest, short version. */
+export const PREMIUM_ONLY = [
+  "More than one launch a week",
+  "Full analytics with daily charts and referrers",
+  "AI Launch Copilot",
+  "Verified badge",
 ];
 
 /**
- * Launching costs nothing but it isn't free of effort: you support three other
+ * Launching costs nothing, but it isn't free of effort: you support three other
  * makers before your own launch goes live. That single rule is what keeps the
- * board from becoming a wall of drive-by submissions nobody reads.
+ * board from becoming a wall of drive-by submissions nobody reads — and it's
+ * why the upvote counts here mean something.
  */
 export const SUPPORT_THRESHOLD = 3;

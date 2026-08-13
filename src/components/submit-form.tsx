@@ -6,6 +6,7 @@ import { Sparkles, Loader2, ChevronDown, Check } from "lucide-react";
 import { toast } from "sonner";
 import { Button, Field, inputClass, Card } from "@/components/ui";
 import { ProductLogo } from "@/components/avatar";
+import { CopilotPanel } from "@/components/copilot-panel";
 import { CATEGORIES, PRICING_MODELS } from "@/lib/categories";
 import { cn } from "@/lib/utils";
 import { trackEvent } from "@/lib/track-client";
@@ -152,9 +153,9 @@ export function SubmitForm({
     <form onSubmit={publish} className="space-y-6">
       {/* ── autofill ── */}
       <Card className="overflow-hidden">
-        <div className="bg-gradient-to-br from-violet-500/8 to-signal-500/6 px-5 py-6 sm:px-6">
+        <div className="bg-gradient-to-br from-oxblood-500/8 to-moss-500/6 px-5 py-6 sm:px-6">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-violet-500" />
+            <Sparkles className="h-4 w-4 text-oxblood-500" />
             <h2 className="text-base font-semibold tracking-tight text-ink-900">
               Start with your URL
             </h2>
@@ -193,7 +194,7 @@ export function SubmitForm({
           </div>
 
           {filled && (
-            <p className="mt-2.5 inline-flex items-center gap-1.5 text-[12px] font-medium text-signal-600">
+            <p className="mt-2.5 inline-flex items-center gap-1.5 text-[12px] font-medium text-moss-600">
               <Check className="h-3.5 w-3.5" /> Filled in below — everything is editable.
             </p>
           )}
@@ -202,7 +203,7 @@ export function SubmitForm({
 
       {/* ── the essentials ── */}
       <Card className="p-5 sm:p-6">
-        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-violet-600">
+        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-oxblood-600">
           The essentials
         </p>
         <p className="mt-1.5 text-sm text-ink-500">
@@ -276,7 +277,7 @@ export function SubmitForm({
                     className={cn(
                       "rounded-full border px-3 py-1.5 text-[13px] font-medium transition",
                       on
-                        ? "border-violet-500/40 bg-violet-500/10 text-violet-600"
+                        ? "border-oxblood-500/40 bg-oxblood-500/10 text-oxblood-600"
                         : "border-ink-900/10 bg-paper-100 text-ink-500 hover:border-ink-900/25 hover:text-ink-900"
                     )}
                   >
@@ -391,14 +392,36 @@ export function SubmitForm({
         )}
       </Card>
 
+      {/* ── copilot ── */}
+      {ready && (
+        <CopilotPanel
+          draft={{
+            name: draft.name,
+            tagline: draft.tagline,
+            description: draft.description,
+            categories: draft.categories,
+            who_for: draft.who_for,
+            problem: draft.problem,
+            solution: draft.solution,
+            unique_edge: draft.unique_edge,
+            website_url: draft.website_url,
+          }}
+          onApplyTagline={(t) => set("tagline", t.slice(0, 80))}
+          onApplyDescription={(d) => {
+            set("description", d.slice(0, 700));
+            setMore(true);
+          }}
+        />
+      )}
+
       {/* ── publish ── */}
       <div className="sticky bottom-0 z-10 -mx-1 border-t border-ink-900/8 bg-paper-50/90 px-1 py-4 backdrop-blur">
         {!canPublish && (
-          <p className="mb-3 rounded-xl border border-medal-500/25 bg-medal-500/8 px-4 py-3 text-[13px] text-ink-700">
+          <p className="mb-3 rounded-xl border border-brass-500/25 bg-brass-500/8 px-4 py-3 text-[13px] text-ink-700">
             Support <strong>{threshold - supported}</strong> more launch
             {threshold - supported === 1 ? "" : "es"} before you publish your own. You&apos;ve
             upvoted {supported} of {threshold}.{" "}
-            <a href="/" className="font-medium text-violet-600 hover:underline">
+            <a href="/" className="font-medium text-oxblood-600 hover:underline">
               Go find one worth an upvote →
             </a>
           </p>

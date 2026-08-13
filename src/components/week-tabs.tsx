@@ -1,26 +1,51 @@
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { currentWeekKey, isCurrentWeek, isFutureWeek, shiftWeek, weekLabel, weekWindow } from "@/lib/week";
+import {
+  currentWeekKey,
+  isCurrentWeek,
+  isFutureWeek,
+  isPreLaunchWeek,
+  shiftWeek,
+  weekLabel,
+  weekWindow,
+} from "@/lib/week";
 
 /**
- * The week strip. Future weeks are shown but not linkable — you can see the
- * board is about to turn over, you just can't vote in a week that hasn't
- * started.
+ * The week strip.
+ *
+ * Labels are the platform's own week numbers (Week 1, Week 2 …), never ISO
+ * week numbers — nobody arriving at a new board should read "Week 33". Weeks
+ * before launch aren't offered at all, and the week ahead is visible but not
+ * linkable, because you can't vote in a week that hasn't started.
  */
 export function WeekTabs({ week, basePath = "/" }: { week: string; basePath?: string }) {
   const weeks = weekWindow(week, 3, 1);
   const href = (w: string) => (w === currentWeekKey() ? basePath : `${basePath}?w=${w}`);
 
+  const previous = shiftWeek(week, -1);
+  const next = shiftWeek(week, 1);
+  const canGoBack = !isPreLaunchWeek(previous);
+  const canGoForward = !isFutureWeek(next);
+
+  const arrow =
+    "grid h-7 w-7 shrink-0 place-items-center rounded-[2px] transition";
+
   return (
-    <div className="flex items-center gap-1 overflow-x-auto px-2 py-3 sm:px-4">
-      <Link
-        href={href(shiftWeek(week, -1))}
-        aria-label="Previous week"
-        className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-ink-400 transition hover:bg-paper-200 hover:text-ink-900"
-      >
-        <ChevronLeft className="h-4 w-4" />
-      </Link>
+    <div className="flex items-center gap-1 overflow-x-auto px-3 py-2.5 sm:px-4">
+      {canGoBack ? (
+        <Link
+          href={href(previous)}
+          aria-label="Previous week"
+          className={cn(arrow, "text-ink-400 hover:bg-paper-300 hover:text-ink-900")}
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Link>
+      ) : (
+        <span className={cn(arrow, "text-ink-400/30")}>
+          <ChevronLeft className="h-4 w-4" />
+        </span>
+      )}
 
       {weeks.map((w) => {
         const active = w === week;
@@ -31,7 +56,7 @@ export function WeekTabs({ week, basePath = "/" }: { week: string; basePath?: st
             <span
               key={w}
               title="This week hasn't started yet"
-              className="shrink-0 rounded-lg px-3.5 py-1.5 text-sm text-ink-400/60"
+              className="shrink-0 px-3 py-1 font-mono text-[11px] uppercase tracking-[0.1em] text-ink-400/50"
             >
               {weekLabel(w)}
             </span>
@@ -43,30 +68,30 @@ export function WeekTabs({ week, basePath = "/" }: { week: string; basePath?: st
             key={w}
             href={href(w)}
             className={cn(
-              "shrink-0 rounded-lg px-3.5 py-1.5 text-sm font-medium transition",
+              "shrink-0 rounded-[2px] px-3 py-1 font-mono text-[11px] uppercase tracking-[0.1em] transition",
               active
-                ? "bg-ink-900 text-white shadow-card"
-                : "text-ink-500 hover:bg-paper-200 hover:text-ink-900"
+                ? "bg-ink-900 text-paper-100"
+                : "text-ink-500 hover:bg-paper-300 hover:text-ink-900"
             )}
           >
             {weekLabel(w)}
             {isCurrentWeek(w) && !active && (
-              <span className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-signal-500 align-middle" />
+              <span className="ml-1.5 inline-block h-1 w-1 rounded-full bg-moss-500 align-middle" />
             )}
           </Link>
         );
       })}
 
-      {!isFutureWeek(shiftWeek(week, 1)) ? (
+      {canGoForward ? (
         <Link
-          href={href(shiftWeek(week, 1))}
+          href={href(next)}
           aria-label="Next week"
-          className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-ink-400 transition hover:bg-paper-200 hover:text-ink-900"
+          className={cn(arrow, "text-ink-400 hover:bg-paper-300 hover:text-ink-900")}
         >
           <ChevronRight className="h-4 w-4" />
         </Link>
       ) : (
-        <span className="grid h-8 w-8 shrink-0 place-items-center text-ink-400/40">
+        <span className={cn(arrow, "text-ink-400/30")}>
           <ChevronRight className="h-4 w-4" />
         </span>
       )}

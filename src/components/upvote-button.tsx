@@ -2,15 +2,15 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowUp } from "lucide-react";
+import { ChevronUp } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { trackEvent } from "@/lib/track-client";
 
 /**
- * The upvote. Optimistic — the count moves the instant you click, and rolls
- * back if the server disagrees. A signed-out click sends you to sign in and
- * comes straight back to what you were looking at.
+ * The upvote. Optimistic — the count moves the instant you click and rolls back
+ * if the server disagrees. A signed-out click goes to sign-in and returns to
+ * exactly what you were looking at.
  */
 export function UpvoteButton({
   productId,
@@ -33,8 +33,8 @@ export function UpvoteButton({
   const [bump, setBump] = useState(false);
 
   const dims = {
-    sm: "w-12 py-1.5 text-[11px]",
-    md: "w-14 py-2 text-xs",
+    sm: "w-11 py-1 text-[11px]",
+    md: "w-13 py-1.5 text-[12px]",
     lg: "w-16 py-2.5 text-sm",
   }[size];
 
@@ -45,10 +45,9 @@ export function UpvoteButton({
     }
 
     const previous = state;
-    const next = { count: state.count + (state.upvoted ? -1 : 1), upvoted: !state.upvoted };
-    setState(next);
+    setState({ count: state.count + (state.upvoted ? -1 : 1), upvoted: !state.upvoted });
     setBump(true);
-    setTimeout(() => setBump(false), 360);
+    setTimeout(() => setBump(false), 350);
 
     try {
       const res = await fetch("/api/upvote", {
@@ -76,21 +75,20 @@ export function UpvoteButton({
       aria-pressed={state.upvoted}
       aria-label={state.upvoted ? "Remove upvote" : "Upvote"}
       className={cn(
-        "group flex shrink-0 flex-col items-center justify-center gap-0.5 rounded-xl border font-mono font-semibold transition-all active:scale-95",
+        "group flex shrink-0 flex-col items-center justify-center gap-0 rounded-[3px] border transition-all active:translate-y-px",
         dims,
         state.upvoted
-          ? "border-violet-500/30 bg-violet-500/10 text-violet-600"
-          : "border-ink-900/10 bg-paper-100 text-ink-700 hover:border-violet-500/40 hover:bg-violet-500/5 hover:text-violet-600"
+          ? "border-oxblood-500/40 bg-oxblood-500/10 text-oxblood-600"
+          : "border-ink-900/16 bg-paper-100 text-ink-700 hover:border-oxblood-500/50 hover:bg-oxblood-500/5 hover:text-oxblood-600"
       )}
     >
-      <ArrowUp
-        className={cn(
-          "h-4 w-4 transition-transform group-hover:-translate-y-0.5",
-          bump && "animate-pop"
-        )}
+      <ChevronUp
+        className={cn("h-4 w-4 transition-transform group-hover:-translate-y-px", bump && "animate-pop")}
         strokeWidth={2.5}
       />
-      <span className={cn(bump && "animate-pop")}>{state.count}</span>
+      <span className={cn("figure font-semibold leading-none", bump && "animate-pop")}>
+        {state.count}
+      </span>
     </button>
   );
 }

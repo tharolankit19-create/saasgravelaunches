@@ -50,7 +50,7 @@ export function ShareRow({
   }
 
   const btn =
-    "inline-flex items-center gap-1.5 rounded-lg border border-ink-900/10 bg-paper-100 px-3 py-1.5 text-[13px] font-medium text-ink-700 transition hover:border-violet-500/40 hover:text-violet-600";
+    "inline-flex items-center gap-1.5 rounded-lg border border-ink-900/10 bg-paper-100 px-3 py-1.5 text-[13px] font-medium text-ink-700 transition hover:border-oxblood-500/40 hover:text-oxblood-600";
 
   return (
     <div className={cn("flex flex-wrap items-center gap-2", className)}>
@@ -73,7 +73,7 @@ export function ShareRow({
         <Linkedin className="h-3.5 w-3.5" /> LinkedIn
       </a>
       <button onClick={copy} className={btn}>
-        {copied ? <Check className="h-3.5 w-3.5 text-signal-500" /> : <Link2 className="h-3.5 w-3.5" />}
+        {copied ? <Check className="h-3.5 w-3.5 text-moss-500" /> : <Link2 className="h-3.5 w-3.5" />}
         {copied ? "Copied" : "Copy link"}
       </button>
     </div>

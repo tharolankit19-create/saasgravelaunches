@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { getSupportCount } from "@/lib/launches";
-import { SUPPORT_THRESHOLD } from "@/lib/pricing";
+import { FREE_LAUNCHES_PER_WEEK, SUPPORT_THRESHOLD } from "@/lib/pricing";
+import { isPremium } from "@/lib/premium";
 import { CATEGORY_NAMES } from "@/lib/categories";
 import { normalizeUrl, slugify, truncate } from "@/lib/utils";
 import { currentWeekKey } from "@/lib/week";
@@ -9,8 +10,8 @@ import { track } from "@/lib/analytics";
 
 export const dynamic = "force-dynamic";
 
-/** How many launches one maker can put on a single week's board. */
-const MAX_PER_WEEK = 2;
+// Free makers get one launch a week; Premium lifts the cap. That's the
+// cleanest thing a subscription can buy without touching the ranking.
 
 export async function POST(request: Request) {
   const supabase = createClient();
@@ -57,17 +58,24 @@ export async function POST(request: Request) {
   const week = currentWeekKey();
 
   // ── anti-spam, in the two ways that actually matter ──
-  const { count: thisWeekCount } = await supabase
-    .from("launch_products")
-    .select("id", { count: "exact", head: true })
-    .eq("maker_id", user.id)
-    .eq("launch_week", week)
-    .eq("status", "live");
+  const [{ count: thisWeekCount }, premium] = await Promise.all([
+    supabase
+      .from("launch_products")
+      .select("id", { count: "exact", head: true })
+      .eq("maker_id", user.id)
+      .eq("launch_week", week)
+      .eq("status", "live"),
+    isPremium(user.id),
+  ]);
 
-  if ((thisWeekCount || 0) >= MAX_PER_WEEK) {
+  if (!premium && (thisWeekCount || 0) >= FREE_LAUNCHES_PER_WEEK) {
     await track({ event: "publish_blocked", userId: user.id, meta: { reason: "week_limit" } });
     return NextResponse.json(
-      { error: `You can launch ${MAX_PER_WEEK} products a week. Next week's board opens Monday.` },
+      {
+        error:
+          "Free makers launch one product a week, and you've used this week's. Next week's board opens Monday — or Premium lifts the limit entirely.",
+        upgrade: "premium",
+      },
       { status: 429 }
     );
   }

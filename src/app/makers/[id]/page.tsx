@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Globe, Github } from "lucide-react";
-import { Card, Eyebrow, Empty, LinkButton, Stat } from "@/components/ui";
+import { Card, Rubric, Empty, LinkButton, Stat } from "@/components/ui";
 import { Avatar } from "@/components/avatar";
 import { ProductRow } from "@/components/product-row";
 import { currentUser } from "@/lib/supabase/server";
 import { getMaker, getMakerProducts, getMyUpvotes } from "@/lib/launches";
 import { normalizeUrl, hostOf } from "@/lib/utils";
+import { getMakerStats, levelFor, streakLabel } from "@/lib/premium";
+import { LevelMeter } from "@/components/charts";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +29,12 @@ export default async function MakerPage({ params }: { params: { id: string } }) 
   const maker = await getMaker(params.id);
   if (!maker) notFound();
 
-  const [products, user] = await Promise.all([getMakerProducts(params.id), currentUser()]);
+  const [products, user, stats] = await Promise.all([
+    getMakerProducts(params.id),
+    currentUser(),
+    getMakerStats(params.id),
+  ]);
+  const { level, next, progress } = levelFor(stats.reputation);
   const isSelf = user?.id === params.id;
   const live = products.filter((p) => p.status === "live");
   const visible = isSelf ? products : live;
@@ -59,7 +66,7 @@ export default async function MakerPage({ params }: { params: { id: string } }) 
                   href={website}
                   target="_blank"
                   rel="noopener"
-                  className="inline-flex items-center gap-1.5 text-ink-500 hover:text-violet-600"
+                  className="inline-flex items-center gap-1.5 text-ink-500 hover:text-oxblood-600"
                 >
                   <Globe className="h-3.5 w-3.5" /> {hostOf(website)}
                 </a>
@@ -69,7 +76,7 @@ export default async function MakerPage({ params }: { params: { id: string } }) 
                   href={`https://x.com/${maker.x_handle.replace(/^@/, "")}`}
                   target="_blank"
                   rel="noopener"
-                  className="text-ink-500 hover:text-violet-600"
+                  className="text-ink-500 hover:text-oxblood-600"
                 >
                   @{maker.x_handle.replace(/^@/, "")}
                 </a>
@@ -79,7 +86,7 @@ export default async function MakerPage({ params }: { params: { id: string } }) 
                   href={`https://github.com/${String((maker as any).github_handle).replace(/^@/, "")}`}
                   target="_blank"
                   rel="noopener"
-                  className="inline-flex items-center gap-1.5 text-ink-500 hover:text-violet-600"
+                  className="inline-flex items-center gap-1.5 text-ink-500 hover:text-oxblood-600"
                 >
                   <Github className="h-3.5 w-3.5" /> GitHub
                 </a>
@@ -94,15 +101,33 @@ export default async function MakerPage({ params }: { params: { id: string } }) 
           )}
         </div>
 
-        <div className="mt-6 grid max-w-sm grid-cols-3 gap-6 border-t border-ink-900/8 pt-5">
-          <Stat value={live.length} label="Launches" />
-          <Stat value={upvotes} label="Upvotes earned" />
-          <Stat value={views} label="Page views" />
+        <div className="mt-6 border-t border-ink-900/8 pt-5">
+          <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
+            <Stat value={live.length} label="Launches" />
+            <Stat value={upvotes} label="Upvotes earned" />
+            <Stat value={stats.upvotes_given} label="Support given" />
+            <Stat value={views} label="Page views" />
+          </div>
+
+          <div className="mt-6 max-w-sm">
+            <div className="flex items-baseline justify-between gap-3">
+              <p className="font-serif text-[15px] font-semibold text-ink-900">{level.name}</p>
+              <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-ink-400">
+                {streakLabel(stats.streak_weeks)}
+              </p>
+            </div>
+            <LevelMeter progress={progress} className="mt-2" />
+            <p className="mt-1.5 font-mono text-[10px] text-ink-400">
+              {next
+                ? `${stats.reputation} / ${next.min} to ${next.name}`
+                : `${stats.reputation} — top level`}
+            </p>
+          </div>
         </div>
       </Card>
 
       <section className="mt-8">
-        <Eyebrow className="mb-3">Launches</Eyebrow>
+        <Rubric className="mb-3">Launches</Rubric>
         {visible.length === 0 ? (
           <Empty
             title={isSelf ? "You haven't launched yet" : "No launches yet"}
@@ -132,7 +157,7 @@ export default async function MakerPage({ params }: { params: { id: string } }) 
 
       <p className="mt-8 text-center text-[13px] text-ink-400">
         Building something?{" "}
-        <Link href="/launch" className="font-medium text-violet-600 hover:underline">
+        <Link href="/launch" className="font-medium text-oxblood-600 hover:underline">
           Launch it here — free.
         </Link>
       </p>

@@ -15,7 +15,7 @@ import {
   Star,
   Sparkles,
 } from "lucide-react";
-import { Badge, Card, Eyebrow, LinkButton } from "@/components/ui";
+import { Badge, Card, Rubric, LinkButton } from "@/components/ui";
 import { Avatar, ProductLogo } from "@/components/avatar";
 import { UpvoteButton } from "@/components/upvote-button";
 import { VisitButton } from "@/components/visit-button";
@@ -164,7 +164,7 @@ export default async function ProductPage({
 
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         <nav className="mb-5 flex items-center gap-1.5 text-[12px] text-ink-400">
-          <Link href="/products" className="hover:text-violet-600">
+          <Link href="/products" className="hover:text-oxblood-600">
             Products
           </Link>
           <span>/</span>
@@ -175,7 +175,7 @@ export default async function ProductPage({
           <Card
             className={
               searchParams.launched
-                ? "mb-6 border-signal-500/25 bg-signal-500/6 p-5"
+                ? "mb-6 border-moss-500/25 bg-moss-500/6 p-5"
                 : "mb-6 p-5"
             }
           >
@@ -192,6 +192,20 @@ export default async function ProductPage({
             />
             <div className="mt-6 border-t border-ink-900/8 pt-5">
               <BadgeEmbed slug={product.slug} siteUrl={SITE} />
+              <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2">
+                <Link
+                  href={`/embed/${product.slug}`}
+                  className="font-mono text-[10px] uppercase tracking-[0.1em] text-oxblood-600 hover:underline"
+                >
+                  All three live widgets →
+                </Link>
+                <Link
+                  href={`/dashboard/analytics/${product.slug}`}
+                  className="font-mono text-[10px] uppercase tracking-[0.1em] text-oxblood-600 hover:underline"
+                >
+                  Launch analytics →
+                </Link>
+              </div>
             </div>
           </Card>
         )}
@@ -209,15 +223,15 @@ export default async function ProductPage({
                       {product.name}
                     </h1>
                     {product.verified && (
-                      <BadgeCheck className="h-5 w-5 text-medal-500" aria-label="Verified" />
+                      <BadgeCheck className="h-5 w-5 text-brass-500" aria-label="Verified" />
                     )}
                     {rank && rank <= 3 && (
-                      <Badge tone="medal">
+                      <Badge tone="brass">
                         <Trophy className="h-3 w-3" /> #{rank} · {weekLabel(product.launch_week || "")}
                       </Badge>
                     )}
                     {product.featured && (
-                      <Badge tone="violet">
+                      <Badge tone="oxblood">
                         <Sparkles className="h-3 w-3" /> Editor&apos;s pick
                       </Badge>
                     )}
@@ -235,7 +249,7 @@ export default async function ProductPage({
                       <Link
                         key={c}
                         href={`/categories/${categorySlug(c)}`}
-                        className="inline-flex items-center gap-1 hover:text-violet-600"
+                        className="inline-flex items-center gap-1 hover:text-oxblood-600"
                       >
                         <Tag className="h-3 w-3" />
                         {c}
@@ -292,7 +306,7 @@ export default async function ProductPage({
             {/* ── gallery ── */}
             {gallery.length > 0 && (
               <section className="mt-8">
-                <Eyebrow className="mb-3">Gallery</Eyebrow>
+                <Rubric className="mb-3">Gallery</Rubric>
                 <div className="flex snap-x gap-4 overflow-x-auto pb-2">
                   {gallery.map((src) => (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -311,7 +325,7 @@ export default async function ProductPage({
             {/* ── about ── */}
             {product.description && (
               <section className="mt-8">
-                <Eyebrow className="mb-3">About {product.name}</Eyebrow>
+                <Rubric className="mb-3">About {product.name}</Rubric>
                 <Card className="p-6">
                   <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-ink-700">
                     {product.description}
@@ -323,11 +337,11 @@ export default async function ProductPage({
             {/* ── overview ── */}
             {overview.length > 0 && (
               <section className="mt-8">
-                <Eyebrow className="mb-3">Overview</Eyebrow>
+                <Rubric className="mb-3">Overview</Rubric>
                 <Card className="divide-y divide-ink-900/8">
                   {overview.map((o) => (
                     <div key={o.label} className="flex gap-4 p-5">
-                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-violet-500/8 text-violet-600">
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-oxblood-500/8 text-oxblood-600">
                         {o.icon}
                       </span>
                       <div>
@@ -343,7 +357,7 @@ export default async function ProductPage({
             {/* ── faq ── */}
             {faq.length > 0 && (
               <section className="mt-8">
-                <Eyebrow className="mb-3">FAQ</Eyebrow>
+                <Rubric className="mb-3">FAQ</Rubric>
                 <Card className="divide-y divide-ink-900/8">
                   {faq.map((f, i) => (
                     <details key={i} className="group p-5">
@@ -359,16 +373,16 @@ export default async function ProductPage({
 
             {/* ── discussion ── */}
             <section className="mt-8" id="discussion">
-              <Eyebrow className="mb-3">Discussion · {product.comment_count}</Eyebrow>
+              <Rubric className="mb-3">Discussion · {product.comment_count}</Rubric>
               <Card className="p-6">
                 {product.maker_note && (
-                  <div className="mb-6 rounded-xl border border-violet-500/20 bg-violet-500/6 p-4">
+                  <div className="mb-6 rounded-xl border border-oxblood-500/20 bg-oxblood-500/6 p-4">
                     <div className="flex items-center gap-2">
                       <Avatar src={maker?.avatar_url} name={maker?.full_name} size={26} />
                       <span className="text-[13px] font-semibold text-ink-900">
                         {maker?.full_name || "The maker"}
                       </span>
-                      <span className="rounded-full border border-violet-500/20 bg-paper-100 px-2 py-0.5 text-[10px] font-medium text-violet-600">
+                      <span className="rounded-full border border-oxblood-500/20 bg-paper-100 px-2 py-0.5 text-[10px] font-medium text-oxblood-600">
                         Maker
                       </span>
                     </div>
@@ -399,7 +413,7 @@ export default async function ProductPage({
                 <Link href={`/makers/${maker.id}`} className="group mt-3 flex items-center gap-3">
                   <Avatar src={maker.avatar_url} name={maker.full_name} size={44} />
                   <span className="min-w-0">
-                    <span className="block truncate text-sm font-semibold text-ink-900 group-hover:text-violet-600">
+                    <span className="block truncate text-sm font-semibold text-ink-900 group-hover:text-oxblood-600">
                       {maker.full_name || "A maker"}
                     </span>
                     {maker.maker_headline && (
@@ -417,7 +431,7 @@ export default async function ProductPage({
                     href={`https://x.com/${maker.x_handle.replace(/^@/, "")}`}
                     target="_blank"
                     rel="noopener"
-                    className="mt-3 inline-block text-[12px] font-medium text-violet-600 hover:underline"
+                    className="mt-3 inline-block text-[12px] font-medium text-oxblood-600 hover:underline"
                   >
                     @{maker.x_handle.replace(/^@/, "")} on X
                   </a>
@@ -438,7 +452,7 @@ export default async function ProductPage({
                       <Link href={`/products/${p.slug}`} className="group flex items-center gap-3">
                         <ProductLogo src={p.logo_url} name={p.name} size={32} />
                         <span className="min-w-0 flex-1">
-                          <span className="block truncate text-[13px] font-semibold text-ink-900 group-hover:text-violet-600">
+                          <span className="block truncate text-[13px] font-semibold text-ink-900 group-hover:text-oxblood-600">
                             {p.name}
                           </span>
                           <span className="block truncate text-[12px] text-ink-400">{p.tagline}</span>

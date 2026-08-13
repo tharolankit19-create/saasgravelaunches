@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Eye, MousePointerClick, ArrowUp, MessageSquare, Plus, Sparkles } from "lucide-react";
-import { Card, Eyebrow, Empty, LinkButton, Stat, Badge } from "@/components/ui";
+import { Card, Rubric, Empty, LinkButton, Stat, Badge } from "@/components/ui";
 import { ProductLogo } from "@/components/avatar";
 import { ProfileForm } from "@/components/profile-form";
 import { ShareRow } from "@/components/share-row";
 import { createClient, currentUser } from "@/lib/supabase/server";
 import { getMakerProducts, getSupportCount } from "@/lib/launches";
+import { getMakerStats, levelFor, streakLabel, isPremium } from "@/lib/premium";
+import { LevelMeter } from "@/components/charts";
 import { getMyAds } from "@/lib/ads";
 import { SUPPORT_THRESHOLD, PRODUCTS } from "@/lib/pricing";
 import { monthLabel, weekLabel } from "@/lib/week";
@@ -34,6 +36,9 @@ export default async function DashboardPage() {
     getSupportCount(user.id),
   ]);
 
+  const [stats, premium] = await Promise.all([getMakerStats(user.id), isPremium(user.id)]);
+  const { level, next, progress } = levelFor(stats.reputation);
+
   const live = products.filter((p) => p.status === "live");
   const totals = live.reduce(
     (acc, p) => ({
@@ -50,7 +55,7 @@ export default async function DashboardPage() {
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <Eyebrow className="mb-2">Your workspace</Eyebrow>
+          <Rubric className="mb-2">Your workspace</Rubric>
           <h1 className="text-3xl font-semibold tracking-tight text-ink-900">
             {profile?.full_name ? `Hi, ${profile.full_name.split(" ")[0]}` : "Your dashboard"}
           </h1>
@@ -71,8 +76,30 @@ export default async function DashboardPage() {
         <Stat value={totals.badge} label="From your badge" />
       </Card>
 
+      {/* ── standing ── */}
+      <Card className="mt-4 flex flex-wrap items-center gap-x-8 gap-y-5 p-6">
+        <div className="min-w-[190px] flex-1">
+          <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-400">
+            Your standing
+          </p>
+          <p className="mt-1.5 font-serif text-xl font-semibold text-ink-900">{level.name}</p>
+          <p className="mt-0.5 text-[13px] text-ink-500">{level.blurb}</p>
+          <LevelMeter progress={progress} className="mt-3" />
+          <p className="mt-1.5 font-mono text-[10px] text-ink-400">
+            {next
+              ? `${stats.reputation} / ${next.min} to ${next.name}`
+              : `${stats.reputation} — top level`}
+          </p>
+        </div>
+        <div className="grid grid-cols-3 gap-6">
+          <Stat value={stats.streak_weeks} label="Week streak" hint={streakLabel(stats.streak_weeks)} />
+          <Stat value={stats.upvotes_given} label="Support given" />
+          <Stat value={premium ? "Premium" : "Free"} label="Plan" />
+        </div>
+      </Card>
+
       {supported < SUPPORT_THRESHOLD && (
-        <Card className="mt-5 border-medal-500/25 bg-medal-500/6 p-5">
+        <Card className="mt-5 border-brass-500/25 bg-brass-500/6 p-5">
           <p className="text-sm font-semibold text-ink-900">
             {SUPPORT_THRESHOLD - supported} more upvote
             {SUPPORT_THRESHOLD - supported === 1 ? "" : "s"} before you can publish
@@ -80,7 +107,7 @@ export default async function DashboardPage() {
           <p className="mt-1 text-[13px] leading-relaxed text-ink-500">
             Everyone who launches here supports {SUPPORT_THRESHOLD} other makers first. It takes a
             minute and it&apos;s the reason the votes on this board mean anything.{" "}
-            <Link href="/" className="font-medium text-violet-600 hover:underline">
+            <Link href="/" className="font-medium text-oxblood-600 hover:underline">
               Browse this week →
             </Link>
           </p>
@@ -89,7 +116,7 @@ export default async function DashboardPage() {
 
       {/* ── launches ── */}
       <section className="mt-10">
-        <Eyebrow className="mb-3">Your launches</Eyebrow>
+        <Rubric className="mb-3">Your launches</Rubric>
         {products.length === 0 ? (
           <Empty
             title="Nothing launched yet"
@@ -106,16 +133,16 @@ export default async function DashboardPage() {
                     <div className="flex flex-wrap items-center gap-2">
                       <Link
                         href={`/products/${p.slug}`}
-                        className="text-[15px] font-semibold text-ink-900 hover:text-violet-600"
+                        className="text-[15px] font-semibold text-ink-900 hover:text-oxblood-600"
                       >
                         {p.name}
                       </Link>
                       {p.status === "live" ? (
-                        <Badge tone="signal">Live · {weekLabel(p.launch_week || "")}</Badge>
+                        <Badge tone="moss">Live · {weekLabel(p.launch_week || "")}</Badge>
                       ) : (
                         <Badge>Draft</Badge>
                       )}
-                      {p.verified && <Badge tone="medal">Premium</Badge>}
+                      {p.verified && <Badge tone="brass">Premium</Badge>}
                     </div>
                     <p className="mt-0.5 truncate text-sm text-ink-500">{p.tagline}</p>
 
@@ -154,9 +181,15 @@ export default async function DashboardPage() {
                     />
                     <Link
                       href={`/products/${p.slug}`}
-                      className="text-[12px] font-medium text-violet-600 hover:underline"
+                      className="text-[12px] font-medium text-oxblood-600 hover:underline"
                     >
-                      Get your badge &amp; ready-made posts →
+                      Badge &amp; ready-made posts →
+                    </Link>
+                    <Link
+                      href={`/dashboard/analytics/${p.slug}`}
+                      className="text-[12px] font-medium text-oxblood-600 hover:underline"
+                    >
+                      Analytics →
                     </Link>
                   </div>
                 )}
@@ -168,7 +201,7 @@ export default async function DashboardPage() {
 
       {/* ── ads ── */}
       <section className="mt-10">
-        <Eyebrow className="mb-3">Your sponsor slots</Eyebrow>
+        <Rubric className="mb-3">Your sponsor slots</Rubric>
         {ads.length === 0 ? (
           <Empty
             title="No sponsor slots booked"
@@ -188,7 +221,7 @@ export default async function DashboardPage() {
                     {monthLabel(ad.month_key)}
                   </p>
                 </div>
-                <Badge tone={ad.active ? "signal" : "neutral"}>
+                <Badge tone={ad.active ? "moss" : "neutral"}>
                   {ad.active ? "Running" : "Awaiting payment"}
                 </Badge>
                 <span className="font-mono text-[12px] text-ink-500">{ad.click_count} clicks</span>
@@ -204,12 +237,12 @@ export default async function DashboardPage() {
 
       {/* ── profile ── */}
       <section className="mt-10">
-        <Eyebrow className="mb-3">Maker profile</Eyebrow>
+        <Rubric className="mb-3">Maker profile</Rubric>
         <Card className="p-6">
           <p className="mb-5 text-[13px] text-ink-500">
             This is the profile people see on your launches — and it&apos;s the same one Saasgrave
             uses.{" "}
-            <Link href={`/makers/${user.id}`} className="font-medium text-violet-600 hover:underline">
+            <Link href={`/makers/${user.id}`} className="font-medium text-oxblood-600 hover:underline">
               View your public page →
             </Link>
           </p>

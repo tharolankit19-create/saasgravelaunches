@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Check } from "lucide-react";
-import { Card, Eyebrow } from "@/components/ui";
+import { Card, Rubric } from "@/components/ui";
 import { SubmitForm } from "@/components/submit-form";
 import { TrackOnMount } from "@/components/tracker";
 import { currentUser } from "@/lib/supabase/server";
@@ -28,7 +28,7 @@ export default async function LaunchPage() {
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
       <TrackOnMount event="submit_start" />
 
-      <Eyebrow className="mb-3">New launch · {weekLabel(currentWeekKey())}</Eyebrow>
+      <Rubric className="mb-3">New launch · {weekLabel(currentWeekKey())}</Rubric>
       <h1 className="text-3xl font-semibold tracking-tight text-ink-900 sm:text-4xl">
         Launch your product
       </h1>
@@ -42,7 +42,7 @@ export default async function LaunchPage() {
         <ul className="mt-2.5 grid gap-1.5 sm:grid-cols-2">
           {FREE_PERKS.map((p) => (
             <li key={p} className="flex items-start gap-2 text-[13px] text-ink-500">
-              <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-signal-500" />
+              <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-moss-500" />
               {p}
             </li>
           ))}

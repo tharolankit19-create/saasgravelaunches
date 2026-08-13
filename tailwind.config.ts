@@ -9,79 +9,84 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Saasgrave Launches — same family as Saasgrave (paper canvas, ink
-        // type, one confident accent), deliberately re-tuned so the two read
-        // as siblings rather than the same site twice. The canvas cools a
-        // shade, the accent moves from Saasgrave's ember orange to an electric
-        // violet, and a signal green carries "live this week".
+        // ── "The Launch Register" ──────────────────────────────
+        // An editorial identity, not a dashboard one. Every competitor in this
+        // space looks the same: white cards, blue or orange accent, drop
+        // shadows everywhere. This looks like a printed register — paper stock,
+        // hairline rules, one oxblood ink, serif headlines, monospaced figures.
+        // Authority instead of enthusiasm.
         paper: {
-          50: "#f8f7f4", // page — cool paper
-          100: "#ffffff", // cards / surfaces
-          200: "#f1efe9", // hover / wells
-          300: "#e8e5dd", // deeper well
-          400: "#ddd9cf", // subtle fills
-          500: "#cec9bc", // dividers with weight
+          50: "#f6f4ef", // the page — uncoated stock
+          100: "#fffdf9", // cards — warm white, never pure #fff
+          200: "#edeae2", // wells / hover
+          300: "#e2ded4", // rules with weight
+          400: "#d3cec2", // dividers
+          500: "#beb8a9", // muted edges
         },
         ink: {
-          900: "#12110f", // headings — near-black
-          700: "#3b372f", // body
-          500: "#6a655a", // secondary
-          400: "#948e80", // muted
+          900: "#17150f", // headlines — warm near-black
+          700: "#3a372e", // body copy
+          500: "#6b6659", // secondary
+          400: "#938d7e", // captions
         },
-        // The one primary. Violet reads "launch / new", warm paper keeps it
-        // in the Saasgrave family instead of turning into a generic SaaS blue.
-        violet: {
-          400: "#8B6BFF",
-          500: "#5B3DF5", // primary — buttons, marks, links
-          600: "#4527CC", // accessible violet text on paper
+        // The one ink. Scarce on purpose, the way a second colour is scarce on
+        // a printed page.
+        oxblood: {
+          400: "#a63a3a",
+          500: "#8c2323",
+          600: "#6e1a1a",
+          700: "#4f1212",
         },
-        // Live / verified / positive. Only used for state, never decoration.
-        signal: {
-          400: "#22B573",
-          500: "#0FA968",
-          600: "#0A7F4E",
+        // Functional only. Never decoration.
+        brass: {
+          400: "#c9a556", // #1 rank, Premium
+          500: "#b08a3e",
+          600: "#8a6a2c",
         },
-        // Ranking medals + Premium. Gold is scarce on purpose.
-        medal: {
-          400: "#EFBE63",
-          500: "#E0A33B",
-          600: "#A9741B",
+        moss: {
+          500: "#2f6b4f", // live / verified / slots open
+          600: "#245740",
         },
       },
       fontFamily: {
+        // Fraunces for headlines (optically-sized, opinionated serif),
+        // Instrument Sans for reading, JetBrains Mono for every figure and
+        // label. Nothing shared with Saasgrave's Bricolage, nothing shared
+        // with the four competitors.
+        serif: ["var(--font-serif)", "Georgia", "serif"],
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
         mono: ["var(--font-mono)", "ui-monospace", "monospace"],
       },
+      fontSize: {
+        display: ["clamp(2.5rem, 5.6vw, 4.4rem)", { lineHeight: "0.98", letterSpacing: "-0.025em" }],
+        masthead: ["clamp(1.8rem, 3.2vw, 2.6rem)", { lineHeight: "1.06", letterSpacing: "-0.02em" }],
+        section: ["clamp(1.3rem, 1.9vw, 1.65rem)", { lineHeight: "1.16", letterSpacing: "-0.015em" }],
+      },
       boxShadow: {
-        card: "0 1px 2px rgba(18,17,15,0.04), 0 8px 20px -14px rgba(18,17,15,0.14)",
-        lift: "0 2px 10px rgba(18,17,15,0.06), 0 24px 56px -26px rgba(18,17,15,0.22)",
-        glow: "0 8px 24px -10px rgba(91,61,245,0.55)",
+        // Paper doesn't float. Elevation is a rule plus a hair of shadow.
+        page: "0 1px 0 rgba(23,21,15,0.05)",
+        card: "0 1px 2px rgba(23,21,15,0.04), 0 10px 28px -22px rgba(23,21,15,0.22)",
+        lift: "0 2px 6px rgba(23,21,15,0.06), 0 24px 48px -28px rgba(23,21,15,0.28)",
       },
       keyframes: {
         "fade-up": {
-          "0%": { opacity: "0", transform: "translateY(12px)" },
+          "0%": { opacity: "0", transform: "translateY(10px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
-        "pop": {
+        pop: {
           "0%": { transform: "scale(1)" },
-          "45%": { transform: "scale(1.18)" },
+          "45%": { transform: "scale(1.16)" },
           "100%": { transform: "scale(1)" },
         },
-        marquee: {
-          "0%": { transform: "translateX(0)" },
-          "100%": { transform: "translateX(-50%)" },
-        },
-        pulse_ring: {
-          "0%": { boxShadow: "0 0 0 0 rgba(15,169,104,0.45)" },
-          "70%": { boxShadow: "0 0 0 8px rgba(15,169,104,0)" },
-          "100%": { boxShadow: "0 0 0 0 rgba(15,169,104,0)" },
+        blink: {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.3" },
         },
       },
       animation: {
-        "fade-up": "fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards",
-        pop: "pop 0.35s cubic-bezier(0.16, 1, 0.3, 1)",
-        marquee: "marquee var(--marquee-dur, 38s) linear infinite",
-        "pulse-ring": "pulse_ring 2.2s ease-out infinite",
+        "fade-up": "fade-up 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+        pop: "pop 0.34s cubic-bezier(0.16, 1, 0.3, 1)",
+        blink: "blink 2s ease-in-out infinite",
       },
     },
   },

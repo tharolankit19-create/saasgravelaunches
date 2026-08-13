@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Card, Eyebrow, Empty, LinkButton } from "@/components/ui";
+import { Card, Rubric, Empty, LinkButton } from "@/components/ui";
 import { ProductRow } from "@/components/product-row";
 import { AdRail } from "@/components/ad-rail";
 import { currentUser } from "@/lib/supabase/server";
@@ -36,14 +36,14 @@ export default async function CategoryPage({ params }: { params: { slug: string 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
       <nav className="mb-5 flex items-center gap-1.5 text-[12px] text-ink-400">
-        <Link href="/products" className="hover:text-violet-600">
+        <Link href="/products" className="hover:text-oxblood-600">
           Directory
         </Link>
         <span>/</span>
         <span className="text-ink-700">{category.name}</span>
       </nav>
 
-      <Eyebrow className="mb-3">Category</Eyebrow>
+      <Rubric className="mb-3">Category</Rubric>
       <h1 className="text-3xl font-semibold tracking-tight text-ink-900 sm:text-4xl">
         {category.name}
       </h1>
@@ -76,7 +76,7 @@ export default async function CategoryPage({ params }: { params: { slug: string 
               <Link
                 key={c.slug}
                 href={`/categories/${c.slug}`}
-                className="rounded-full border border-ink-900/10 bg-paper-100 px-3 py-1.5 text-[13px] font-medium text-ink-500 transition hover:border-violet-500/40 hover:text-violet-600"
+                className="rounded-full border border-ink-900/10 bg-paper-100 px-3 py-1.5 text-[13px] font-medium text-ink-500 transition hover:border-oxblood-500/40 hover:text-oxblood-600"
               >
                 {c.name}
               </Link>

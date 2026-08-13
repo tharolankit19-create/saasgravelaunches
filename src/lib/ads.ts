@@ -1,10 +1,10 @@
 // ─── The paid rail ──────────────────────────────────────────
-// Ads are sold per calendar month, per placement, per slot index. Everything
-// here reads; the only writes happen in the checkout route and the webhook.
+// One placement, sold per calendar month, three slots. Everything here reads;
+// the only writes happen in the checkout route and the webhook.
 
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { monthKey, shiftMonth } from "@/lib/week";
-import { PRODUCTS, slotIndexes, type ProductKey } from "@/lib/pricing";
+import { PRODUCTS, slotIndexes } from "@/lib/pricing";
 
 export type Ad = {
   id: string;
@@ -20,16 +20,20 @@ export type Ad = {
   click_count: number;
 };
 
-/** Live ads for a placement this month, in slot order. */
-export async function getLiveAds(placement: "sidebar" | "feed"): Promise<Ad[]> {
+const AD_FIELDS =
+  "id, placement, month_key, slot_index, headline, body, cta_label, cta_url, image_url, active, click_count";
+
+/** Live sidebar ads for this month, in slot order. */
+export async function getLiveAds(): Promise<Ad[]> {
   const supabase = createClient();
   const { data } = await supabase
     .from("launch_ads")
-    .select("id, placement, month_key, slot_index, headline, body, cta_label, cta_url, image_url, active, click_count")
-    .eq("placement", placement)
+    .select(AD_FIELDS)
+    .eq("placement", "sidebar")
     .eq("month_key", monthKey())
     .eq("active", true)
     .order("slot_index");
+  // A paid slot whose creative hasn't arrived yet shouldn't render an empty box.
   return ((data || []) as Ad[]).filter((a) => a.headline && a.cta_url);
 }
 
@@ -38,8 +42,8 @@ export type Availability = { monthKey: string; taken: number; total: number; ope
 /**
  * How long an unpaid row holds a slot.
  *
- * A row is inserted the moment someone opens checkout, which is what makes the
- * unique constraint work as a lock. But most people who open a checkout never
+ * A row is inserted the moment someone opens checkout — that's what makes the
+ * unique constraint act as a lock. But most people who open a checkout never
  * finish one, and without an expiry those abandoned rows would mark the
  * placement sold out forever.
  */
@@ -56,18 +60,15 @@ function occupies(row: { active: boolean; created_at?: string | null }): boolean
 }
 
 /** How many slots are left, this month and the next two. */
-export async function getAvailability(
-  product: Exclude<ProductKey, "premium">,
-  months = 3
-): Promise<Availability[]> {
+export async function getAvailability(months = 3): Promise<Availability[]> {
   const supabase = createClient();
   const keys = Array.from({ length: months }, (_, i) => shiftMonth(monthKey(), i));
-  const total = PRODUCTS[product].slots ?? 1;
+  const total = PRODUCTS.sidebar.slots ?? 3;
 
   const { data } = await supabase
     .from("launch_ads")
     .select("month_key, slot_index, active, created_at")
-    .eq("placement", product)
+    .eq("placement", "sidebar")
     .in("month_key", keys);
 
   return keys.map((key) => {
@@ -77,14 +78,13 @@ export async function getAvailability(
 }
 
 /**
- * Claim the lowest free slot for a placement in a month.
+ * Claim the lowest free slot for this month.
  *
  * The insert is the lock: `unique (placement, month_key, slot_index)` means two
  * buyers racing for the last slot can't both win — the loser gets a conflict
- * and we move on to the next index, or report a genuine sell-out.
+ * and we move to the next index, or report a genuine sell-out.
  */
 export async function claimSlot(
-  product: Exclude<ProductKey, "premium">,
   buyerId: string,
   month = monthKey()
 ): Promise<{ id: string; slotIndex: number } | null> {
@@ -96,7 +96,7 @@ export async function claimSlot(
     await admin
       .from("launch_ads")
       .delete()
-      .eq("placement", product)
+      .eq("placement", "sidebar")
       .eq("month_key", month)
       .eq("active", false)
       .lt("created_at", holdCutoff());
@@ -104,11 +104,11 @@ export async function claimSlot(
     console.error("claimSlot: hold sweep failed (continuing):", e?.message || e);
   }
 
-  for (const slotIndex of slotIndexes(product)) {
+  for (const slotIndex of slotIndexes("sidebar")) {
     const { data, error } = await admin
       .from("launch_ads")
       .insert({
-        placement: product,
+        placement: "sidebar",
         month_key: month,
         slot_index: slotIndex,
         buyer_id: buyerId,
@@ -127,13 +127,26 @@ export async function claimSlot(
   return null; // sold out
 }
 
-/** The buyer's own ads, for the dashboard. */
+/** The buyer's own slots, for the dashboard. */
 export async function getMyAds(userId: string): Promise<Ad[]> {
   const supabase = createClient();
   const { data } = await supabase
     .from("launch_ads")
-    .select("id, placement, month_key, slot_index, headline, body, cta_label, cta_url, image_url, active, click_count")
+    .select(AD_FIELDS)
     .eq("buyer_id", userId)
     .order("month_key", { ascending: false });
   return (data || []) as Ad[];
+}
+
+/** How many Featured slots are left in a given week. */
+export async function getFeaturedAvailability(week: string): Promise<Availability> {
+  const supabase = createClient();
+  const total = PRODUCTS.featured.slots ?? 3;
+  const { count } = await supabase
+    .from("launch_products")
+    .select("id", { count: "exact", head: true })
+    .eq("featured_week", week)
+    .gt("featured_until", new Date().toISOString());
+  const taken = count || 0;
+  return { monthKey: week, taken, total, open: Math.max(0, total - taken) };
 }

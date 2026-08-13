@@ -33,7 +33,7 @@ export function NewsletterForm({ source = "footer" }: { source?: string }) {
 
   if (done) {
     return (
-      <p className="text-sm text-signal-600">
+      <p className="text-sm text-moss-600">
         You&apos;re on the list — the next digest lands Monday.
       </p>
     );
@@ -49,7 +49,7 @@ export function NewsletterForm({ source = "footer" }: { source?: string }) {
         placeholder="you@company.com"
         className={cn(inputClass, "sm:flex-1")}
       />
-      <Button type="submit" disabled={busy} variant="dark">
+      <Button type="submit" disabled={busy} variant="ink">
         {busy ? "…" : "Get the weekly top 10"}
       </Button>
     </form>

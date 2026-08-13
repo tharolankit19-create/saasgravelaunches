@@ -6,8 +6,43 @@ subdomain, running against the **same Supabase project**. Anyone already signed
 in to Saasgrave can launch here without creating anything new.
 
 Paste a URL, AI writes the listing, and you're on this week's board in about a
-minute. Launching is free forever; the money comes from three sponsor slots in
-the rail.
+minute. Launching is free forever.
+
+## Identity
+
+"The Launch Register" — an editorial look, not a dashboard one. Every competitor
+in this space reads the same way: white cards, blue or orange accent, drop
+shadows. This one reads as printed matter — uncoated paper stock, hairline rules,
+one oxblood ink, Fraunces headlines and monospaced figures. Authority instead of
+enthusiasm, and nothing shared with Saasgrave's Bricolage or with any of the four
+competitors.
+
+The masthead is slim at rest so the headline is the first thing on the page, and
+opens out into full navigation the moment you scroll.
+
+## Weeks are numbered from our own first week
+
+ISO week keys (`2026-W33`) are what's stored; they are never displayed. A brand
+new board that says "Week 33" implies thirty-two weeks of history that don't
+exist, so the UI counts from `NEXT_PUBLIC_LAUNCH_EPOCH_WEEK` instead: the first
+week we're live is **Week 1**. Weeks before the epoch don't exist as far as the
+UI is concerned. Set the epoch once, before launch, and never move it — changing
+it renumbers every past week and every archived URL.
+
+## What costs money
+
+| | Price | What it is |
+| --- | --- | --- |
+| Launch | **free, forever** | One launch a week, permanent page, dofollow link |
+| Featured | **$9** / launch week | A labelled strip above the board — 3 slots per week |
+| Sidebar Slot | **$19** / month | The rail beside every page — 3 slots per month |
+| Premium | **$29** / month | Unlimited launches, full analytics, Copilot, verified badge |
+| Directory Blast | **$99** one-off | We submit you to 100+ directories by hand |
+
+Featured is a **paid placement, not a rank**. It renders in a strip that says so,
+above a ranking it does not touch, and the Featured product still appears at its
+true position in the board below. Premium doesn't move you up either. Rank is
+upvotes, then who launched first — that's the whole formula.
 
 ---
 
@@ -46,9 +81,33 @@ with it. Safe to run on the live project, and safe to re-run.
 | Maker profile | `/makers/[id]` | Someone's launches and totals. Reads the shared `profiles` row. |
 | Submit | `/launch` | URL → autofill → five fields → live. |
 | Dashboard | `/dashboard` | Views, upvotes, comments, outbound clicks, sponsor slots, profile editing. |
-| Pricing | `/pricing` | Free tier, the two ad placements with live availability, Premium. |
+| Pricing | `/pricing` | Free tier, Premium, both placements with live inventory, directory blast. |
 | Admin | `/admin` | Traffic diagnosis: funnel drop-off, referrers, friction, and what to do. |
 | Badge | `/api/badge?slug=…` | The embeddable "Featured on Saasgrave Launches" SVG. |
+| Widgets | `/embed/[slug]`, `/api/widget` | Three live SVG widgets — badge, upvote chip, rank strip. |
+| Launch analytics | `/dashboard/analytics/[slug]` | Daily views/clicks, upvote velocity, referrers. Premium. |
+
+## The four moat features
+
+**AI Launch Copilot** (`/api/copilot`, `src/lib/copilot.ts`) reviews a draft
+before it goes live. The score, the eight checks and the "publish now / wait for
+Monday" call are **rules**, not a model — deterministic, explainable, arguable,
+and free. The model only writes alternative taglines and a tightened
+description, and that half is Premium. An unset AI key costs you the rewrites,
+not the review.
+
+**Maker analytics** (`src/lib/maker-analytics.ts`) is derived from
+`launch_events` rather than a second set of counters, so there's one source of
+truth and nothing to drift. Charts are inline SVG — a charting dependency would
+have cost more than the page.
+
+**Streaks and reputation** are computed on read by `launch_maker_stats`, never
+stored. Storing a score would mean writing to `profiles` on every upvote, and
+that row belongs to Saasgrave too. The weighting rewards launching, getting real
+votes *and* supporting other makers — not volume.
+
+**Live embed widgets** are SVG, not scripts. A directory has no business running
+JavaScript on someone else's site, and an `<img>` can't break their page.
 
 ## The compounding loop
 
@@ -76,9 +135,9 @@ deliberately *not* reachable with the read-only insights bearer token.
 ## The one rule
 
 A maker must upvote **3 other people's launches** before publishing their own
-(`SUPPORT_THRESHOLD` in `src/lib/pricing.ts`). It's enforced in the API, not
-just the UI, and it's the reason the ranking means anything. A maker can put at
-most 2 products on a single week's board.
+(`SUPPORT_THRESHOLD` in `src/lib/pricing.ts`). It's enforced in the API, not just
+the UI, and it's the reason the ranking means anything. Free makers get
+`FREE_LAUNCHES_PER_WEEK` (one) launch a week; Premium lifts that cap.
 
 ## Stack
 
