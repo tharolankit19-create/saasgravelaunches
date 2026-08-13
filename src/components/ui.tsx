@@ -1,20 +1,18 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-// A small, purpose-built primitive set — the handful of shapes this product
-// repeats. Not a design system; there's no second app to share it with.
+// The register's furniture. Small, sharp corners, hairline rules, one ink.
+// Nothing here floats or glows — this is meant to read as printed matter.
 
 const base =
-  "inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-all duration-200 active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-paper-50";
+  "inline-flex items-center justify-center gap-2 rounded-[3px] font-medium transition-all duration-150 active:translate-y-px disabled:opacity-40 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ember-500/35 focus-visible:ring-offset-2 focus-visible:ring-offset-paper-50";
 
 const variants = {
-  primary:
-    "bg-violet-500 text-white shadow-glow hover:bg-violet-600 hover:shadow-lift",
-  dark: "bg-ink-900 text-white hover:bg-ink-700 shadow-card",
+  primary: "bg-ember-500 text-paper-100 hover:bg-ember-600 shadow-page",
+  ink: "bg-ink-900 text-paper-100 hover:bg-ink-700 shadow-page",
   outline:
-    "border border-ink-900/12 bg-paper-100 text-ink-900 hover:border-ink-900/25 hover:bg-paper-200 hover:shadow-card",
-  ghost: "text-ink-500 hover:text-ink-900 hover:bg-paper-200",
-  signal: "bg-signal-500 text-white hover:bg-signal-600 shadow-card",
+    "border border-ink-900/18 bg-paper-100 text-ink-900 hover:border-ink-900/40 hover:bg-paper-200",
+  quiet: "text-ink-500 hover:text-ink-900 hover:bg-paper-200",
 };
 
 const sizes = {
@@ -70,6 +68,14 @@ export function LinkButton({
   );
 }
 
+const tones = {
+  neutral: "border-ink-900/14 bg-paper-200 text-ink-500",
+  ink: "border-ink-900/20 bg-ink-900 text-paper-100",
+  orange: "border-ember-500/25 bg-ember-500/8 text-ember-600",
+  brass: "border-brass-500/35 bg-brass-500/10 text-brass-600",
+  moss: "border-moss-500/30 bg-moss-500/10 text-moss-600",
+};
+
 export function Badge({
   children,
   className,
@@ -77,18 +83,12 @@ export function Badge({
 }: {
   children: React.ReactNode;
   className?: string;
-  tone?: "neutral" | "violet" | "signal" | "medal";
+  tone?: keyof typeof tones;
 }) {
-  const tones = {
-    neutral: "border-ink-900/10 bg-paper-200 text-ink-500",
-    violet: "border-violet-500/20 bg-violet-500/8 text-violet-600",
-    signal: "border-signal-500/25 bg-signal-500/10 text-signal-600",
-    medal: "border-medal-500/30 bg-medal-500/10 text-medal-600",
-  };
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-medium",
+        "inline-flex items-center gap-1.5 rounded-[2px] border px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-[0.08em]",
         tones[tone],
         className
       )}
@@ -98,6 +98,7 @@ export function Badge({
   );
 }
 
+/** A sheet of stock. Square-ish corners, a hairline, almost no shadow. */
 export function Card({
   children,
   className,
@@ -108,57 +109,61 @@ export function Card({
   as?: any;
 }) {
   return (
-    <As className={cn("rounded-2xl border border-ink-900/8 bg-paper-100 shadow-card", className)}>
+    <As className={cn("rounded-[4px] border border-ink-900/12 bg-paper-100 shadow-card", className)}>
       {children}
     </As>
   );
 }
 
-export function Eyebrow({ children, className }: { children: React.ReactNode; className?: string }) {
-  return (
-    <p
-      className={cn(
-        "font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-violet-600",
-        className
-      )}
-    >
-      {children}
-    </p>
-  );
+/** The section label with a rule running off to the right. */
+export function Rubric({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <p className={cn("rubric", className)}>{children}</p>;
 }
 
 export function SectionHeading({
-  eyebrow,
+  rubric,
   title,
   sub,
   action,
   className,
 }: {
-  eyebrow?: string;
+  rubric?: string;
   title: string;
   sub?: string;
   action?: React.ReactNode;
   className?: string;
 }) {
   return (
-    <div className={cn("mb-5 flex flex-wrap items-end justify-between gap-3", className)}>
-      <div>
-        {eyebrow && <Eyebrow className="mb-2">{eyebrow}</Eyebrow>}
-        <h2 className="text-xl font-semibold tracking-tight text-ink-900 sm:text-2xl">{title}</h2>
-        {sub && <p className="mt-1.5 max-w-xl text-sm text-ink-500">{sub}</p>}
+    <div className={cn("mb-6", className)}>
+      {rubric && <Rubric className="mb-3">{rubric}</Rubric>}
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h2 className="font-serif text-section font-semibold text-ink-900">{title}</h2>
+          {sub && <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-ink-500">{sub}</p>}
+        </div>
+        {action}
       </div>
-      {action}
     </div>
   );
 }
 
-export function Stat({ value, label }: { value: React.ReactNode; label: string }) {
+/** A figure and its caption — the register's unit of data. */
+export function Stat({
+  value,
+  label,
+  hint,
+}: {
+  value: React.ReactNode;
+  label: string;
+  hint?: string;
+}) {
   return (
     <div>
-      <div className="font-mono text-xl font-semibold tracking-tight text-ink-900 sm:text-2xl">
-        {value}
+      <div className="figure text-2xl font-semibold text-ink-900">{value}</div>
+      <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-400">
+        {label}
       </div>
-      <div className="mt-0.5 text-[11px] uppercase tracking-wider text-ink-400">{label}</div>
+      {hint && <div className="mt-0.5 text-[11px] text-ink-400">{hint}</div>}
     </div>
   );
 }
@@ -178,10 +183,10 @@ export function Field({
 }) {
   return (
     <label className={cn("block", className)}>
-      <span className="mb-1.5 flex items-baseline gap-1.5 text-[13px] font-medium text-ink-700">
+      <span className="mb-1.5 flex items-baseline gap-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-ink-500">
         {label}
-        {required && <span className="text-violet-500">*</span>}
-        {hint && <span className="text-[11px] font-normal text-ink-400">{hint}</span>}
+        {required && <span className="text-ember-500">*</span>}
+        {hint && <span className="tracking-normal text-ink-400 normal-case">{hint}</span>}
       </span>
       {children}
     </label>
@@ -189,7 +194,7 @@ export function Field({
 }
 
 export const inputClass =
-  "w-full rounded-xl border border-ink-900/10 bg-paper-100 px-3.5 py-2.5 text-sm text-ink-900 shadow-sm outline-none transition placeholder:text-ink-400/70 focus:border-violet-500/60 focus:ring-2 focus:ring-violet-500/15";
+  "w-full rounded-[3px] border border-ink-900/16 bg-paper-100 px-3.5 py-2.5 text-sm text-ink-900 outline-none transition placeholder:text-ink-400/80 focus:border-ember-500/60 focus:ring-2 focus:ring-ember-500/12";
 
 export function Empty({
   title,
@@ -201,10 +206,15 @@ export function Empty({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-dashed border-ink-900/12 bg-paper-100/60 px-6 py-14 text-center">
-      <p className="text-sm font-medium text-ink-900">{title}</p>
-      {sub && <p className="mx-auto mt-1.5 max-w-sm text-sm text-ink-500">{sub}</p>}
-      {action && <div className="mt-5 flex justify-center">{action}</div>}
+    <div className="border border-dashed border-ink-900/16 bg-paper-100/50 px-6 py-16 text-center">
+      <p className="font-serif text-lg font-semibold text-ink-900">{title}</p>
+      {sub && <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-ink-500">{sub}</p>}
+      {action && <div className="mt-6 flex justify-center">{action}</div>}
     </div>
   );
+}
+
+/** A horizontal rule with a bit of weight — used between register sections. */
+export function Rule({ className }: { className?: string }) {
+  return <hr className={cn("border-0 border-t border-ink-900/12", className)} />;
 }

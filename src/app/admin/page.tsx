@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AlertTriangle, Info, TriangleAlert } from "lucide-react";
-import { Card, Eyebrow, Stat, Badge } from "@/components/ui";
+import { Card, Rubric, Stat, Badge } from "@/components/ui";
 import { isAdmin } from "@/lib/admin";
 import { buildInsights } from "@/lib/insights";
 import { cn } from "@/lib/utils";
@@ -26,7 +26,7 @@ export default async function AdminPage({ searchParams }: { searchParams: { days
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <Eyebrow className="mb-2">Admin</Eyebrow>
+          <Rubric className="mb-2">Admin</Rubric>
           <h1 className="text-3xl font-semibold tracking-tight text-ink-900">Traffic diagnosis</h1>
           <p className="mt-2 text-sm text-ink-500">
             Last {days} days · generated {new Date(i.generatedAt).toLocaleString()}
@@ -50,7 +50,7 @@ export default async function AdminPage({ searchParams }: { searchParams: { days
 
       {/* ── findings ── */}
       <section className="mt-8">
-        <Eyebrow className="mb-3">What to do about it</Eyebrow>
+        <Rubric className="mb-3">What to do about it</Rubric>
         {i.findings.length === 0 ? (
           <Card className="p-6 text-sm text-ink-500">
             Nothing is tripping a threshold in this window. Either it&apos;s genuinely healthy or
@@ -64,8 +64,8 @@ export default async function AdminPage({ searchParams }: { searchParams: { days
                 className={cn(
                   "p-5",
                   f.severity === "critical" && "border-l-4 border-l-red-500/70",
-                  f.severity === "warn" && "border-l-4 border-l-medal-500/70",
-                  f.severity === "info" && "border-l-4 border-l-violet-500/50"
+                  f.severity === "warn" && "border-l-4 border-l-brass-500/70",
+                  f.severity === "info" && "border-l-4 border-l-ember-500/50"
                 )}
               >
                 <div className="flex items-start gap-3">
@@ -73,8 +73,8 @@ export default async function AdminPage({ searchParams }: { searchParams: { days
                     className={cn(
                       "mt-0.5",
                       f.severity === "critical" && "text-red-600",
-                      f.severity === "warn" && "text-medal-600",
-                      f.severity === "info" && "text-violet-600"
+                      f.severity === "warn" && "text-brass-600",
+                      f.severity === "info" && "text-ember-600"
                     )}
                   >
                     {f.severity === "critical" ? (
@@ -110,7 +110,7 @@ export default async function AdminPage({ searchParams }: { searchParams: { days
 
       {/* ── funnel ── */}
       <section className="mt-8">
-        <Eyebrow className="mb-3">Where people stop</Eyebrow>
+        <Rubric className="mb-3">Where people stop</Rubric>
         <Card className="divide-y divide-ink-900/8">
           {i.funnel.map((step, idx) => (
             <div key={step.event} className="p-5">
@@ -132,7 +132,7 @@ export default async function AdminPage({ searchParams }: { searchParams: { days
               </div>
               <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-paper-300">
                 <div
-                  className="h-full rounded-full bg-violet-500"
+                  className="h-full rounded-full bg-ember-500"
                   style={{ width: `${Math.max(1, step.totalRate * 100)}%` }}
                 />
               </div>
@@ -149,7 +149,7 @@ export default async function AdminPage({ searchParams }: { searchParams: { days
       {/* ── sources + daily ── */}
       <div className="mt-8 grid gap-6 md:grid-cols-2">
         <section>
-          <Eyebrow className="mb-3">Where they came from</Eyebrow>
+          <Rubric className="mb-3">Where they came from</Rubric>
           <Card className="p-5">
             {i.sources.length === 0 ? (
               <p className="text-sm text-ink-400">No traffic in this window.</p>
@@ -160,7 +160,7 @@ export default async function AdminPage({ searchParams }: { searchParams: { days
                     <span className="w-32 shrink-0 truncate text-[13px] text-ink-700">{s.label}</span>
                     <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-paper-300">
                       <span
-                        className="block h-full rounded-full bg-signal-500"
+                        className="block h-full rounded-full bg-moss-500"
                         style={{ width: `${Math.max(2, s.share * 100)}%` }}
                       />
                     </span>
@@ -175,14 +175,14 @@ export default async function AdminPage({ searchParams }: { searchParams: { days
         </section>
 
         <section>
-          <Eyebrow className="mb-3">By day</Eyebrow>
+          <Rubric className="mb-3">By day</Rubric>
           <Card className="p-5">
             <div className="flex h-32 items-end gap-1.5">
               {i.daily.map((d) => (
                 <div key={d.day} className="flex flex-1 flex-col items-center gap-1.5">
                   <div
                     title={`${d.day}: ${d.sessions} sessions`}
-                    className="w-full rounded-t bg-violet-500/70"
+                    className="w-full rounded-t bg-ember-500/70"
                     style={{ height: `${Math.max(2, (d.sessions / maxSessions) * 100)}%` }}
                   />
                   <span className="text-[9px] text-ink-400">{d.day.slice(8)}</span>
@@ -195,7 +195,7 @@ export default async function AdminPage({ searchParams }: { searchParams: { days
 
       {/* ── friction detail ── */}
       <section className="mt-8">
-        <Eyebrow className="mb-3">Friction</Eyebrow>
+        <Rubric className="mb-3">Friction</Rubric>
         <Card className="grid grid-cols-2 gap-5 p-6 sm:grid-cols-3">
           <Stat value={i.friction.abandonedDrafts} label="Opened form, didn't publish" />
           <Stat value={pct(i.friction.autofillErrorRate)} label="Autofill error rate" />
@@ -209,7 +209,7 @@ export default async function AdminPage({ searchParams }: { searchParams: { days
       {/* ── top content ── */}
       <div className="mt-8 grid gap-6 md:grid-cols-2">
         <section>
-          <Eyebrow className="mb-3">Top pages</Eyebrow>
+          <Rubric className="mb-3">Top pages</Rubric>
           <Card className="divide-y divide-ink-900/8">
             {i.topPaths.length === 0 ? (
               <p className="p-5 text-sm text-ink-400">Nothing yet.</p>
@@ -225,7 +225,7 @@ export default async function AdminPage({ searchParams }: { searchParams: { days
         </section>
 
         <section>
-          <Eyebrow className="mb-3">Most-viewed products</Eyebrow>
+          <Rubric className="mb-3">Most-viewed products</Rubric>
           <Card className="divide-y divide-ink-900/8">
             {i.topProducts.length === 0 ? (
               <p className="p-5 text-sm text-ink-400">Nothing yet.</p>
@@ -234,7 +234,7 @@ export default async function AdminPage({ searchParams }: { searchParams: { days
                 <div key={p.slug} className="flex items-center justify-between gap-3 p-3.5">
                   <a
                     href={`/products/${p.slug}`}
-                    className="truncate text-[13px] text-ink-700 hover:text-violet-600"
+                    className="truncate text-[13px] text-ink-700 hover:text-ember-600"
                   >
                     {p.slug}
                   </a>
@@ -256,7 +256,7 @@ export default async function AdminPage({ searchParams }: { searchParams: { days
           with a bearer token from <code className="font-mono text-[12px]">ADMIN_INSIGHTS_TOKEN</code>.
         </p>
         <div className="mt-3">
-          <Badge tone={process.env.ADMIN_INSIGHTS_TOKEN ? "signal" : "neutral"}>
+          <Badge tone={process.env.ADMIN_INSIGHTS_TOKEN ? "moss" : "neutral"}>
             {process.env.ADMIN_INSIGHTS_TOKEN ? "token configured" : "token not set — machine access off"}
           </Badge>
         </div>

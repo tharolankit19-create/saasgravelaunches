@@ -42,25 +42,37 @@ export type LaunchProduct = {
   launched_at: string | null;
   tier: string;
   verified: boolean;
+  /** Editor's pick. A badge only — it never moves a product up the board. */
+  featured: boolean;
+  featured_at: string | null;
+  /** Paid $9 Featured placement — shown in a labelled strip, not in the ranking. */
+  featured_until: string | null;
+  featured_week: string | null;
   upvote_count: number;
   comment_count: number;
   view_count: number;
   click_count: number;
+  /** Arrivals from the maker's own embedded badge. */
+  badge_clicks: number;
   created_at: string;
   profiles?: Maker | null;
 };
 
 export const PRODUCT_FIELDS =
-  "id, slug, maker_id, name, tagline, description, website_url, logo_url, gallery_urls, categories, pricing_model, who_for, problem, solution, unique_edge, seo_title, seo_description, keywords, alternatives, faq, maker_note, status, launch_week, launched_at, tier, verified, upvote_count, comment_count, view_count, click_count, created_at";
+  "id, slug, maker_id, name, tagline, description, website_url, logo_url, gallery_urls, categories, pricing_model, who_for, problem, solution, unique_edge, seo_title, seo_description, keywords, alternatives, faq, maker_note, status, launch_week, launched_at, tier, verified, featured, featured_at, featured_until, featured_week, upvote_count, comment_count, view_count, click_count, badge_clicks, created_at";
 
 const WITH_MAKER = `${PRODUCT_FIELDS}, profiles:maker_id (id, full_name, avatar_url, bio, x_handle, website_url, maker_headline)`;
 
 /**
  * The ranked board for one ISO week.
  *
- * Ranking is upvotes first, then Premium ahead of free at the same score (that
- * is what the upgrade buys and it's stated on the pricing page), then whoever
- * launched earlier. Nothing here can be bought past the tie-break.
+ * Ranking is upvotes, then whoever launched earlier. That's the whole formula —
+ * no tier, no payment and no editorial flag touches it.
+ *
+ * Paid Featured placements are NOT mixed in here. They're returned separately by
+ * `getFeaturedForWeek` and rendered in a labelled strip above the board, and
+ * they still appear at their true position in this list. A ranking you can buy
+ * into is just an ad wearing a rank, and the pricing page promises otherwise.
  */
 export async function getWeekBoard(week: WeekKey): Promise<LaunchProduct[]> {
   const supabase = createClient();
@@ -70,7 +82,6 @@ export async function getWeekBoard(week: WeekKey): Promise<LaunchProduct[]> {
     .eq("status", "live")
     .eq("launch_week", week)
     .order("upvote_count", { ascending: false })
-    .order("tier", { ascending: false }) // "premium" > "free" alphabetically
     .order("launched_at", { ascending: true })
     .limit(200);
 
@@ -78,6 +89,20 @@ export async function getWeekBoard(week: WeekKey): Promise<LaunchProduct[]> {
     console.error("getWeekBoard:", error.message);
     return [];
   }
+  return (data || []) as unknown as LaunchProduct[];
+}
+
+/** Paid Featured placements running in a week — the labelled strip. */
+export async function getFeaturedForWeek(week: WeekKey): Promise<LaunchProduct[]> {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("launch_products")
+    .select(WITH_MAKER)
+    .eq("status", "live")
+    .eq("featured_week", week)
+    .gt("featured_until", new Date().toISOString())
+    .order("upvote_count", { ascending: false })
+    .limit(5);
   return (data || []) as unknown as LaunchProduct[];
 }
 

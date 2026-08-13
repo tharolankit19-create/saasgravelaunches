@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Sparkles, Loader2, ChevronDown, Check } from "lucide-react";
 import { toast } from "sonner";
 import { Button, Field, inputClass, Card } from "@/components/ui";
 import { ProductLogo } from "@/components/avatar";
+import { CopilotPanel } from "@/components/copilot-panel";
 import { CATEGORIES, PRICING_MODELS } from "@/lib/categories";
 import { cn } from "@/lib/utils";
 import { trackEvent } from "@/lib/track-client";
@@ -54,21 +55,42 @@ export function SubmitForm({
   canPublish,
   supported,
   threshold,
+  initialUrl,
 }: {
   canPublish: boolean;
   supported: number;
   threshold: number;
+  /** URL carried from the landing hero — autofill fires against it on mount. */
+  initialUrl?: string;
 }) {
   const router = useRouter();
   const [draft, setDraft] = useState<Draft>(EMPTY);
-  const [sourceUrl, setSourceUrl] = useState("");
+  const [sourceUrl, setSourceUrl] = useState(initialUrl || "");
   const [filling, setFilling] = useState(false);
   const [filled, setFilled] = useState(false);
   const [more, setMore] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const autoRan = useRef(false);
+
+  // High-value SEO fields the AI drafts. Not shown as editable inputs (they'd
+  // add friction), but carried through to publish and rendered on the SEO page.
+  const [aiFaq, setAiFaq] = useState<{ q: string; a: string }[]>([]);
+  const [aiAlternatives, setAiAlternatives] = useState<string[]>([]);
+  const [aiExtras, setAiExtras] = useState(false);
 
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) =>
     setDraft((d) => ({ ...d, [key]: value }));
+
+  // If the maker arrived from the hero with a URL, fill from it immediately —
+  // the guard stops React's dev double-mount from firing autofill twice.
+  useEffect(() => {
+    if (autoRan.current) return;
+    if (initialUrl && initialUrl.trim()) {
+      autoRan.current = true;
+      autofill();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function autofill() {
     const url = sourceUrl.trim();
@@ -100,8 +122,14 @@ export function SubmitForm({
         unique_edge: data.unique_edge || d.unique_edge,
         keywords: (data.keywords || []).join(", ") || d.keywords,
       }));
+      if (Array.isArray(data.faq) && data.faq.length) setAiFaq(data.faq);
+      if (Array.isArray(data.alternatives) && data.alternatives.length)
+        setAiAlternatives(data.alternatives);
+      setAiExtras((data.faq?.length || 0) + (data.alternatives?.length || 0) > 0);
       setFilled(true);
-      trackEvent("autofill_success", { meta: { ai: Boolean(data?.source?.ai) } });
+      trackEvent("autofill_success", {
+        meta: { ai: Boolean(data?.source?.ai), via: data?.source?.via },
+      });
 
       if (data?.source?.ai) {
         toast.success("Filled from your site. Check it over and fix anything we got wrong.");
@@ -132,6 +160,8 @@ export function SubmitForm({
             .split(",")
             .map((k) => k.trim())
             .filter(Boolean),
+          faq: aiFaq,
+          alternatives: aiAlternatives,
         }),
       });
       const data = await res.json();
@@ -152,9 +182,9 @@ export function SubmitForm({
     <form onSubmit={publish} className="space-y-6">
       {/* ── autofill ── */}
       <Card className="overflow-hidden">
-        <div className="bg-gradient-to-br from-violet-500/8 to-signal-500/6 px-5 py-6 sm:px-6">
+        <div className="bg-gradient-to-br from-ember-500/8 to-moss-500/6 px-5 py-6 sm:px-6">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-violet-500" />
+            <Sparkles className="h-4 w-4 text-ember-500" />
             <h2 className="text-base font-semibold tracking-tight text-ink-900">
               Start with your URL
             </h2>
@@ -193,16 +223,31 @@ export function SubmitForm({
           </div>
 
           {filled && (
-            <p className="mt-2.5 inline-flex items-center gap-1.5 text-[12px] font-medium text-signal-600">
-              <Check className="h-3.5 w-3.5" /> Filled in below — everything is editable.
-            </p>
+            <div className="mt-2.5 space-y-1">
+              <p className="inline-flex items-center gap-1.5 text-[12px] font-medium text-moss-600">
+                <Check className="h-3.5 w-3.5" /> Filled in below — everything is editable.
+              </p>
+              {aiExtras && (
+                <p className="text-[12px] text-ink-500">
+                  We also drafted{" "}
+                  {aiFaq.length > 0 && <strong className="text-ink-700">{aiFaq.length} FAQ answers</strong>}
+                  {aiFaq.length > 0 && aiAlternatives.length > 0 && " and "}
+                  {aiAlternatives.length > 0 && (
+                    <strong className="text-ink-700">
+                      {aiAlternatives.length} “alternative to” page{aiAlternatives.length > 1 ? "s" : ""}
+                    </strong>
+                  )}{" "}
+                  — added to your SEO page on publish.
+                </p>
+              )}
+            </div>
           )}
         </div>
       </Card>
 
       {/* ── the essentials ── */}
       <Card className="p-5 sm:p-6">
-        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-violet-600">
+        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ember-600">
           The essentials
         </p>
         <p className="mt-1.5 text-sm text-ink-500">
@@ -276,7 +321,7 @@ export function SubmitForm({
                     className={cn(
                       "rounded-full border px-3 py-1.5 text-[13px] font-medium transition",
                       on
-                        ? "border-violet-500/40 bg-violet-500/10 text-violet-600"
+                        ? "border-ember-500/40 bg-ember-500/10 text-ember-600"
                         : "border-ink-900/10 bg-paper-100 text-ink-500 hover:border-ink-900/25 hover:text-ink-900"
                     )}
                   >
@@ -391,14 +436,36 @@ export function SubmitForm({
         )}
       </Card>
 
+      {/* ── copilot ── */}
+      {ready && (
+        <CopilotPanel
+          draft={{
+            name: draft.name,
+            tagline: draft.tagline,
+            description: draft.description,
+            categories: draft.categories,
+            who_for: draft.who_for,
+            problem: draft.problem,
+            solution: draft.solution,
+            unique_edge: draft.unique_edge,
+            website_url: draft.website_url,
+          }}
+          onApplyTagline={(t) => set("tagline", t.slice(0, 80))}
+          onApplyDescription={(d) => {
+            set("description", d.slice(0, 700));
+            setMore(true);
+          }}
+        />
+      )}
+
       {/* ── publish ── */}
       <div className="sticky bottom-0 z-10 -mx-1 border-t border-ink-900/8 bg-paper-50/90 px-1 py-4 backdrop-blur">
         {!canPublish && (
-          <p className="mb-3 rounded-xl border border-medal-500/25 bg-medal-500/8 px-4 py-3 text-[13px] text-ink-700">
+          <p className="mb-3 rounded-xl border border-brass-500/25 bg-brass-500/8 px-4 py-3 text-[13px] text-ink-700">
             Support <strong>{threshold - supported}</strong> more launch
             {threshold - supported === 1 ? "" : "es"} before you publish your own. You&apos;ve
             upvoted {supported} of {threshold}.{" "}
-            <a href="/" className="font-medium text-violet-600 hover:underline">
+            <a href="/" className="font-medium text-ember-600 hover:underline">
               Go find one worth an upvote →
             </a>
           </p>

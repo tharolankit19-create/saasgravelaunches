@@ -26,8 +26,8 @@ export function VisitButton({
 }) {
   const styles =
     variant === "primary"
-      ? "bg-ink-900 text-white hover:bg-violet-500"
-      : "border border-ink-900/12 bg-paper-100 text-ink-900 hover:border-violet-500/40 hover:text-violet-600";
+      ? "bg-ink-900 text-white hover:bg-ember-500"
+      : "border border-ink-900/12 bg-paper-100 text-ink-900 hover:border-ember-500/40 hover:text-ember-600";
 
   return (
     <a

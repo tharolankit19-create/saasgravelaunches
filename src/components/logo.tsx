@@ -2,10 +2,10 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 /**
- * The mark: a launch chevron rising out of a baseline, drawn in one stroke.
- * Related to Saasgrave's headstone silhouette — same weight, same geometry —
- * but pointing up rather than standing still, which is the whole difference
- * between the two products.
+ * The mark: a register entry. A ruled block with an ascending stroke crossing
+ * it — a line in a ledger that goes up. Squared corners and a single orange
+ * fill, so it reads as a stamp rather than an app icon, and so it's still
+ * legible at 16px in a browser tab.
  */
 export function LogoMark({ size = 28, className }: { size?: number; className?: string }) {
   return (
@@ -17,31 +17,57 @@ export function LogoMark({ size = 28, className }: { size?: number; className?: 
       aria-hidden
       className={cn("shrink-0", className)}
     >
-      <rect width="32" height="32" rx="9" fill="#5B3DF5" />
+      <rect width="32" height="32" rx="4" fill="#f2671e" />
+      <path d="M7 11h18" stroke="#fffdf9" strokeWidth="1.6" opacity="0.4" strokeLinecap="round" />
+      <path d="M7 25h18" stroke="#fffdf9" strokeWidth="1.6" opacity="0.4" strokeLinecap="round" />
       <path
-        d="M9 20.5 16 9.5l7 11"
-        stroke="white"
+        d="M8.5 21.5 16 10.5l7.5 11"
+        stroke="#fffdf9"
         strokeWidth="2.6"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <path d="M11.5 24h9" stroke="white" strokeWidth="2.6" strokeLinecap="round" opacity="0.55" />
     </svg>
   );
 }
 
 /** The same mark as a data URI, for OG images (Satori can't nest components). */
 export function logoMarkDataUri(size = 512) {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="9" fill="#5B3DF5"/><path d="M9 20.5 16 9.5l7 11" stroke="white" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M11.5 24h9" stroke="white" stroke-width="2.6" stroke-linecap="round" opacity="0.55"/></svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="4" fill="#f2671e"/><path d="M7 11h18" stroke="#fffdf9" stroke-width="1.6" opacity="0.4" stroke-linecap="round"/><path d="M7 25h18" stroke="#fffdf9" stroke-width="1.6" opacity="0.4" stroke-linecap="round"/><path d="M8.5 21.5 16 10.5l7.5 11" stroke="#fffdf9" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   return `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
 }
 
-export function Logo({ className }: { className?: string }) {
+/**
+ * The wordmark. "Saasgrave" is the parent brand and stays quiet; "Launches" is
+ * this surface and carries the weight — one masthead, two levels of hierarchy.
+ */
+export function Logo({
+  className,
+  compact,
+}: {
+  className?: string;
+  compact?: boolean;
+}) {
   return (
     <Link href="/" className={cn("group inline-flex items-center gap-2.5", className)}>
-      <LogoMark size={30} className="transition-transform duration-200 group-hover:-translate-y-0.5" />
-      <span className="text-[17px] font-semibold tracking-tight text-ink-900">
-        Saasgrave<span className="text-violet-500"> Launches</span>
+      <LogoMark size={compact ? 24 : 28} />
+      <span className="leading-none">
+        <span
+          className={cn(
+            "block font-mono uppercase tracking-[0.18em] text-ink-400 transition-all",
+            compact ? "text-[8px]" : "text-[9px]"
+          )}
+        >
+          Saasgrave
+        </span>
+        <span
+          className={cn(
+            "block font-serif font-semibold tracking-tight text-ink-900 transition-all group-hover:text-ember-600",
+            compact ? "text-[15px]" : "text-[18px]"
+          )}
+        >
+          Launches
+        </span>
       </span>
     </Link>
   );

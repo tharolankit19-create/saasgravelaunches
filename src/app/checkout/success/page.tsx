@@ -47,8 +47,8 @@ export default async function CheckoutSuccessPage({
         <span
           className={
             confirmed
-              ? "mx-auto grid h-14 w-14 place-items-center rounded-full bg-signal-500/10 text-signal-600"
-              : "mx-auto grid h-14 w-14 place-items-center rounded-full bg-medal-500/10 text-medal-600"
+              ? "mx-auto grid h-14 w-14 place-items-center rounded-full bg-moss-500/10 text-moss-600"
+              : "mx-auto grid h-14 w-14 place-items-center rounded-full bg-brass-500/10 text-brass-600"
           }
         >
           {confirmed ? <CheckCircle2 className="h-7 w-7" /> : <Clock className="h-7 w-7" />}
@@ -75,7 +75,7 @@ export default async function CheckoutSuccessPage({
 
         <p className="mt-6 text-[12px] text-ink-400">
           Something wrong?{" "}
-          <Link href="/pricing" className="text-violet-600 hover:underline">
+          <Link href="/pricing" className="text-ember-600 hover:underline">
             See what you bought
           </Link>{" "}
           or reply to your receipt email.

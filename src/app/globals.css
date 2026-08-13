@@ -3,66 +3,175 @@
 @tailwind utilities;
 
 :root {
-  --font-sans: "Bricolage Grotesque", system-ui, -apple-system, sans-serif;
+  --font-serif: "Fraunces", Georgia, serif;
+  --font-sans: "Instrument Sans", system-ui, -apple-system, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* The masthead's two heights — the header reads the collapsed one at rest
+     and the expanded one once you start scrolling. */
+  --bar-rest: 56px;
+  --bar-open: 132px;
 }
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 96px;
 }
 
 body {
-  background-color: #f8f7f4;
-  color: #12110f;
+  background-color: #faf7f1;
+  color: #17150f;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  font-feature-settings: "cv11", "ss01";
+}
+
+/* Fraunces is variable — dial in a warmer, higher-contrast cut for display
+   sizes so headlines read as typeset rather than merely bold. */
+.font-serif {
+  font-variation-settings: "SOFT" 0, "WONK" 1, "opsz" 96;
 }
 
 ::selection {
-  background: rgba(91, 61, 245, 0.18);
-  color: #12110f;
+  background: rgba(242, 103, 30, 0.16);
+  color: #17150f;
 }
 
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 11px;
+  height: 11px;
+}
+::-webkit-scrollbar-track {
+  background: #f4efe6;
 }
 ::-webkit-scrollbar-thumb {
-  background: #ddd9cf;
+  background: #e9e2d5;
+  border: 3px solid #f4efe6;
   border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #cec9bc;
+  background: #dcd3c3;
 }
 
-/* Faint dot grid behind the hero — the "launch deck" texture. */
-.deck-grid {
-  background-image: radial-gradient(rgba(18, 17, 15, 0.05) 1px, transparent 1px);
-  background-size: 20px 20px;
+/* ── Paper ──────────────────────────────────────────────────
+   A warm fibre tint. Low-opacity gradients, no image — costs nothing and stops
+   the canvas reading as flat #fff. */
+.stock {
+  background-image:
+    radial-gradient(circle at 15% 6%, rgba(242, 103, 30, 0.05), transparent 45%),
+    radial-gradient(circle at 85% 0%, rgba(251, 139, 61, 0.05), transparent 48%),
+    radial-gradient(circle at 50% 120%, rgba(24, 21, 16, 0.03), transparent 55%);
 }
 
-/* A soft violet wash used behind the hero and CTA blocks. */
-.deck-wash {
+/* The hero's warm glow — a soft orange bloom behind the headline that lifts the
+   whole block off the page. Sits under the content (z below), never over it. */
+.hero-wash {
+  position: relative;
+  isolation: isolate;
+}
+.hero-wash::before {
+  content: "";
+  position: absolute;
+  inset: -10% -20% auto -20%;
+  height: 70%;
+  z-index: -1;
   background:
-    radial-gradient(60% 90% at 12% 0%, rgba(91, 61, 245, 0.10), transparent 70%),
-    radial-gradient(50% 80% at 92% 8%, rgba(15, 169, 104, 0.08), transparent 72%);
+    radial-gradient(50% 60% at 50% 30%, rgba(242, 103, 30, 0.16), transparent 70%),
+    radial-gradient(40% 50% at 78% 20%, rgba(251, 139, 61, 0.14), transparent 72%);
+  filter: blur(36px);
+  will-change: transform, opacity;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hero-wash::before {
+    animation: aurora 16s ease-in-out infinite;
+  }
 }
 
-.hairline {
-  border-color: rgba(18, 17, 15, 0.08);
+/* Faint dotted grid behind the masthead block. */
+.ruled {
+  background-image: radial-gradient(rgba(24, 21, 16, 0.05) 1px, transparent 1px);
+  background-size: 22px 22px;
 }
 
-/* Edge-fade for the logo/marquee tape. */
-.marquee-mask {
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+/* ── Editorial furniture ────────────────────────────────────── */
+
+/* A section label with a rule running off to the right. */
+.rubric {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #f2671e;
+}
+.rubric::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(23, 21, 15, 0.14);
+}
+/* Centered rubrics (section intros) drop the trailing rule. */
+.rubric.justify-center {
+  justify-content: center;
+}
+.rubric.justify-center::after {
+  display: none;
 }
 
-/* Scroll-reveal, progressively enhanced by <Reveal>. */
+/* Small-caps figure, for counts and ranks. */
+.figure {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* Drop-cap for the one paragraph that earns it. */
+.dropcap::first-letter {
+  float: left;
+  font-family: var(--font-serif);
+  font-size: 3.4em;
+  line-height: 0.78;
+  padding: 0.06em 0.09em 0 0;
+  color: #f2671e;
+  font-weight: 600;
+}
+
+/* ── Board rows ─────────────────────────────────────────────── */
+@keyframes row-in {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.row-in {
+  opacity: 0;
+  animation: row-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Rank tints — a wash at the leading edge, not a coloured card. */
+.rank-1 {
+  box-shadow: inset 3px 0 0 #b08a3e;
+  background: linear-gradient(90deg, rgba(176, 138, 62, 0.06), transparent 38%);
+}
+.rank-2 {
+  box-shadow: inset 3px 0 0 #dcd3c3;
+  background: linear-gradient(90deg, rgba(23, 21, 15, 0.035), transparent 34%);
+}
+.rank-3 {
+  box-shadow: inset 3px 0 0 #fb8b3d;
+  background: linear-gradient(90deg, rgba(251, 139, 61, 0.05), transparent 34%);
+}
+
+/* ── Scroll reveal ──────────────────────────────────────────── */
 .reveal {
   opacity: 0;
-  transform: translateY(14px);
+  transform: translateY(12px);
   transition:
     opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
     transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
@@ -73,76 +182,55 @@ body {
   transform: none;
 }
 
-/* Staggered rise for feed rows. */
-@keyframes row-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+/* ── Long-form (SEO product pages) ──────────────────────────── */
+.prose-register {
+  color: #3a372e;
+  line-height: 1.72;
+  font-size: 1rem;
 }
-.row-in {
-  opacity: 0;
-  animation: row-in 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-/* The #1 launch of a week gets a gold hairline, not a whole gold card. */
-.rank-1 {
-  background: linear-gradient(180deg, rgba(224, 163, 59, 0.07), rgba(224, 163, 59, 0));
-}
-.rank-2 {
-  background: linear-gradient(180deg, rgba(18, 17, 15, 0.035), rgba(18, 17, 15, 0));
-}
-.rank-3 {
-  background: linear-gradient(180deg, rgba(169, 116, 27, 0.05), rgba(169, 116, 27, 0));
-}
-
-/* Long-form article body (SEO pages) — readable defaults without a plugin. */
-.prose-deck {
-  color: #3b372f;
-  line-height: 1.75;
-}
-.prose-deck h2 {
-  margin: 2rem 0 0.75rem;
-  font-size: 1.35rem;
+.prose-register h2 {
+  margin: 2.1rem 0 0.7rem;
+  font-family: var(--font-serif);
+  font-size: 1.45rem;
   font-weight: 600;
-  color: #12110f;
-  letter-spacing: -0.01em;
+  color: #17150f;
+  letter-spacing: -0.015em;
 }
-.prose-deck h3 {
-  margin: 1.5rem 0 0.5rem;
-  font-size: 1.1rem;
+.prose-register h3 {
+  margin: 1.5rem 0 0.45rem;
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
   font-weight: 600;
-  color: #12110f;
+  color: #17150f;
 }
-.prose-deck p {
+.prose-register p {
   margin: 0.85rem 0;
 }
-.prose-deck ul,
-.prose-deck ol {
-  margin: 0.85rem 0 0.85rem 1.15rem;
+.prose-register ul,
+.prose-register ol {
+  margin: 0.85rem 0 0.85rem 1.2rem;
   list-style: disc;
 }
-.prose-deck ol {
+.prose-register ol {
   list-style: decimal;
 }
-.prose-deck li {
-  margin: 0.35rem 0;
+.prose-register li {
+  margin: 0.3rem 0;
 }
-.prose-deck a {
-  color: #4527cc;
+.prose-register a {
+  color: #f2671e;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
-.prose-deck strong {
-  color: #12110f;
+.prose-register strong {
+  color: #17150f;
   font-weight: 600;
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
   .reveal {
     opacity: 1;
     transform: none;
@@ -152,9 +240,8 @@ body {
     opacity: 1;
     animation: none;
   }
-  .animate-marquee,
-  .animate-pulse-ring,
-  .animate-pop {
+  .animate-pop,
+  .animate-blink {
     animation: none !important;
   }
 }

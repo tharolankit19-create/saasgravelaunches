@@ -16,13 +16,18 @@ import { trackEvent } from "@/lib/track-client";
 export function BuyButton({
   product,
   label,
+  productSlug,
   className,
   soldOut,
+  variant = "ink",
 }: {
-  product: "sidebar" | "feed" | "premium";
+  product: "featured" | "sidebar" | "directory" | "premium";
   label: string;
+  /** For product-scoped purchases (Featured, Directory Blast). */
+  productSlug?: string;
   className?: string;
   soldOut?: boolean;
+  variant?: "primary" | "ink" | "outline";
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -34,7 +39,7 @@ export function BuyButton({
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ product }),
+        body: JSON.stringify({ product, productSlug }),
       });
       const data = await res.json();
 
@@ -53,13 +58,13 @@ export function BuyButton({
   if (soldOut) {
     return (
       <Button variant="outline" className={className} disabled>
-        Sold out this month
+        Sold out
       </Button>
     );
   }
 
   return (
-    <Button onClick={buy} disabled={busy} className={className} variant="dark">
+    <Button onClick={buy} disabled={busy} className={className} variant={variant}>
       {busy ? (
         <>
           <Loader2 className="h-4 w-4 animate-spin" /> Opening checkout…

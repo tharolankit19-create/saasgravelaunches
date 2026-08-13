@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { createAdminClient, currentUser } from "@/lib/supabase/server";
 import { createDodoCheckout } from "@/lib/dodo";
-import { claimSlot } from "@/lib/ads";
+import { claimSlot, getFeaturedAvailability } from "@/lib/ads";
+import { isPremium } from "@/lib/premium";
 import {
   isProductKey,
   kindFor,
@@ -10,22 +11,26 @@ import {
   productEnvName,
   PRODUCTS,
 } from "@/lib/pricing";
-import { monthKey } from "@/lib/week";
+import { currentWeekKey, monthKey, weekLabel } from "@/lib/week";
 
 export const dynamic = "force-dynamic";
 
 /**
  * Start a purchase.
  *
- * The client sends a product key and nothing else. Every number — the price,
- * the Dodo product, what's being bought — is resolved here from the
- * catalogue, so there's no amount in the request for anyone to edit.
+ * The client sends a product key and, for product-scoped upgrades, a slug.
+ * Every number — the price, the Dodo product, what's being bought — is resolved
+ * here from the catalogue, so there is no amount in the request for anyone to
+ * edit.
  */
 export async function POST(request: Request) {
   const user = await currentUser();
   if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
 
-  const { product, productSlug } = await request.json().catch(() => ({ product: null }));
+  const body = await request.json().catch(() => ({}));
+  const product = body?.product;
+  const productSlug = typeof body?.productSlug === "string" ? body.productSlug : null;
+
   if (!isProductKey(product)) {
     return NextResponse.json({ error: "Unknown product." }, { status: 400 });
   }
@@ -35,44 +40,59 @@ export async function POST(request: Request) {
   const origin = new URL(request.url).origin;
   const admin = createAdminClient();
 
-  // ── what exactly is being bought ──
+  // ── resolve exactly what's being bought ──
   let referenceId: string;
 
-  if (spec.placement) {
-    const claimed = await claimSlot(spec.placement, user.id);
+  if (product === "sidebar") {
+    const claimed = await claimSlot(user.id);
     if (!claimed) {
       return NextResponse.json(
-        { error: `Every ${spec.name} is booked for ${monthKey()}. Try next month.` },
+        { error: `All ${spec.slots} sidebar slots are booked for ${monthKey()}. Try next month.` },
         { status: 409 }
       );
     }
     referenceId = claimed.id;
-  } else {
-    // Premium applies to one of the buyer's own products.
-    let query = admin
-      .from("launch_products")
-      .select("id, verified")
-      .eq("maker_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(1);
-    if (typeof productSlug === "string" && productSlug) query = query.eq("slug", productSlug);
+  } else if (product === "featured") {
+    const week = currentWeekKey();
+    const availability = await getFeaturedAvailability(week);
+    if (availability.open === 0) {
+      return NextResponse.json(
+        { error: `All ${availability.total} Featured slots are taken for ${weekLabel(week)}.` },
+        { status: 409 }
+      );
+    }
 
-    const { data } = await query;
-    const target = data?.[0];
+    const target = await ownProduct(admin, user.id, productSlug);
     if (!target) {
       return NextResponse.json(
-        { error: "Launch a product first — Premium upgrades a listing you already have." },
+        { error: "Launch a product first — Featured pins a listing you already have." },
         { status: 400 }
       );
     }
-    if (target.verified) {
-      return NextResponse.json({ error: "That listing is already Premium." }, { status: 409 });
+    if (target.featured_until && new Date(target.featured_until) > new Date()) {
+      return NextResponse.json({ error: "That launch is already Featured." }, { status: 409 });
+    }
+    referenceId = target.id;
+  } else if (product === "premium") {
+    if (await isPremium(user.id)) {
+      return NextResponse.json({ error: "You're already on Premium." }, { status: 409 });
+    }
+    // A subscription belongs to the person, not to a product.
+    referenceId = user.id;
+  } else {
+    // directory — a one-off service against the maker's latest launch
+    const target = await ownProduct(admin, user.id, productSlug);
+    if (!target) {
+      return NextResponse.json(
+        { error: "Launch a product first — that's what we submit to the directories." },
+        { status: 400 }
+      );
     }
     referenceId = target.id;
   }
 
-  // Best-effort ledger row. Never blocks checkout — the webhook and the
-  // success page both reconcile afterwards.
+  // Best-effort ledger row. Never blocks checkout — the webhook and the success
+  // page both reconcile afterwards.
   let paymentId: string | null = null;
   try {
     const { data } = await admin
@@ -108,4 +128,21 @@ export async function POST(request: Request) {
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || "Checkout couldn't start." }, { status: 502 });
   }
+}
+
+/** The buyer's own product — named by slug, or their most recent one. */
+async function ownProduct(
+  admin: ReturnType<typeof createAdminClient>,
+  userId: string,
+  slug: string | null
+) {
+  let query = admin
+    .from("launch_products")
+    .select("id, slug, featured_until")
+    .eq("maker_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(1);
+  if (slug) query = query.eq("slug", slug);
+  const { data } = await query;
+  return data?.[0] || null;
 }

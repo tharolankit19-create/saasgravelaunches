@@ -9,79 +9,87 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Saasgrave Launches — same family as Saasgrave (paper canvas, ink
-        // type, one confident accent), deliberately re-tuned so the two read
-        // as siblings rather than the same site twice. The canvas cools a
-        // shade, the accent moves from Saasgrave's ember orange to an electric
-        // violet, and a signal green carries "live this week".
+        // ── "The Launch Register", warmed ──────────────────────
+        // Editorial bones — paper stock, hairline rules, serif headlines,
+        // monospaced figures — carrying Saasgrave's confident orange as the one
+        // ink, so the two products read as family. Authority, but not cold.
         paper: {
-          50: "#f8f7f4", // page — cool paper
-          100: "#ffffff", // cards / surfaces
-          200: "#f1efe9", // hover / wells
-          300: "#e8e5dd", // deeper well
-          400: "#ddd9cf", // subtle fills
-          500: "#cec9bc", // dividers with weight
+          50: "#faf7f1", // the page — warm paper
+          100: "#fffdf9", // cards — warm white, never pure #fff
+          200: "#f4efe6", // wells / hover
+          300: "#e9e2d5", // rules with weight
+          400: "#dcd3c3", // dividers
+          500: "#c7bca8", // muted edges
         },
         ink: {
-          900: "#12110f", // headings — near-black
-          700: "#3b372f", // body
-          500: "#6a655a", // secondary
-          400: "#948e80", // muted
+          900: "#181510", // headlines — warm near-black
+          700: "#3c372e", // body copy
+          500: "#6d675a", // secondary
+          400: "#978f7e", // captions
         },
-        // The one primary. Violet reads "launch / new", warm paper keeps it
-        // in the Saasgrave family instead of turning into a generic SaaS blue.
-        violet: {
-          400: "#8B6BFF",
-          500: "#5B3DF5", // primary — buttons, marks, links
-          600: "#4527CC", // accessible violet text on paper
+        // The one ink — Saasgrave's orange. Scarce on purpose.
+        ember: {
+          400: "#fb8b3d", // light / soft fills / gradient top
+          500: "#f2671e", // primary — buttons, marks, links
+          600: "#c2410c", // accessible orange text on paper
+          700: "#9a3412", // deep, for pressed / rules
         },
-        // Live / verified / positive. Only used for state, never decoration.
-        signal: {
-          400: "#22B573",
-          500: "#0FA968",
-          600: "#0A7F4E",
+        // Functional only. Never decoration.
+        brass: {
+          400: "#d8ad55", // #1 rank, Premium
+          500: "#bf9235",
+          600: "#94701f",
         },
-        // Ranking medals + Premium. Gold is scarce on purpose.
-        medal: {
-          400: "#EFBE63",
-          500: "#E0A33B",
-          600: "#A9741B",
+        moss: {
+          500: "#2f7a4f", // live / verified / slots open
+          600: "#245f3d",
         },
       },
       fontFamily: {
+        serif: ["var(--font-serif)", "Georgia", "serif"],
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
         mono: ["var(--font-mono)", "ui-monospace", "monospace"],
       },
+      fontSize: {
+        display: ["clamp(2.5rem, 5.6vw, 4.4rem)", { lineHeight: "0.98", letterSpacing: "-0.025em" }],
+        masthead: ["clamp(1.8rem, 3.2vw, 2.6rem)", { lineHeight: "1.06", letterSpacing: "-0.02em" }],
+        section: ["clamp(1.3rem, 1.9vw, 1.65rem)", { lineHeight: "1.16", letterSpacing: "-0.015em" }],
+      },
       boxShadow: {
-        card: "0 1px 2px rgba(18,17,15,0.04), 0 8px 20px -14px rgba(18,17,15,0.14)",
-        lift: "0 2px 10px rgba(18,17,15,0.06), 0 24px 56px -26px rgba(18,17,15,0.22)",
-        glow: "0 8px 24px -10px rgba(91,61,245,0.55)",
+        // Warm, layered elevation — soft ambient + a tight contact shadow, tuned
+        // brown rather than grey so cards sit on paper instead of floating on a
+        // screen. This is the difference between "designed" and "flat".
+        page: "0 1px 0 rgba(24,21,16,0.04)",
+        card: "0 1px 2px rgba(40,28,12,0.05), 0 6px 16px -8px rgba(40,28,12,0.12), 0 22px 44px -28px rgba(40,28,12,0.16)",
+        lift: "0 2px 6px rgba(40,28,12,0.07), 0 14px 28px -12px rgba(40,28,12,0.16), 0 34px 60px -34px rgba(40,28,12,0.26)",
+        // Orange CTA glow — used only on the primary launch action.
+        glow: "0 1px 2px rgba(154,52,18,0.2), 0 10px 24px -8px rgba(242,103,30,0.42)",
+        inset: "inset 0 1px 0 rgba(255,255,255,0.6)",
       },
       keyframes: {
         "fade-up": {
-          "0%": { opacity: "0", transform: "translateY(12px)" },
+          "0%": { opacity: "0", transform: "translateY(10px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
-        "pop": {
+        pop: {
           "0%": { transform: "scale(1)" },
-          "45%": { transform: "scale(1.18)" },
+          "45%": { transform: "scale(1.16)" },
           "100%": { transform: "scale(1)" },
         },
-        marquee: {
-          "0%": { transform: "translateX(0)" },
-          "100%": { transform: "translateX(-50%)" },
+        blink: {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.3" },
         },
-        pulse_ring: {
-          "0%": { boxShadow: "0 0 0 0 rgba(15,169,104,0.45)" },
-          "70%": { boxShadow: "0 0 0 8px rgba(15,169,104,0)" },
-          "100%": { boxShadow: "0 0 0 0 rgba(15,169,104,0)" },
+        aurora: {
+          "0%, 100%": { transform: "translate3d(0,0,0) scale(1)", opacity: "0.7" },
+          "50%": { transform: "translate3d(2%,-3%,0) scale(1.1)", opacity: "1" },
         },
       },
       animation: {
-        "fade-up": "fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards",
-        pop: "pop 0.35s cubic-bezier(0.16, 1, 0.3, 1)",
-        marquee: "marquee var(--marquee-dur, 38s) linear infinite",
-        "pulse-ring": "pulse_ring 2.2s ease-out infinite",
+        "fade-up": "fade-up 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+        pop: "pop 0.34s cubic-bezier(0.16, 1, 0.3, 1)",
+        blink: "blink 2s ease-in-out infinite",
+        aurora: "aurora 16s ease-in-out infinite",
       },
     },
   },

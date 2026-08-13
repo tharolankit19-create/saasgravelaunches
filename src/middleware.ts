@@ -34,10 +34,14 @@ export async function middleware(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
   if (PROTECTED.some((p) => path.startsWith(p)) && !user) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    url.searchParams.set("next", path);
-    return NextResponse.redirect(url);
+    // Preserve the full destination, query and all, so a visitor who came from
+    // the hero with ?url=… lands back on /launch with autofill ready — rather
+    // than losing it. Build the login URL fresh so the original query doesn't
+    // leak in as stray params beside `next`.
+    const dest = path + request.nextUrl.search;
+    const login = new URL("/login", request.url);
+    login.searchParams.set("next", dest);
+    return NextResponse.redirect(login);
   }
 
   return response;

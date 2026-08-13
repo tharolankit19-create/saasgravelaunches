@@ -47,12 +47,19 @@ export async function POST(req: Request) {
   const referenceId = metadata.reference_id as string | undefined;
   const buyerId = metadata.user_id as string | undefined;
   const paymentId = data?.payment_id || data?.id;
+  const subscriptionId = data?.subscription_id || data?.subscription?.id;
 
   if (!kind || !referenceId) {
     return NextResponse.json({ received: true, note: "no metadata" });
   }
 
-  const result = await fulfilPurchase({ kind, referenceId, buyerId, dodoPaymentId: paymentId });
+  const result = await fulfilPurchase({
+    kind,
+    referenceId,
+    buyerId,
+    dodoPaymentId: paymentId,
+    dodoSubscriptionId: subscriptionId,
+  });
   return NextResponse.json({ received: true, ...result });
 }
 

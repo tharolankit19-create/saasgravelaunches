@@ -8,6 +8,7 @@
 // extracted URL is resolved against the page and forced to http(s).
 
 import { normalizeUrl } from "@/lib/utils";
+import { firecrawlScrape, firecrawlConfigured } from "@/lib/firecrawl";
 
 export type ScrapedSite = {
   url: string;
@@ -21,6 +22,8 @@ export type ScrapedSite = {
   text: string;
   /** Whether the fetch itself worked — a failed fetch still returns a shell. */
   ok: boolean;
+  /** Which path produced this — for debugging bad scrapes. */
+  source: "firecrawl" | "fetch";
   error?: string;
 };
 
@@ -39,14 +42,46 @@ export async function scrapeSite(rawUrl: string): Promise<ScrapedSite> {
     throw new Error("That address isn't reachable from the public internet.");
   }
 
+  const host = parsed.hostname.replace(/^www\./, "");
+  const fallbackFavicon = `https://www.google.com/s2/favicons?domain=${parsed.hostname}&sz=128`;
+
+  // Preferred path: Firecrawl renders the page and returns clean markdown. Only
+  // tried when configured, and any failure quietly falls through to the
+  // built-in fetch scraper below — autofill never hard-depends on it.
+  if (firecrawlConfigured()) {
+    const fc = await firecrawlScrape(url);
+    if (fc?.ok) {
+      const name = fc.siteName || fc.title.split(/[|—–·-]/)[0] || host.split(".")[0];
+      return {
+        url,
+        host,
+        source: "firecrawl",
+        ok: true,
+        title: fc.title,
+        description: fc.description,
+        siteName: fc.siteName,
+        image: fc.image,
+        favicon: fc.favicon || fallbackFavicon,
+        // Pull section headings out of the markdown for the category guesser.
+        headings: [...fc.markdown.matchAll(/^#{1,3}\s+(.+)$/gm)]
+          .map((m) => m[1].replace(/[#*_`]/g, "").trim())
+          .filter((t) => t.length > 2 && t.length < 140)
+          .slice(0, 14),
+        text: markdownToText(fc.markdown).slice(0, 7000),
+      };
+    }
+    // fc null/errored → continue to the fetch path.
+  }
+
   const shell: ScrapedSite = {
     url,
-    host: parsed.hostname.replace(/^www\./, ""),
+    host,
+    source: "fetch",
     title: "",
     description: "",
     siteName: "",
     image: null,
-    favicon: `https://www.google.com/s2/favicons?domain=${parsed.hostname}&sz=128`,
+    favicon: fallbackFavicon,
     headings: [],
     text: "",
     ok: false,
@@ -145,6 +180,21 @@ function decode(s: string) {
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
     .replace(/&#(\d+);/g, (_, d) => String.fromCharCode(Number(d)));
+}
+
+/** Strip markdown syntax down to readable prose for the AI and category guess. */
+function markdownToText(md: string): string {
+  return md
+    .replace(/```[\s\S]*?```/g, " ") // code fences
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, " ") // images
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1") // links → their text
+    .replace(/^[#>\-*+]\s+/gm, "") // list/heading/quote markers
+    .replace(/[*_`~]/g, "") // emphasis
+    .replace(/\|/g, " ") // table pipes
+    .replace(/\s+\n/g, "\n")
+    .replace(/\n{2,}/g, ". ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 /** Body copy with script/style/nav noise removed. */

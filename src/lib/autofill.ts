@@ -1,18 +1,25 @@
 // ─── Autofill ───────────────────────────────────────────────
-// Paste a URL, get a filled-in listing. Two stages, and the second is optional:
+// Paste a URL, get a genuinely finished listing. Two stages:
 //
-//   1. Scrape the page for the facts that are already there — title, meta
-//      description, OG image, favicon, headings, body copy.
-//   2. Ask a small model to turn those facts into the fields a listing needs.
+//   1. Scrape the page — Firecrawl (clean rendered markdown) when configured,
+//      otherwise the built-in fetch scraper. Either way we get title, meta,
+//      OG image, favicon, headings and readable body copy.
+//   2. Ask a small model to turn that into HIGH-QUALITY listing fields: a real
+//      tagline, a specific description, the audience, the problem/solution/edge
+//      in the maker's own terms, an FAQ, and "alternative to X" competitors —
+//      the fields that make the SEO page rank and that a founder would
+//      otherwise spend an hour writing.
 //
 // If the AI is unset, rate-limited or returns nonsense, stage 1's values are
-// used on their own. The maker always lands on a form they can edit, never on
-// an error — that's the whole point of the feature.
+// used on their own. The maker always lands on a filled-in form, never an
+// error — that's the whole point.
 
 import { aiConfigured, aiJson } from "@/lib/ai";
 import { scrapeDigest, scrapeSite, type ScrapedSite } from "@/lib/scrape";
 import { CATEGORIES } from "@/lib/categories";
 import { truncate } from "@/lib/utils";
+
+export type FaqItem = { q: string; a: string };
 
 export type AutofillResult = {
   name: string;
@@ -28,8 +35,11 @@ export type AutofillResult = {
   solution: string;
   unique_edge: string;
   keywords: string[];
+  /** High-value SEO fields the model drafts so the founder doesn't have to. */
+  faq: FaqItem[];
+  alternatives: string[];
   /** Which stages actually contributed, so the UI can be honest about it. */
-  source: { scraped: boolean; ai: boolean; note?: string };
+  source: { scraped: boolean; ai: boolean; via?: string; note?: string };
 };
 
 const PRICING_MODELS = ["free", "freemium", "trial", "paid"];
@@ -39,25 +49,31 @@ export async function autofillFromUrl(rawUrl: string): Promise<AutofillResult> {
   const base = fromScrape(site);
 
   if (!site.ok) {
-    return { ...base, source: { scraped: false, ai: false, note: site.error } };
+    return { ...base, source: { scraped: false, ai: false, via: site.source, note: site.error } };
   }
   if (!aiConfigured()) {
-    return { ...base, source: { scraped: true, ai: false, note: "AI is not configured." } };
+    return {
+      ...base,
+      source: { scraped: true, ai: false, via: site.source, note: "AI is not configured." },
+    };
   }
 
   try {
     const drafted = await aiJson<Partial<Record<string, unknown>>>(prompt(site), {
       system:
-        "You write concise, factual product listings for a launch directory. You only use facts you are given. You reply with a single JSON object and nothing else.",
-      maxTokens: 800,
-      temperature: 0.3,
+        "You are a senior product marketer writing a directory listing. You are specific and concrete, you use only the facts given, and you never pad with filler. You reply with a single JSON object and nothing else.",
+      maxTokens: 1100,
+      temperature: 0.35,
     });
     if (!drafted) {
-      return { ...base, source: { scraped: true, ai: false, note: "The model returned no usable JSON." } };
+      return {
+        ...base,
+        source: { scraped: true, ai: false, via: site.source, note: "The model returned no usable JSON." },
+      };
     }
-    return { ...merge(base, drafted), source: { scraped: true, ai: true } };
+    return { ...merge(base, drafted), source: { scraped: true, ai: true, via: site.source } };
   } catch (e: any) {
-    return { ...base, source: { scraped: true, ai: false, note: e?.message } };
+    return { ...base, source: { scraped: true, ai: false, via: site.source, note: e?.message } };
   }
 }
 
@@ -69,7 +85,10 @@ function fromScrape(site: ScrapedSite): Omit<AutofillResult, "source"> {
     .slice(0, 60);
 
   const tagline =
-    truncate(site.description || site.headings[0] || site.title.replace(name, "").replace(/^[\s|—–·-]+/, ""), 80) || "";
+    truncate(
+      site.description || site.headings[0] || site.title.replace(name, "").replace(/^[\s|—–·-]+/, ""),
+      80
+    ) || "";
 
   return {
     name: name ? name[0].toUpperCase() + name.slice(1) : "",
@@ -78,21 +97,21 @@ function fromScrape(site: ScrapedSite): Omit<AutofillResult, "source"> {
     website_url: site.url,
     logo_url: site.favicon,
     gallery_urls: site.image ? [site.image] : [],
-    categories: guessCategories(`${site.title} ${site.description} ${site.headings.join(" ")}`),
+    categories: guessCategories(`${site.title} ${site.description} ${site.headings.join(" ")} ${site.text}`),
     pricing_model: guessPricing(site.text),
     who_for: "",
     problem: "",
     solution: "",
     unique_edge: "",
     keywords: [],
+    faq: [],
+    alternatives: [],
   };
 }
 
 function guessCategories(text: string): string[] {
   const haystack = text.toLowerCase();
-  const hits = CATEGORIES.filter((c) =>
-    c.match.some((m) => haystack.includes(m))
-  ).map((c) => c.name);
+  const hits = CATEGORIES.filter((c) => c.match.some((m) => haystack.includes(m))).map((c) => c.name);
   return hits.slice(0, 2);
 }
 
@@ -105,31 +124,38 @@ function guessPricing(text: string): string | null {
   return null;
 }
 
-// ─── stage 2: the model's draft, merged conservatively ──────
+// ─── stage 2: the model's draft ─────────────────────────────
 
 function prompt(site: ScrapedSite): string {
-  return `Below is everything scraped from a product's website. Write its listing for a launch directory.
+  return `You are writing a launch-directory listing for the product below, from what was scraped off its own site.
 
-Rules:
-- Use ONLY facts present below. Never invent metrics, prices, customers or claims.
-- Plain, specific language. No marketing fluff, no emojis, no exclamation marks.
-- If a field cannot be answered from the facts, return "" for it. An empty field is better than a guessed one.
+Write like a person who used the product, not a brochure. Rules:
+- Use ONLY facts present in the material. Never invent metrics, prices, customers, funding or awards.
+- Be concrete and specific. Name the actual job it does and who does it. Avoid "revolutionary", "seamless", "powerful", "cutting-edge", "game-changing", "one-stop", "supercharge" and every word like them.
+- No emojis, no exclamation marks, no trailing periods on the tagline.
+- If a field genuinely can't be supported by the facts, return "" (or [] for lists). An empty field beats a guessed one.
 
 Reply with ONLY this JSON object:
 {
   "name": "the product's name, 1-4 words",
-  "tagline": "what it does, max 80 characters, no trailing period",
-  "description": "2-4 sentences on what it is and who uses it, max 600 characters",
-  "who_for": "the audience in under 12 words",
-  "problem": "the problem it solves, 1-2 sentences",
-  "solution": "how it solves that, 1-2 sentences",
-  "unique_edge": "what makes it different, 1-2 sentences",
-  "categories": ["pick 1-2 from: ${CATEGORIES.map((c) => c.name).join(", ")}"],
-  "pricing_model": "one of: free, freemium, trial, paid, or \\"\\" if unclear",
-  "keywords": ["3-6 short search phrases someone would type to find this"]
+  "tagline": "the single clearest line of what it does and for whom, 25-70 characters",
+  "description": "3-4 specific sentences: what it is, who it's for, what it replaces. 300-600 characters",
+  "who_for": "the exact audience, under 12 words (e.g. 'solo founders doing their own outbound')",
+  "problem": "the real problem it removes, 1-2 sentences, grounded in the copy",
+  "solution": "concretely how it solves that — the actual mechanism, 1-2 sentences",
+  "unique_edge": "the one thing that makes it different from the obvious alternative, 1-2 sentences",
+  "categories": ["1-2 from exactly: ${CATEGORIES.map((c) => c.name).join(", ")}"],
+  "pricing_model": "one of free, freemium, trial, paid, or \\"\\" if unclear",
+  "keywords": ["4-6 specific search phrases a buyer would type — not generic single words"],
+  "alternatives": ["0-3 well-known products this is an alternative to, ONLY if clearly implied by the copy"],
+  "faq": [
+    {"q": "a real question a buyer would ask", "a": "a direct 1-2 sentence answer from the facts"},
+    {"q": "another", "a": "..."},
+    {"q": "a third", "a": "..."}
+  ]
 }
 
-FACTS:
+MATERIAL:
 ${scrapeDigest(site)}`;
 }
 
@@ -141,12 +167,12 @@ function merge(
     const v = ai[k];
     return typeof v === "string" ? truncate(v.trim(), max) : "";
   };
-  const list = (k: string, max: number) => {
+  const list = (k: string, max: number, itemMax = 60) => {
     const v = ai[k];
     if (!Array.isArray(v)) return [];
     return v
       .filter((x): x is string => typeof x === "string")
-      .map((x) => x.trim())
+      .map((x) => truncate(x.trim(), itemMax))
       .filter(Boolean)
       .slice(0, max);
   };
@@ -154,6 +180,19 @@ function merge(
   const pricing = str("pricing_model", 20).toLowerCase();
   const validCats = new Set(CATEGORIES.map((c) => c.name.toLowerCase()));
   const cats = list("categories", 2).filter((c) => validCats.has(c.toLowerCase()));
+
+  // FAQ: keep only well-formed pairs, cap at four.
+  const faq: FaqItem[] = Array.isArray(ai.faq)
+    ? (ai.faq as unknown[])
+        .map((it) => {
+          const o = it as Record<string, unknown>;
+          const q = typeof o?.q === "string" ? truncate(o.q.trim(), 120) : "";
+          const a = typeof o?.a === "string" ? truncate(o.a.trim(), 400) : "";
+          return q && a ? { q, a } : null;
+        })
+        .filter((x): x is FaqItem => Boolean(x))
+        .slice(0, 4)
+    : [];
 
   return {
     ...base,
@@ -167,6 +206,8 @@ function merge(
     unique_edge: str("unique_edge", 400),
     categories: cats.length ? cats : base.categories,
     pricing_model: PRICING_MODELS.includes(pricing) ? pricing : base.pricing_model,
-    keywords: list("keywords", 6),
+    keywords: list("keywords", 6, 60),
+    alternatives: list("alternatives", 3, 40),
+    faq,
   };
 }
