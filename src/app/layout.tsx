@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Fraunces, Instrument_Sans, JetBrains_Mono } from "next/font/google";
 import { Toaster } from "sonner";
+import { Analytics } from "@vercel/analytics/next";
 import { Masthead } from "@/components/masthead";
 import { Footer } from "@/components/footer";
 import { Tracker } from "@/components/tracker";
@@ -115,6 +116,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             },
           }}
         />
+        <Analytics />
       </body>
     </html>
   );
