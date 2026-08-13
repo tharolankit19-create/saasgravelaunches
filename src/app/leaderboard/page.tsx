@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Trophy } from "lucide-react";
+import { Trophy, Sparkles } from "lucide-react";
 import { Card, Rubric, Empty, LinkButton, Badge } from "@/components/ui";
 import { ProductRow } from "@/components/product-row";
 import { ProductLogo } from "@/components/avatar";
 import { AdRail } from "@/components/ad-rail";
 import { currentUser } from "@/lib/supabase/server";
-import { getAllTimeTop, getMyUpvotes, getWeekBoard } from "@/lib/launches";
+import { getAllTimeTop, getFeaturedForWeek, getMyUpvotes, getWeekBoard } from "@/lib/launches";
 import { currentWeekKey, shiftWeek, weekLabel, weekRangeLabel } from "@/lib/week";
 
 export const dynamic = "force-dynamic";
@@ -23,12 +23,13 @@ export default async function LeaderboardPage() {
   const now = currentWeekKey();
   const weeks = Array.from({ length: PAST_WEEKS }, (_, i) => shiftWeek(now, -(i + 1)));
 
-  const [allTime, user, ...boards] = await Promise.all([
+  const [allTime, featured, user, ...boards] = await Promise.all([
     getAllTimeTop(25),
+    getFeaturedForWeek(now),
     currentUser(),
     ...weeks.map((w) => getWeekBoard(w)),
   ]);
-  const myUpvotes = await getMyUpvotes(allTime.map((p) => p.id));
+  const myUpvotes = await getMyUpvotes([...featured, ...allTime].map((p) => p.id));
 
   const pastWeeks = weeks
     .map((week, i) => ({ week, winners: (boards[i] as any[]).slice(0, 3) }))
@@ -47,6 +48,29 @@ export default async function LeaderboardPage() {
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
         <div className="space-y-10">
+          {featured.length > 0 && (
+            <section>
+              <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold tracking-tight text-ink-900">
+                <Sparkles className="h-5 w-5 text-ember-500" /> Featured this week
+              </h2>
+              <Card className="overflow-hidden border-ember-500/25">
+                <p className="border-b border-ink-900/10 bg-ember-500/5 px-5 py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ember-600">
+                  Paid placement · does not affect the ranking below
+                </p>
+                {featured.map((p, i) => (
+                  <ProductRow
+                    key={p.id}
+                    product={p}
+                    index={i}
+                    showFeaturedMark
+                    upvoted={myUpvotes.has(p.id)}
+                    signedIn={Boolean(user)}
+                  />
+                ))}
+              </Card>
+            </section>
+          )}
+
           <section>
             <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold tracking-tight text-ink-900">
               <Trophy className="h-5 w-5 text-brass-500" /> All time

@@ -30,7 +30,7 @@ export type ScrapedSite = {
 const UA =
   "Mozilla/5.0 (compatible; SaasgraveLaunchesBot/1.0; +https://launches.saasgrave.org/about)";
 const MAX_BYTES = 900_000; // plenty for a landing page; stops us pulling an app bundle
-const TIMEOUT_MS = 12_000;
+const TIMEOUT_MS = 8_000;
 
 export async function scrapeSite(rawUrl: string): Promise<ScrapedSite> {
   const url = normalizeUrl(rawUrl);

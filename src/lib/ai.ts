@@ -14,6 +14,13 @@ const MODELS = [
   "inclusionai/ling-3.0-tiny:free",
 ];
 
+// A single model gets this long to answer before we abandon it for the next
+// rung. Free models occasionally queue for a minute; a founder waiting on the
+// launch form will not. And the whole ladder is capped below, so autofill can
+// never sit past the route budget waiting on a slow model.
+const PER_MODEL_TIMEOUT_MS = 8_000;
+const LADDER_BUDGET_MS = 12_000;
+
 /** The ladder, with an operator override in front. */
 export function models(): string[] {
   const pinned = process.env.OPENROUTER_MODEL?.trim();
@@ -42,8 +49,18 @@ export async function aiComplete(prompt: string, opts: CompleteOptions = {}): Pr
 
   const site = process.env.NEXT_PUBLIC_SITE_URL || "https://launches.saasgrave.org";
   const errors: string[] = [];
+  const startedAt = Date.now();
 
   for (const model of models()) {
+    // Don't even start another slow model if we're already near the budget —
+    // better to fall back to the scraped fields than to time the route out.
+    if (Date.now() - startedAt > LADDER_BUDGET_MS) {
+      errors.push("ladder budget exhausted");
+      break;
+    }
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), PER_MODEL_TIMEOUT_MS);
     try {
       const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
@@ -63,6 +80,7 @@ export async function aiComplete(prompt: string, opts: CompleteOptions = {}): Pr
           temperature: opts.temperature ?? 0.4,
           ...(opts.json ? { response_format: { type: "json_object" } } : {}),
         }),
+        signal: controller.signal,
         cache: "no-store",
       });
 
@@ -76,7 +94,9 @@ export async function aiComplete(prompt: string, opts: CompleteOptions = {}): Pr
       if (typeof text === "string" && text.trim()) return text.trim();
       errors.push(`${model}: empty response`);
     } catch (e: any) {
-      errors.push(`${model}: ${e?.message || "network error"}`);
+      errors.push(`${model}: ${e?.name === "AbortError" ? "timed out" : e?.message || "network error"}`);
+    } finally {
+      clearTimeout(timer);
     }
   }
 

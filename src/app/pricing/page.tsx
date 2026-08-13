@@ -36,8 +36,9 @@ export default async function PricingPage() {
       </h1>
       <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink-700">
         There is no paid tier that gets you onto the board, no queue to skip, and no paywall between
-        your product and the people browsing. Four things cost money, and each one is listed below
-        with its real inventory.
+        your product and the people browsing. Everything that costs money is grouped below — the
+        plans you might subscribe to, the ad placements you can book, and the one thing we do by
+        hand.
       </p>
 
       <Rule className="my-10 max-w-2xl" />
@@ -47,8 +48,34 @@ export default async function PricingPage() {
         <Stat value={stats.upvotes} label="Upvotes cast" />
       </div>
 
+      {/* Jump nav — three clear groups, so the many options never read as a wall. */}
+      <nav className="mt-10 flex flex-wrap gap-2">
+        {[
+          ["#plans", "Plans for makers"],
+          ["#advertising", "Advertising"],
+          ["#done-for-you", "Done for you"],
+        ].map(([href, label]) => (
+          <a
+            key={href}
+            href={href}
+            className="rounded-full border border-ink-900/12 bg-paper-100 px-4 py-1.5 font-mono text-[11px] uppercase tracking-[0.1em] text-ink-600 transition hover:border-ember-500/50 hover:text-ember-600"
+          >
+            {label}
+          </a>
+        ))}
+      </nav>
+
+      {/* ═══ GROUP 1 · PLANS FOR MAKERS ═══ */}
+      <div id="plans" className="mt-16 scroll-mt-32">
+        <h2 className="font-serif text-masthead font-semibold text-ink-900">Plans for makers</h2>
+        <p className="mt-2 max-w-xl text-[14px] leading-relaxed text-ink-500">
+          How you launch. Free gets you fully on the board; Premium lifts the limits and adds the AI
+          and analytics.
+        </p>
+      </div>
+
       {/* ── free ── */}
-      <section className="mt-16">
+      <section className="mt-8">
         <Rubric className="mb-6">The free tier</Rubric>
         <Card className="grid gap-8 p-8 md:grid-cols-[1fr_1.2fr]">
           <div>
@@ -120,10 +147,19 @@ export default async function PricingPage() {
         </Card>
       </section>
 
+      {/* ═══ GROUP 2 · ADVERTISING ═══ */}
+      <div id="advertising" className="mt-20 scroll-mt-32 border-t border-ink-900/12 pt-14">
+        <h2 className="font-serif text-masthead font-semibold text-ink-900">Advertising</h2>
+        <p className="mt-2 max-w-xl text-[14px] leading-relaxed text-ink-500">
+          Paid placements that put you in front of the board&apos;s traffic. None of them touch the
+          ranking — a rank you can buy is just an ad wearing a number.
+        </p>
+      </div>
+
       {/* ── slots ── */}
-      <section id="slots" className="mt-14 scroll-mt-32">
+      <section id="slots" className="mt-8 scroll-mt-32">
         <Rubric className="mb-6">Placements · live inventory</Rubric>
-        <h2 className="max-w-2xl font-serif text-masthead font-semibold text-ink-900">
+        <h2 className="max-w-2xl font-serif text-xl font-semibold text-ink-900">
           Three placements, and they genuinely run out.
         </h2>
 
@@ -294,9 +330,17 @@ export default async function PricingPage() {
         </div>
       </section>
 
+      {/* ═══ GROUP 3 · DONE FOR YOU ═══ */}
+      <div id="done-for-you" className="mt-20 scroll-mt-32 border-t border-ink-900/12 pt-14">
+        <h2 className="font-serif text-masthead font-semibold text-ink-900">Done for you</h2>
+        <p className="mt-2 max-w-xl text-[14px] leading-relaxed text-ink-500">
+          One thing we do by hand, so you don&apos;t spend a week doing it yourself.
+        </p>
+      </div>
+
       {/* ── directory blast ── */}
-      <section id="directories" className="mt-14 scroll-mt-32">
-        <Rubric className="mb-6">Done for you</Rubric>
+      <section id="directories" className="mt-8 scroll-mt-32">
+        <Rubric className="mb-6">The service</Rubric>
         <Card className="grid gap-8 p-8 md:grid-cols-[1fr_1.2fr]">
           <div>
             <h2 className="font-serif text-2xl font-semibold text-ink-900">

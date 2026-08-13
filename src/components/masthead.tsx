@@ -1,14 +1,18 @@
 import Link from "next/link";
-import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { MastheadShell } from "@/components/masthead-shell";
 import { UserMenu } from "@/components/user-menu";
-import { getSiteStats } from "@/lib/launches";
+import { getLiveWeekCount } from "@/lib/launches";
 import { currentWeekKey, weekLabel } from "@/lib/week";
 
 /**
  * Server half of the masthead: who's signed in, and what the live week is.
  * The scroll behaviour lives in MastheadShell, which is the only part that
  * needs to be a client component.
+ *
+ * This renders on every page, so it does the minimum: one auth call, one live
+ * count, and — only when signed in — one profile row that also carries the
+ * admin flag. No service-role client, no full site-stats scan.
  */
 export async function Masthead() {
   const supabase = createClient();
@@ -16,8 +20,8 @@ export async function Masthead() {
     {
       data: { user },
     },
-    stats,
-  ] = await Promise.all([supabase.auth.getUser(), getSiteStats()]);
+    liveCount,
+  ] = await Promise.all([supabase.auth.getUser(), getLiveWeekCount()]);
 
   let name: string | null = null;
   let avatar: string | null = null;
@@ -26,29 +30,18 @@ export async function Masthead() {
   if (user) {
     const { data } = await supabase
       .from("profiles")
-      .select("full_name, avatar_url")
+      .select("full_name, avatar_url, is_admin")
       .eq("id", user.id)
       .maybeSingle();
     name = data?.full_name || user.email?.split("@")[0] || null;
     avatar = data?.avatar_url || null;
-
-    // Read the admin flag past RLS, same as the /admin gate does.
-    try {
-      const { data: row } = await createAdminClient()
-        .from("profiles")
-        .select("is_admin")
-        .eq("id", user.id)
-        .maybeSingle();
-      isAdmin = Boolean(row?.is_admin);
-    } catch {
-      isAdmin = false;
-    }
+    isAdmin = Boolean(data?.is_admin);
   }
 
   return (
     <MastheadShell
       weekLabel={weekLabel(currentWeekKey())}
-      liveCount={stats.thisWeek}
+      liveCount={liveCount}
       userSlot={
         user ? (
           <UserMenu userId={user.id} name={name} avatarUrl={avatar} isAdmin={isAdmin} />

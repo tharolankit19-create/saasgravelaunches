@@ -122,14 +122,24 @@ export function MastheadShell({
                 </Link>
               );
             })}
-            <Link
-              href="/products"
-              aria-label="Search the directory"
-              className="ml-auto hidden shrink-0 items-center gap-1.5 rounded-[2px] border border-ink-900/14 px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.1em] text-ink-400 transition hover:border-ink-900/30 hover:text-ink-900 sm:flex"
+            {/* A real search — native GET to the directory, which does the
+                name/tagline filter server-side. */}
+            <form
+              action="/products"
+              role="search"
+              className="ml-auto hidden shrink-0 items-center sm:flex"
             >
-              <Search className="h-3 w-3" />
-              Search
-            </Link>
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-400" />
+                <input
+                  type="search"
+                  name="q"
+                  placeholder="Search products…"
+                  aria-label="Search products"
+                  className="h-8 w-44 rounded-[3px] border border-ink-900/14 bg-paper-100 pl-8 pr-3 text-[13px] text-ink-900 outline-none transition placeholder:text-ink-400 focus:w-56 focus:border-ember-500/50"
+                />
+              </div>
+            </form>
           </nav>
         </div>
       </div>

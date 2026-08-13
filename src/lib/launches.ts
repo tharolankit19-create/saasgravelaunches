@@ -141,7 +141,13 @@ export async function getDirectory(opts: {
     .limit(opts.limit ?? 120);
 
   if (opts.category) query = query.contains("categories", [opts.category]);
-  if (opts.q) query = query.or(`name.ilike.%${opts.q}%,tagline.ilike.%${opts.q}%`);
+  if (opts.q) {
+    // Strip the characters that would break PostgREST's or()/ilike grammar
+    // (commas, parens, wildcards) — otherwise a stray one makes search look
+    // like it does nothing.
+    const safe = opts.q.replace(/[,()%*\\]/g, " ").trim().slice(0, 80);
+    if (safe) query = query.or(`name.ilike.%${safe}%,tagline.ilike.%${safe}%`);
+  }
 
   const { data } = await query;
   return (data || []) as unknown as LaunchProduct[];
@@ -255,6 +261,21 @@ export async function getSupportCount(userId: string): Promise<number> {
     console.error("getSupportCount:", e?.message || e);
     return 0;
   }
+}
+
+/**
+ * Just this week's live count — one HEAD count, nothing else. The masthead
+ * renders on every page, so it must not pull the full `getSiteStats` payload
+ * (which scans up to 5000 maker rows) on every single navigation.
+ */
+export async function getLiveWeekCount(): Promise<number> {
+  const supabase = createClient();
+  const { count } = await supabase
+    .from("launch_products")
+    .select("id", { count: "exact", head: true })
+    .eq("status", "live")
+    .eq("launch_week", currentWeekKey());
+  return count || 0;
 }
 
 /** Headline numbers for the landing page. Cheap counts, no row payloads. */

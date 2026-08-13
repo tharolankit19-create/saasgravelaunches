@@ -107,6 +107,16 @@ export async function POST(request: Request) {
     ? body.keywords.filter((k: unknown) => typeof k === "string").map((k: string) => k.trim().slice(0, 60)).slice(0, 8)
     : [];
 
+  // Screenshots the maker uploaded (public Supabase storage URLs) plus any OG
+  // image autofill seeded. Keep only our own http(s) URLs, cap at five.
+  const gallery = Array.isArray(body.gallery_urls)
+    ? body.gallery_urls
+        .filter((u: unknown): u is string => typeof u === "string")
+        .map((u: string) => normalizeUrl(u))
+        .filter((u: string | null): u is string => Boolean(u))
+        .slice(0, 5)
+    : [];
+
   const alternatives = Array.isArray(body.alternatives)
     ? body.alternatives.filter((a: unknown) => typeof a === "string").map((a: string) => a.trim().slice(0, 40)).slice(0, 3)
     : [];
@@ -137,6 +147,7 @@ export async function POST(request: Request) {
     description: text(body.description, 700),
     website_url: website,
     logo_url: normalizeUrl(body.logo_url),
+    gallery_urls: gallery,
     categories: categories.length ? categories : ["Other"],
     pricing_model: text(body.pricing_model, 20),
     who_for: text(body.who_for, 120),

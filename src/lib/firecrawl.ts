@@ -21,7 +21,10 @@ export type FirecrawlResult = {
 };
 
 const ENDPOINT = "https://api.firecrawl.dev/v1/scrape";
-const TIMEOUT_MS = 25_000;
+// Kept tight on purpose: a founder is watching the launch form while this runs.
+// If Firecrawl can't render the page in this window we fall through to the
+// built-in fetch scraper rather than making them wait.
+const TIMEOUT_MS = 12_000;
 
 export function firecrawlConfigured(): boolean {
   return Boolean(process.env.FIRECRAWL_API_KEY?.trim());
@@ -48,7 +51,7 @@ export async function firecrawlScrape(url: string): Promise<FirecrawlResult | nu
         formats: ["markdown"],
         onlyMainContent: true,
         removeBase64Images: true,
-        timeout: 20000,
+        timeout: 10000,
         blockAds: true,
       }),
       signal: controller.signal,

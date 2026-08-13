@@ -6,6 +6,7 @@ import { Sparkles, Loader2, ChevronDown, Check } from "lucide-react";
 import { toast } from "sonner";
 import { Button, Field, inputClass, Card } from "@/components/ui";
 import { ProductLogo } from "@/components/avatar";
+import { ImageUpload } from "@/components/image-upload";
 import { CopilotPanel } from "@/components/copilot-panel";
 import { CATEGORIES, PRICING_MODELS } from "@/lib/categories";
 import { cn } from "@/lib/utils";
@@ -16,6 +17,7 @@ type Draft = {
   tagline: string;
   website_url: string;
   logo_url: string;
+  gallery_urls: string[];
   description: string;
   categories: string[];
   pricing_model: string;
@@ -32,6 +34,7 @@ const EMPTY: Draft = {
   tagline: "",
   website_url: "",
   logo_url: "",
+  gallery_urls: [],
   description: "",
   categories: [],
   pricing_model: "",
@@ -116,6 +119,14 @@ export function SubmitForm({
         tagline: data.tagline || d.tagline,
         website_url: data.website_url || url,
         logo_url: data.logo_url || d.logo_url,
+        // Seed the gallery with the site's OG image only if the maker hasn't
+        // added their own screenshots yet — their uploads always win.
+        gallery_urls:
+          d.gallery_urls.length > 0
+            ? d.gallery_urls
+            : Array.isArray(data.gallery_urls)
+              ? data.gallery_urls.slice(0, 5)
+              : d.gallery_urls,
         description: data.description || d.description,
         categories: data.categories?.length ? data.categories : d.categories,
         pricing_model: data.pricing_model || d.pricing_model,
@@ -163,6 +174,7 @@ export function SubmitForm({
             .split(",")
             .map((k) => k.trim())
             .filter(Boolean),
+          gallery_urls: draft.gallery_urls,
           faq: aiFaq,
           alternatives: aiAlternatives,
         }),
@@ -301,6 +313,16 @@ export function SubmitForm({
                 className={inputClass}
               />
             </div>
+          </Field>
+
+          <Field
+            label="Screenshots"
+            hint="the founder's first impression — add at least one"
+          >
+            <ImageUpload
+              value={draft.gallery_urls}
+              onChange={(urls) => set("gallery_urls", urls)}
+            />
           </Field>
 
           <Field label="Categories" required hint="pick up to 2">

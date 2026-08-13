@@ -5,7 +5,10 @@ import { track } from "@/lib/analytics";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 30;
+// Headroom for the pathological path (Firecrawl errors → fetch fallback → the
+// full AI ladder). The per-step timeouts keep the common case to a few seconds;
+// this only stops a rare slow chain from 504-ing instead of degrading.
+export const maxDuration = 60;
 
 /**
  * Read a maker's site and draft their listing.
