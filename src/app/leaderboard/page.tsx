@@ -4,6 +4,7 @@ import { Trophy, MessageSquare, BadgeCheck, Sparkles } from "lucide-react";
 import { Card, Rubric, Empty, LinkButton } from "@/components/ui";
 import { ProductLogo } from "@/components/avatar";
 import { UpvoteButton } from "@/components/upvote-button";
+import { RankMedal } from "@/components/rank-medal";
 import { AdRail } from "@/components/ad-rail";
 import { currentUser } from "@/lib/supabase/server";
 import { getLeaderboard, getMyUpvotes, isLeaderRange, type LaunchProduct, type LeaderRange } from "@/lib/launches";
@@ -146,7 +147,7 @@ function LeaderRow({
       className="row-in relative flex items-center gap-4 border-b border-ink-900/8 px-4 py-4 transition-colors last:border-b-0 hover:bg-paper-200/50 sm:px-5"
       style={{ animationDelay: `${Math.min(index, 12) * 30}ms` }}
     >
-      <RankMedal rank={rank} />
+      <RankMedal rank={rank} index={Math.min(index, 3)} />
 
       <ProductLogo src={product.logo_url} name={product.name} size={52} />
 
@@ -193,31 +194,5 @@ function LeaderRow({
         />
       </div>
     </div>
-  );
-}
-
-/** A medal disc for the podium, a plain typeset numeral for everyone else. */
-function RankMedal({ rank }: { rank: number }) {
-  if (rank <= 3) {
-    const tone = {
-      1: "from-brass-400 to-brass-600 text-paper-50 ring-brass-500/30",
-      2: "from-paper-300 to-paper-400 text-ink-700 ring-ink-900/15",
-      3: "from-ember-400 to-ember-600 text-paper-50 ring-ember-500/30",
-    }[rank as 1 | 2 | 3];
-    return (
-      <span
-        className={cn(
-          "figure grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gradient-to-br text-[15px] font-bold shadow-card ring-2",
-          tone
-        )}
-      >
-        {rank}
-      </span>
-    );
-  }
-  return (
-    <span className="figure w-9 shrink-0 text-center text-[15px] font-semibold text-ink-400">
-      {rank}
-    </span>
   );
 }

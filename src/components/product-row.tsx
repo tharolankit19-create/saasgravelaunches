@@ -2,6 +2,7 @@ import Link from "next/link";
 import { MessageSquare, BadgeCheck, Sparkles } from "lucide-react";
 import { ProductLogo } from "@/components/avatar";
 import { UpvoteButton } from "@/components/upvote-button";
+import { RankMedal } from "@/components/rank-medal";
 import { cn } from "@/lib/utils";
 import { categorySlug } from "@/lib/categories";
 import type { LaunchProduct } from "@/lib/launches";
@@ -30,33 +31,21 @@ export function ProductRow({
   /** Set inside the paid Featured strip, where the rank isn't the point. */
   showFeaturedMark?: boolean;
 }) {
-  const rankTint = rank === 1 ? "rank-1" : rank === 2 ? "rank-2" : rank === 3 ? "rank-3" : "";
-
   return (
     <div
-      className={cn(
-        "row-in relative flex items-center gap-3 border-b border-ink-900/10 px-3 py-4 transition-colors last:border-b-0 hover:bg-paper-200/70 sm:gap-4 sm:px-5",
-        rankTint
-      )}
+      className="row-in relative flex items-center gap-3 border-b border-ink-900/10 px-3 py-4 transition-colors last:border-b-0 hover:bg-paper-200/70 sm:gap-4 sm:px-5"
       style={{ animationDelay: `${Math.min(index, 12) * 30}ms` }}
     >
-      {/* rank — a figure, not a badge */}
-      <div className="hidden w-9 shrink-0 text-center sm:block">
-        {showFeaturedMark ? (
-          <span className="font-mono text-[9px] uppercase tracking-[0.1em] text-ember-500">
-            Ad
-          </span>
-        ) : rank ? (
-          <span
-            className={cn(
-              "figure block text-lg font-semibold leading-none",
-              rank === 1 ? "text-brass-600" : rank <= 3 ? "text-ink-900" : "text-ink-400"
-            )}
-          >
-            {rank}
-          </span>
-        ) : null}
-      </div>
+      {/* rank — a medal for the podium, a numeral for the rest */}
+      {showFeaturedMark ? (
+        <span className="hidden w-11 shrink-0 text-center font-mono text-[9px] uppercase tracking-[0.1em] text-ember-500 sm:block">
+          Ad
+        </span>
+      ) : rank ? (
+        <div className="hidden shrink-0 sm:block">
+          <RankMedal rank={rank} index={Math.min(index, 3)} />
+        </div>
+      ) : null}
 
       <ProductLogo src={product.logo_url} name={product.name} size={50} />
 

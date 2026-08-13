@@ -7,6 +7,8 @@ import { CATEGORY_NAMES } from "@/lib/categories";
 import { normalizeUrl, slugify, truncate } from "@/lib/utils";
 import { currentWeekKey } from "@/lib/week";
 import { track } from "@/lib/analytics";
+import { sendEmail } from "@/lib/email";
+import { launchLiveEmail } from "@/lib/email-templates";
 
 export const dynamic = "force-dynamic";
 
@@ -178,6 +180,25 @@ export async function POST(request: Request) {
   }
 
   await track({ event: "publish_success", userId: user.id, productSlug: data.slug });
+
+  // "Your product is live." Best-effort and no-op until RESEND_API_KEY is set —
+  // never let a mail hiccup fail a launch that already succeeded.
+  if (user.email) {
+    const site = process.env.NEXT_PUBLIC_SITE_URL || "https://launches.saasgrave.org";
+    const mail = launchLiveEmail({
+      productName: name,
+      tagline,
+      productUrl: `${site}/products/${data.slug}`,
+      boardUrl: site,
+      siteUrl: site,
+    });
+    try {
+      await sendEmail({ to: user.email, subject: mail.subject, html: mail.html });
+    } catch (e: any) {
+      console.error("launch email:", e?.message || e);
+    }
+  }
+
   return NextResponse.json({ slug: data.slug });
 }
 

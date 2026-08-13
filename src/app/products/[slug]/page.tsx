@@ -23,6 +23,7 @@ import { ShareRow } from "@/components/share-row";
 import { ShareKit } from "@/components/share-kit";
 import { BadgeEmbed } from "@/components/badge-embed";
 import { CommentThread } from "@/components/comment-thread";
+import { Celebrate } from "@/components/celebrate";
 import { AdRail } from "@/components/ad-rail";
 import { currentUser, createAdminClient } from "@/lib/supabase/server";
 import {
@@ -171,43 +172,26 @@ export default async function ProductPage({
           <span className="text-ink-700">{product.name}</span>
         </nav>
 
-        {isOwner && (
-          <Card
-            className={
-              searchParams.launched
-                ? "mb-6 border-moss-500/25 bg-moss-500/6 p-5"
-                : "mb-6 p-5"
-            }
-          >
-            {searchParams.launched && (
-              <p className="mb-4 text-sm font-semibold text-ink-900">You&apos;re live. 🎉</p>
-            )}
-            <ShareKit
-              url={url}
-              name={product.name}
-              tagline={product.tagline}
-              rank={rank}
-              upvotes={product.upvote_count}
-              slug={product.slug}
-            />
-            <div className="mt-6 border-t border-ink-900/8 pt-5">
-              <BadgeEmbed slug={product.slug} siteUrl={SITE} />
-              <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2">
-                <Link
-                  href={`/embed/${product.slug}`}
-                  className="font-mono text-[10px] uppercase tracking-[0.1em] text-ember-600 hover:underline"
-                >
-                  All three live widgets →
-                </Link>
-                <Link
-                  href={`/dashboard/analytics/${product.slug}`}
-                  className="font-mono text-[10px] uppercase tracking-[0.1em] text-ember-600 hover:underline"
-                >
-                  Launch analytics →
-                </Link>
-              </div>
-            </div>
-          </Card>
+        {/* The moment it goes live: confetti + a short cheer at the top. The
+            share/manage tools are NOT here — they sit at the foot of the page,
+            below the product, so this doesn't bury the launch itself. */}
+        {isOwner && searchParams.launched && (
+          <>
+            <Celebrate />
+            <Card className="mb-6 border-moss-500/25 bg-moss-500/[0.07] p-6 text-center">
+              <p className="font-serif text-2xl font-semibold text-ink-900">You&apos;re live 🎉</p>
+              <p className="mx-auto mt-1.5 max-w-md text-sm text-ink-500">
+                {product.name} is on the board. Give it its first push — your share tools are at the
+                bottom of the page.
+              </p>
+              <a
+                href="#maker-tools"
+                className="mt-4 inline-flex items-center gap-1.5 rounded-[4px] bg-ink-900 px-4 py-2 text-[13px] font-medium text-paper-100 transition hover:bg-ember-500"
+              >
+                Share your launch ↓
+              </a>
+            </Card>
+          </>
         )}
 
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
@@ -401,6 +385,40 @@ export default async function ProductPage({
                 />
               </Card>
             </section>
+
+            {/* ── maker tools — at the foot, for the owner only ── */}
+            {isOwner && (
+              <section id="maker-tools" className="mt-8 scroll-mt-24">
+                <Rubric className="mb-3">Your launch tools</Rubric>
+                <Card className="p-6">
+                  <ShareKit
+                    url={url}
+                    name={product.name}
+                    tagline={product.tagline}
+                    rank={rank}
+                    upvotes={product.upvote_count}
+                    slug={product.slug}
+                  />
+                  <div className="mt-6 border-t border-ink-900/8 pt-5">
+                    <BadgeEmbed slug={product.slug} siteUrl={SITE} />
+                    <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2">
+                      <Link
+                        href={`/embed/${product.slug}`}
+                        className="font-mono text-[10px] uppercase tracking-[0.1em] text-ember-600 hover:underline"
+                      >
+                        All three live widgets →
+                      </Link>
+                      <Link
+                        href={`/dashboard/analytics/${product.slug}`}
+                        className="font-mono text-[10px] uppercase tracking-[0.1em] text-ember-600 hover:underline"
+                      >
+                        Launch analytics →
+                      </Link>
+                    </div>
+                  </div>
+                </Card>
+              </section>
+            )}
           </div>
 
           {/* ── rail ── */}

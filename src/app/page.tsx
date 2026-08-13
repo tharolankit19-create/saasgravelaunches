@@ -8,6 +8,7 @@ import { AdRail, FeedAd } from "@/components/ad-rail";
 import { HeroLauncher } from "@/components/hero-launcher";
 import { ProductLogo } from "@/components/avatar";
 import { NewsletterForm } from "@/components/newsletter-form";
+import { Reveal } from "@/components/reveal";
 import { currentUser } from "@/lib/supabase/server";
 import {
   getWeekBoard,
@@ -53,33 +54,45 @@ export default async function HomePage({ searchParams }: { searchParams: { w?: s
       <section className="stock border-b border-ink-900/12">
         <div className="ruled">
           <div className="hero-wash mx-auto max-w-3xl px-4 py-20 text-center sm:px-6 sm:py-28">
-            <span className="mb-7 inline-flex items-center gap-2 rounded-full border border-ink-900/12 bg-paper-100 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-500 shadow-page">
+            <span className="rise mb-7 inline-flex items-center gap-2 rounded-full border border-ink-900/12 bg-paper-100 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-500 shadow-page">
               <span className="h-1.5 w-1.5 animate-blink rounded-full bg-moss-500" />
               {weekLabel(currentWeekKey())} · {first ? "our first week" : "live now"}
             </span>
 
-            <h1 className="mx-auto max-w-2xl font-serif text-display font-semibold text-ink-900">
+            <h1
+              className="rise mx-auto max-w-2xl font-serif text-display font-semibold text-ink-900"
+              style={{ animationDelay: "70ms" }}
+            >
               Launch your SaaS.
               <br />
               <span className="text-ember-500">Get your first users.</span>
             </h1>
 
-            <p className="mx-auto mt-5 max-w-lg text-lg leading-relaxed text-ink-500">
+            <p
+              className="rise mx-auto mt-5 max-w-lg text-lg leading-relaxed text-ink-500"
+              style={{ animationDelay: "150ms" }}
+            >
               Paste your URL. We write the listing, you&apos;re on the board in a minute — with a
               dofollow backlink that lasts.
             </p>
 
-            <div className="mt-9">
+            <div className="rise mt-9" style={{ animationDelay: "230ms" }}>
               <HeroLauncher />
             </div>
 
-            <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.1em] text-ink-400">
+            <p
+              className="rise mt-4 font-mono text-[11px] uppercase tracking-[0.1em] text-ink-400"
+              style={{ animationDelay: "310ms" }}
+            >
               Free forever · no card · one minute
             </p>
 
             {/* Quiet social proof: real makers already on the board. */}
             {(winners.length > 0 || board.length > 0) && (
-              <div className="mt-10 flex items-center justify-center gap-3">
+              <div
+                className="rise mt-10 flex items-center justify-center gap-3"
+                style={{ animationDelay: "390ms" }}
+              >
                 <div className="flex -space-x-2">
                   {[...winners, ...board]
                     .slice(0, 5)
@@ -144,7 +157,7 @@ export default async function HomePage({ searchParams }: { searchParams: { w?: s
               </Card>
             )}
 
-            <Card className="overflow-hidden">
+            <Card className="overflow-hidden shadow-lift">
               <div className="border-b border-ink-900/10 bg-paper-200/60">
                 <WeekTabs week={week} />
               </div>
@@ -168,8 +181,11 @@ export default async function HomePage({ searchParams }: { searchParams: { w?: s
                   />
                 </div>
               ) : (
-                <>
-                  {board.slice(0, 3).map((p, i) => (
+                // The board is a self-contained box: the ranked list scrolls
+                // INSIDE it, the page stays put. It's a live leaderboard
+                // preview — and nothing in it is for sale.
+                <div className="board-scroll max-h-[560px] overflow-y-auto overscroll-contain">
+                  {board.map((p, i) => (
                     <ProductRow
                       key={p.id}
                       product={p}
@@ -179,27 +195,19 @@ export default async function HomePage({ searchParams }: { searchParams: { w?: s
                       signedIn={Boolean(user)}
                     />
                   ))}
-
-                  {/* The Prime slot — one banner, right below the top three. */}
-                  <FeedAd />
-
-                  {board.slice(3).map((p, i) => (
-                    <ProductRow
-                      key={p.id}
-                      product={p}
-                      rank={i + 4}
-                      index={i + 3}
-                      upvoted={myUpvotes.has(p.id)}
-                      signedIn={Boolean(user)}
-                    />
-                  ))}
-                </>
+                </div>
               )}
             </Card>
 
             <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.08em] text-ink-400">
-              Ranked by upvotes. Nothing above can be bought.
+              Ranked by upvotes. Nothing here can be bought.
             </p>
+
+            {/* The Prime slot sits OUTSIDE the ranked box — an ad is never part
+                of the leaderboard. The rail carries the sidebar slots. */}
+            <div className="mt-6">
+              <FeedAd />
+            </div>
           </div>
 
           {/* rail */}
@@ -274,8 +282,8 @@ export default async function HomePage({ searchParams }: { searchParams: { w?: s
                 body: "You're live with a permanent page and a backlink that outlasts the week.",
               },
             ].map((s, i) => (
-              <div key={s.title} className="text-center">
-                <span className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-ember-500/10 text-ember-600">
+              <Reveal key={s.title} delay={i * 110} className="text-center">
+                <span className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-ember-500/10 text-ember-600 transition-transform hover:scale-110">
                   {s.icon}
                 </span>
                 <p className="mt-4 font-mono text-[10px] text-ink-400">0{i + 1}</p>
@@ -283,7 +291,7 @@ export default async function HomePage({ searchParams }: { searchParams: { w?: s
                 <p className="mx-auto mt-2 max-w-[240px] text-[14px] leading-relaxed text-ink-500">
                   {s.body}
                 </p>
-              </div>
+              </Reveal>
             ))}
           </div>
 
@@ -316,15 +324,17 @@ export default async function HomePage({ searchParams }: { searchParams: { w?: s
 
       {/* ═══ CLOSE ═══════════════════════════════════════════ */}
       <section className="mx-auto max-w-3xl px-4 py-20 text-center sm:px-6">
-        <h2 className="font-serif text-masthead font-semibold text-ink-900">
-          {first ? "Week 1 has no history to beat." : `The top of ${weekLabel(currentWeekKey())} is open.`}
-        </h2>
-        <p className="mx-auto mt-3 max-w-md text-[15px] leading-relaxed text-ink-500">
-          One URL, one minute, a permanent page behind you.
-        </p>
-        <div className="mt-8">
-          <HeroLauncher />
-        </div>
+        <Reveal>
+          <h2 className="font-serif text-masthead font-semibold text-ink-900">
+            {first ? "Week 1 has no history to beat." : `The top of ${weekLabel(currentWeekKey())} is open.`}
+          </h2>
+          <p className="mx-auto mt-3 max-w-md text-[15px] leading-relaxed text-ink-500">
+            One URL, one minute, a permanent page behind you.
+          </p>
+          <div className="mt-8">
+            <HeroLauncher />
+          </div>
+        </Reveal>
 
         <div className="mx-auto mt-14 max-w-md border-t border-ink-900/12 pt-10">
           <Rubric className="mb-3 justify-center">The Monday digest</Rubric>
