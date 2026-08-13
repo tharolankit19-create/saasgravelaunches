@@ -53,11 +53,14 @@ const EMPTY: Draft = {
  */
 export function SubmitForm({
   canPublish,
+  gateActive,
   supported,
   threshold,
   initialUrl,
 }: {
   canPublish: boolean;
+  /** Whether the support-three gate is switched on yet (board has depth). */
+  gateActive: boolean;
   supported: number;
   threshold: number;
   /** URL carried from the landing hero — autofill fires against it on mount. */
@@ -460,7 +463,7 @@ export function SubmitForm({
 
       {/* ── publish ── */}
       <div className="sticky bottom-0 z-10 -mx-1 border-t border-ink-900/8 bg-paper-50/90 px-1 py-4 backdrop-blur">
-        {!canPublish && (
+        {gateActive && !canPublish && (
           <p className="mb-3 rounded-xl border border-brass-500/25 bg-brass-500/8 px-4 py-3 text-[13px] text-ink-700">
             Support <strong>{threshold - supported}</strong> more launch
             {threshold - supported === 1 ? "" : "es"} before you publish your own. You&apos;ve

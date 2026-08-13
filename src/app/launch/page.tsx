@@ -4,7 +4,7 @@ import { Rubric } from "@/components/ui";
 import { SubmitForm } from "@/components/submit-form";
 import { TrackOnMount } from "@/components/tracker";
 import { currentUser } from "@/lib/supabase/server";
-import { getSupportCount } from "@/lib/launches";
+import { getSupportCount, isSupportGateActive } from "@/lib/launches";
 import { SUPPORT_THRESHOLD } from "@/lib/pricing";
 import { currentWeekKey, weekLabel } from "@/lib/week";
 
@@ -27,8 +27,13 @@ export default async function LaunchPage({ searchParams }: { searchParams: { url
     redirect(`/login?next=${encodeURIComponent(next)}`);
   }
 
-  const supported = await getSupportCount(user.id);
-  const canPublish = supported >= SUPPORT_THRESHOLD;
+  const [supported, gateActive] = await Promise.all([
+    getSupportCount(user.id),
+    isSupportGateActive(),
+  ]);
+  // The support gate only applies once the board has real depth. Until then,
+  // anyone can publish freely — you can't upvote three makers who don't exist.
+  const canPublish = !gateActive || supported >= SUPPORT_THRESHOLD;
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
@@ -43,6 +48,7 @@ export default async function LaunchPage({ searchParams }: { searchParams: { url
       <div className="mt-8">
         <SubmitForm
           canPublish={canPublish}
+          gateActive={gateActive}
           supported={Math.min(supported, SUPPORT_THRESHOLD)}
           threshold={SUPPORT_THRESHOLD}
           initialUrl={searchParams.url}

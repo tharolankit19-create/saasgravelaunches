@@ -1,10 +1,80 @@
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
-import { getLiveAds, getAvailability, getFeaturedAvailability } from "@/lib/ads";
-import { PRODUCTS } from "@/lib/pricing";
+import { ArrowUpRight, Megaphone } from "lucide-react";
+import { getLiveAds, getLiveFeedAd, getAvailability, getFeaturedAvailability } from "@/lib/ads";
+import { PRODUCTS, priceDisplay } from "@/lib/pricing";
 import { AdLink } from "@/components/ad-link";
 import { Card, Rubric, Badge } from "@/components/ui";
 import { currentWeekKey, monthLabel, weekLabel } from "@/lib/week";
+
+/**
+ * The Prime slot — one sponsored banner inside the board, below the #3 launch.
+ * When it's booked it renders the buyer's creative; when it's open it renders an
+ * honest "your product here" card so the inventory is visible, never faked.
+ */
+export async function FeedAd() {
+  const ad = await getLiveFeedAd();
+
+  if (ad) {
+    return (
+      <div className="border-y-2 border-ember-500/25 bg-ember-500/[0.04]">
+        <AdLink adId={ad.id} href={ad.cta_url!} className="group flex items-center gap-4 px-4 py-4 sm:px-5">
+          <span className="hidden w-9 shrink-0 text-center font-mono text-[9px] uppercase tracking-[0.1em] text-ember-600 sm:block">
+            Ad
+          </span>
+          {ad.image_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={ad.image_url}
+              alt=""
+              className="h-11 w-11 shrink-0 rounded-[6px] border border-ink-900/8 object-cover"
+              loading="lazy"
+            />
+          ) : (
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[6px] bg-ember-500/10 text-ember-600">
+              <Megaphone className="h-5 w-5" />
+            </span>
+          )}
+          <span className="min-w-0 flex-1">
+            <span className="block font-serif text-[16px] font-semibold text-ink-900 group-hover:text-ember-600">
+              {ad.headline}
+            </span>
+            {ad.body && <span className="mt-0.5 block truncate text-[13px] text-ink-500">{ad.body}</span>}
+          </span>
+          <span className="hidden shrink-0 items-center gap-1 rounded-[4px] bg-ink-900 px-3.5 py-2 text-[13px] font-medium text-paper-100 transition group-hover:bg-ember-500 sm:inline-flex">
+            {ad.cta_label || "Visit"}
+            <ArrowUpRight className="h-3.5 w-3.5" />
+          </span>
+        </AdLink>
+      </div>
+    );
+  }
+
+  // Open — a quiet, honest for-sale strip.
+  return (
+    <Link
+      href="/pricing#slots"
+      className="group flex items-center gap-4 border-y border-dashed border-ink-900/15 bg-paper-200/40 px-4 py-4 transition hover:bg-paper-200/70 sm:px-5"
+    >
+      <span className="hidden w-9 shrink-0 text-center font-mono text-[9px] uppercase tracking-[0.1em] text-ink-400 sm:block">
+        Ad
+      </span>
+      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[6px] border border-dashed border-ink-900/20 text-ink-400">
+        <Megaphone className="h-5 w-5" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block font-serif text-[15px] font-semibold text-ink-900">
+          Your product, right here — below the top three
+        </span>
+        <span className="mt-0.5 block text-[13px] text-ink-500">
+          The most-seen spot on the board. {priceDisplay("feed")} {PRODUCTS.feed.unit}, dofollow.
+        </span>
+      </span>
+      <span className="hidden shrink-0 items-center gap-1 font-mono text-[10px] uppercase tracking-[0.1em] text-ember-600 group-hover:underline sm:inline-flex">
+        Book it <ArrowUpRight className="h-3.5 w-3.5" />
+      </span>
+    </Link>
+  );
+}
 
 /**
  * The rail beside the register. Sold slots render first; whatever's left renders
@@ -12,7 +82,7 @@ import { currentWeekKey, monthLabel, weekLabel } from "@/lib/week";
  * be full is how a directory loses advertisers.
  */
 export async function AdRail() {
-  const [ads, availability] = await Promise.all([getLiveAds(), getAvailability(1)]);
+  const [ads, availability] = await Promise.all([getLiveAds(), getAvailability("sidebar", 1)]);
   const open = availability[0]?.open ?? PRODUCTS.sidebar.slots ?? 3;
 
   return (
@@ -78,7 +148,7 @@ export async function AdRail() {
 export async function AdSlotsSection() {
   const week = currentWeekKey();
   const [sidebar, featured] = await Promise.all([
-    getAvailability(2),
+    getAvailability("sidebar", 2),
     getFeaturedAvailability(week),
   ]);
 

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
-import { getSupportCount } from "@/lib/launches";
+import { getSupportCount, isSupportGateActive } from "@/lib/launches";
 import { FREE_LAUNCHES_PER_WEEK, SUPPORT_THRESHOLD } from "@/lib/pricing";
 import { isPremium } from "@/lib/premium";
 import { CATEGORY_NAMES } from "@/lib/categories";
@@ -25,10 +25,14 @@ export async function POST(request: Request) {
   if (!body) return NextResponse.json({ error: "Nothing to publish." }, { status: 400 });
 
   // ── the one rule ──
-  // Checked here rather than only in the UI: the gate is what keeps the board
-  // honest, so it has to hold even if someone posts straight at the API.
-  const supported = await getSupportCount(user.id);
-  if (supported < SUPPORT_THRESHOLD) {
+  // The support gate only applies once the board has real depth — you can't
+  // upvote three makers who aren't there yet. Checked here, not only in the UI,
+  // so it holds even against a direct POST. Both reads run in parallel.
+  const [gateActive, supported] = await Promise.all([
+    isSupportGateActive(),
+    getSupportCount(user.id),
+  ]);
+  if (gateActive && supported < SUPPORT_THRESHOLD) {
     await track({
       event: "publish_blocked",
       userId: user.id,

@@ -1,10 +1,16 @@
-// ─── The paid rail ──────────────────────────────────────────
-// One placement, sold per calendar month, three slots. Everything here reads;
-// the only writes happen in the checkout route and the webhook.
+// ─── Paid ad placements ─────────────────────────────────────
+// Two on-board placements, both sold per calendar month:
+//   sidebar — 3 slots in the right rail
+//   feed    — 1 Prime banner inside the board, below the #3 launch
+// Everything here reads; the only writes happen in the checkout route and the
+// webhook.
 
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { monthKey, shiftMonth } from "@/lib/week";
-import { PRODUCTS, slotIndexes } from "@/lib/pricing";
+import { PRODUCTS, slotIndexes, type ProductKey } from "@/lib/pricing";
+
+/** The two monthly ad placements. */
+export type AdPlacement = "sidebar" | "feed";
 
 export type Ad = {
   id: string;
@@ -23,18 +29,24 @@ export type Ad = {
 const AD_FIELDS =
   "id, placement, month_key, slot_index, headline, body, cta_label, cta_url, image_url, active, click_count";
 
-/** Live sidebar ads for this month, in slot order. */
-export async function getLiveAds(): Promise<Ad[]> {
+/** Live ads for a placement this month, in slot order. */
+export async function getLiveAds(placement: AdPlacement = "sidebar"): Promise<Ad[]> {
   const supabase = createClient();
   const { data } = await supabase
     .from("launch_ads")
     .select(AD_FIELDS)
-    .eq("placement", "sidebar")
+    .eq("placement", placement)
     .eq("month_key", monthKey())
     .eq("active", true)
     .order("slot_index");
   // A paid slot whose creative hasn't arrived yet shouldn't render an empty box.
   return ((data || []) as Ad[]).filter((a) => a.headline && a.cta_url);
+}
+
+/** The single live Prime (in-board) banner this month, if any. */
+export async function getLiveFeedAd(): Promise<Ad | null> {
+  const [ad] = await getLiveAds("feed");
+  return ad || null;
 }
 
 export type Availability = { monthKey: string; taken: number; total: number; open: number };
@@ -59,16 +71,19 @@ function occupies(row: { active: boolean; created_at?: string | null }): boolean
   return Boolean(row.created_at && row.created_at > holdCutoff());
 }
 
-/** How many slots are left, this month and the next two. */
-export async function getAvailability(months = 3): Promise<Availability[]> {
+/** How many slots are left for a placement, this month and the next two. */
+export async function getAvailability(
+  placement: AdPlacement = "sidebar",
+  months = 3
+): Promise<Availability[]> {
   const supabase = createClient();
   const keys = Array.from({ length: months }, (_, i) => shiftMonth(monthKey(), i));
-  const total = PRODUCTS.sidebar.slots ?? 3;
+  const total = PRODUCTS[placement as ProductKey].slots ?? 1;
 
   const { data } = await supabase
     .from("launch_ads")
     .select("month_key, slot_index, active, created_at")
-    .eq("placement", "sidebar")
+    .eq("placement", placement)
     .in("month_key", keys);
 
   return keys.map((key) => {
@@ -78,13 +93,14 @@ export async function getAvailability(months = 3): Promise<Availability[]> {
 }
 
 /**
- * Claim the lowest free slot for this month.
+ * Claim the lowest free slot for a placement this month.
  *
  * The insert is the lock: `unique (placement, month_key, slot_index)` means two
  * buyers racing for the last slot can't both win — the loser gets a conflict
  * and we move to the next index, or report a genuine sell-out.
  */
 export async function claimSlot(
+  placement: AdPlacement,
   buyerId: string,
   month = monthKey()
 ): Promise<{ id: string; slotIndex: number } | null> {
@@ -96,7 +112,7 @@ export async function claimSlot(
     await admin
       .from("launch_ads")
       .delete()
-      .eq("placement", "sidebar")
+      .eq("placement", placement)
       .eq("month_key", month)
       .eq("active", false)
       .lt("created_at", holdCutoff());
@@ -104,11 +120,11 @@ export async function claimSlot(
     console.error("claimSlot: hold sweep failed (continuing):", e?.message || e);
   }
 
-  for (const slotIndex of slotIndexes("sidebar")) {
+  for (const slotIndex of slotIndexes(placement as ProductKey)) {
     const { data, error } = await admin
       .from("launch_ads")
       .insert({
-        placement: "sidebar",
+        placement,
         month_key: month,
         slot_index: slotIndex,
         buyer_id: buyerId,

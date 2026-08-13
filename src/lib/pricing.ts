@@ -12,7 +12,7 @@
 // product. There is deliberately no shared fallback: a fallback is how a $9
 // upgrade ends up charging $99.
 
-export type ProductKey = "featured" | "sidebar" | "directory" | "premium";
+export type ProductKey = "featured" | "sidebar" | "feed" | "directory" | "premium";
 
 /** How a purchase is charged, which decides how it expires. */
 export type Billing = "week" | "month" | "once" | "subscription";
@@ -20,14 +20,20 @@ export type Billing = "week" | "month" | "once" | "subscription";
 export type ProductSpec = {
   key: ProductKey;
   name: string;
+  /** Numeric price in USD — used for our own ledger only. The real charge is
+   *  whatever the linked Dodo product is configured at. */
   dollars: number;
+  /** Optional display override, for a price we want shown in another currency
+   *  (e.g. the ₹1,00,000 Prime slot). Dodo remains the source of truth for the
+   *  actual charge; this is only what the buyer reads. */
+  priceLabel?: string;
   billing: Billing;
   /** Short human unit, e.g. "/ launch week". */
   unit: string;
   /** Hard cap on concurrent slots. `null` = nothing to sell out. */
   slots: number | null;
   /** The row in `launch_ads.placement`, when this is an ad. */
-  placement: "sidebar" | null;
+  placement: "sidebar" | "feed" | null;
   /** One line: what the buyer actually gets. */
   tagline: string;
   perks: string[];
@@ -71,6 +77,27 @@ export const PRODUCTS: Record<ProductKey, ProductSpec> = {
     ],
     envKey: "DODO_PRODUCT_ID_SIDEBAR_19",
   },
+  feed: {
+    key: "feed",
+    name: "Prime Slot",
+    // Displayed in rupees per the operator's pricing; the real charge is set on
+    // the linked Dodo product. `dollars` is only our internal ledger figure.
+    dollars: 1200,
+    priceLabel: "₹1,00,000",
+    billing: "month",
+    unit: "/ month",
+    slots: 1,
+    placement: "feed",
+    tagline: "One banner inside the board, right below the top three. The single most-seen spot.",
+    perks: [
+      "A full-width sponsored card in the weekly board itself",
+      "Sits directly under the #3 launch — impossible to scroll past",
+      "Dofollow link + your logo, headline and CTA",
+      "Exclusive — one banner per month, no rotation",
+      "Click analytics in your dashboard",
+    ],
+    envKey: "DODO_PRODUCT_ID_FEED_PRIME",
+  },
   directory: {
     key: "directory",
     name: "Directory Blast",
@@ -111,7 +138,7 @@ export const PRODUCTS: Record<ProductKey, ProductSpec> = {
 };
 
 /** Display order on the pricing page: cheapest commitment first. */
-export const PRODUCT_ORDER: ProductKey[] = ["featured", "sidebar", "premium", "directory"];
+export const PRODUCT_ORDER: ProductKey[] = ["featured", "sidebar", "feed", "premium", "directory"];
 
 /** The one we steer people towards. */
 export const MOST_PICKED: ProductKey = "premium";
@@ -122,6 +149,11 @@ export function isProductKey(v: unknown): v is ProductKey {
 
 export function productCents(key: ProductKey): number {
   return PRODUCTS[key].dollars * 100;
+}
+
+/** What the buyer reads for a price — the override if set, else the dollar figure. */
+export function priceDisplay(key: ProductKey): string {
+  return PRODUCTS[key].priceLabel || `$${PRODUCTS[key].dollars}`;
 }
 
 /**
@@ -138,7 +170,9 @@ export function productEnvName(key: ProductKey): string {
 
 /** The payment `kind` a product settles into. */
 export function kindFor(key: ProductKey): string {
-  return key === "sidebar" ? "ad_sidebar" : key;
+  if (key === "sidebar") return "ad_sidebar";
+  if (key === "feed") return "ad_feed";
+  return key;
 }
 
 /** Slot indexes that exist for a placement, e.g. [1,2,3]. */
@@ -174,9 +208,12 @@ export const PREMIUM_ONLY = [
 ];
 
 /**
- * Launching costs nothing, but it isn't free of effort: you support three other
- * makers before your own launch goes live. That single rule is what keeps the
- * board from becoming a wall of drive-by submissions nobody reads — and it's
- * why the upvote counts here mean something.
+ * Support-three-makers-first is the anti-spam rule — but it can only exist once
+ * there ARE makers to support. On a board with a handful of launches, asking a
+ * founder to upvote three others before their own is impossible, so the gate
+ * stays OFF until the platform has real depth.
+ *
+ * It switches on automatically once there are at least this many live products.
  */
 export const SUPPORT_THRESHOLD = 3;
+export const SUPPORT_GATE_MIN_PRODUCTS = 60;

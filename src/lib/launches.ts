@@ -4,6 +4,7 @@
 
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { currentWeekKey, shiftWeek, type WeekKey } from "@/lib/week";
+import { SUPPORT_GATE_MIN_PRODUCTS } from "@/lib/pricing";
 
 export type Maker = {
   id: string;
@@ -216,6 +217,27 @@ export async function getMyUpvotes(productIds: string[]): Promise<Set<string>> {
     .eq("user_id", user.id)
     .in("product_id", productIds);
   return new Set((data || []).map((r: any) => r.product_id as string));
+}
+
+/**
+ * Is the support-three-makers gate switched on yet? It only makes sense once
+ * the board has real depth, so it stays off until there are enough live
+ * products to actually support. Read through the service role so the count is
+ * the true platform total, not what one visitor's RLS lets them see.
+ */
+export async function isSupportGateActive(): Promise<boolean> {
+  try {
+    const admin = createAdminClient();
+    const { count } = await admin
+      .from("launch_products")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "live");
+    return (count || 0) >= SUPPORT_GATE_MIN_PRODUCTS;
+  } catch (e: any) {
+    // Fail OPEN — a counting hiccup must not block every launch on the platform.
+    console.error("isSupportGateActive:", e?.message || e);
+    return false;
+  }
 }
 
 /**

@@ -43,11 +43,16 @@ export async function POST(request: Request) {
   // ── resolve exactly what's being bought ──
   let referenceId: string;
 
-  if (product === "sidebar") {
-    const claimed = await claimSlot(user.id);
+  if (spec.placement === "sidebar" || spec.placement === "feed") {
+    const claimed = await claimSlot(spec.placement, user.id);
     if (!claimed) {
+      const many = (spec.slots ?? 1) > 1;
       return NextResponse.json(
-        { error: `All ${spec.slots} sidebar slots are booked for ${monthKey()}. Try next month.` },
+        {
+          error: many
+            ? `All ${spec.slots} ${spec.name} slots are booked for ${monthKey()}. Try next month.`
+            : `The ${spec.name} is booked for ${monthKey()}. Try next month.`,
+        },
         { status: 409 }
       );
     }

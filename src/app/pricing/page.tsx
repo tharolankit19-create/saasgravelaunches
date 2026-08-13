@@ -6,7 +6,7 @@ import { BuyButton } from "@/components/buy-button";
 import { TrackOnMount } from "@/components/tracker";
 import { getAvailability, getFeaturedAvailability } from "@/lib/ads";
 import { getSiteStats } from "@/lib/launches";
-import { FREE_LAUNCHES_PER_WEEK, FREE_PERKS, PRODUCTS } from "@/lib/pricing";
+import { FREE_LAUNCHES_PER_WEEK, FREE_PERKS, PRODUCTS, priceDisplay } from "@/lib/pricing";
 import { currentWeekKey, monthLabel, weekLabel } from "@/lib/week";
 
 export const dynamic = "force-dynamic";
@@ -19,8 +19,9 @@ export const metadata: Metadata = {
 
 export default async function PricingPage() {
   const week = currentWeekKey();
-  const [sidebar, featured, stats] = await Promise.all([
-    getAvailability(3),
+  const [sidebar, feed, featured, stats] = await Promise.all([
+    getAvailability("sidebar", 3),
+    getAvailability("feed", 3),
     getFeaturedAvailability(week),
     getSiteStats(),
   ]);
@@ -123,10 +124,69 @@ export default async function PricingPage() {
       <section id="slots" className="mt-14 scroll-mt-32">
         <Rubric className="mb-6">Placements · live inventory</Rubric>
         <h2 className="max-w-2xl font-serif text-masthead font-semibold text-ink-900">
-          Two slots, and they genuinely run out.
+          Three placements, and they genuinely run out.
         </h2>
 
-        <div className="mt-8 grid gap-4 md:grid-cols-2">
+        {/* Prime Slot — the flagship, inside the board below the top three */}
+        <Card className="mt-8 grid gap-8 border-ember-500/40 bg-ember-500/[0.03] p-8 md:grid-cols-[1.1fr_1.2fr]">
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="font-serif text-2xl font-semibold text-ink-900">
+                {PRODUCTS.feed.name}
+              </h3>
+              <Badge tone={(feed[0]?.open ?? 0) > 0 ? "moss" : "neutral"}>
+                {(feed[0]?.open ?? 0) > 0
+                  ? `${feed[0].open} of ${feed[0].total} open`
+                  : "Booked this month"}
+              </Badge>
+            </div>
+            <p className="mt-6 flex items-baseline gap-2">
+              <span className="figure text-5xl font-semibold text-ink-900">
+                {priceDisplay("feed")}
+              </span>
+              <span className="text-sm text-ink-400">{PRODUCTS.feed.unit}</span>
+            </p>
+            <p className="mt-4 text-[14px] leading-relaxed text-ink-500">{PRODUCTS.feed.tagline}</p>
+
+            <div className="mt-6 border-t border-ink-900/10 pt-4">
+              <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-ink-400">
+                Next three months
+              </p>
+              <ul className="mt-2 space-y-1">
+                {feed.map((a) => (
+                  <li key={a.monthKey} className="flex items-center justify-between text-[12px]">
+                    <span className="text-ink-500">{monthLabel(a.monthKey)}</span>
+                    <span
+                      className={
+                        a.open === 0 ? "font-mono text-ink-400" : "font-mono text-moss-600"
+                      }
+                    >
+                      {a.open === 0 ? "booked" : `${a.open}/${a.total} open`}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <BuyButton
+              product="feed"
+              label={`Book the Prime Slot — ${priceDisplay("feed")}`}
+              variant="ink"
+              soldOut={(feed[0]?.open ?? 0) === 0}
+              className="mt-6 w-full sm:w-auto"
+            />
+          </div>
+          <ul className="grid gap-3 self-center">
+            {PRODUCTS.feed.perks.map((p) => (
+              <li key={p} className="flex items-start gap-2.5 text-[15px] text-ink-700">
+                <Check className="mt-0.5 h-4 w-4 shrink-0 text-ember-500" />
+                {p}
+              </li>
+            ))}
+          </ul>
+        </Card>
+
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
           {/* Featured — weekly */}
           <Card className="flex flex-col p-7">
             <div className="flex items-start justify-between gap-3">
@@ -286,8 +346,8 @@ export default async function PricingPage() {
               "Four things: unlimited launches instead of one a week, the full analytics dashboard with daily charts and referrers, the AI Launch Copilot on every draft, and a verified badge. It does not change your position on the board.",
             ],
             [
-              "Why do I have to upvote three products first?",
-              "Because a board where everyone submits and nobody votes is a spam list. Three upvotes takes a minute, and it's the only reason the ranking here means anything.",
+              "Do I have to upvote other products before I launch?",
+              "Not while the board is still small — right now you can launch straight away. Once there's real depth here, we ask each maker to upvote three others first, because a board where everyone submits and nobody votes is just a spam list.",
             ],
             [
               "Is Featured the same as being ranked first?",

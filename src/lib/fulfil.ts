@@ -53,7 +53,9 @@ export async function fulfilPurchase({
       }
 
       // ── $19/month · sidebar slot ──
-      case "ad_sidebar": {
+      // Both on-board ad placements activate the same way.
+      case "ad_sidebar":
+      case "ad_feed": {
         const { data: ad } = await admin
           .from("launch_ads")
           .select("id, active")

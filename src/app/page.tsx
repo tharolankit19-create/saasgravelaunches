@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { ArrowRight, Check, Clock, Link2, Sparkles, Trophy } from "lucide-react";
+import { ArrowRight, Clock, Link2, Sparkles, Trophy } from "lucide-react";
 import { Card, Rubric, LinkButton, Empty } from "@/components/ui";
 import { ProductRow } from "@/components/product-row";
 import { WeekTabs } from "@/components/week-tabs";
 import { Countdown } from "@/components/countdown";
-import { AdRail, AdSlotsSection } from "@/components/ad-rail";
+import { AdRail, FeedAd } from "@/components/ad-rail";
 import { HeroLauncher } from "@/components/hero-launcher";
 import { ProductLogo } from "@/components/avatar";
 import { NewsletterForm } from "@/components/newsletter-form";
@@ -25,7 +25,7 @@ import {
   weekLabel,
   weekRangeLabel,
 } from "@/lib/week";
-import { FREE_PERKS, PREMIUM_ONLY, PRODUCTS } from "@/lib/pricing";
+import { PRODUCTS } from "@/lib/pricing";
 
 export const dynamic = "force-dynamic";
 
@@ -168,16 +168,32 @@ export default async function HomePage({ searchParams }: { searchParams: { w?: s
                   />
                 </div>
               ) : (
-                board.map((p, i) => (
-                  <ProductRow
-                    key={p.id}
-                    product={p}
-                    rank={i + 1}
-                    index={i}
-                    upvoted={myUpvotes.has(p.id)}
-                    signedIn={Boolean(user)}
-                  />
-                ))
+                <>
+                  {board.slice(0, 3).map((p, i) => (
+                    <ProductRow
+                      key={p.id}
+                      product={p}
+                      rank={i + 1}
+                      index={i}
+                      upvoted={myUpvotes.has(p.id)}
+                      signedIn={Boolean(user)}
+                    />
+                  ))}
+
+                  {/* The Prime slot — one banner, right below the top three. */}
+                  <FeedAd />
+
+                  {board.slice(3).map((p, i) => (
+                    <ProductRow
+                      key={p.id}
+                      product={p}
+                      rank={i + 4}
+                      index={i + 3}
+                      upvoted={myUpvotes.has(p.id)}
+                      signedIn={Boolean(user)}
+                    />
+                  ))}
+                </>
               )}
             </Card>
 
@@ -249,8 +265,8 @@ export default async function HomePage({ searchParams }: { searchParams: { w?: s
               },
               {
                 icon: <Sparkles className="h-5 w-5" />,
-                title: "Upvote 3 makers",
-                body: "Support the board before you join it. That's why the votes mean something.",
+                title: "Review the draft",
+                body: "Fix the tagline, add a screenshot. Two minutes and it reads like you wrote it.",
               },
               {
                 icon: <Trophy className="h-5 w-5" />,
@@ -279,87 +295,22 @@ export default async function HomePage({ searchParams }: { searchParams: { w?: s
         </div>
       </section>
 
-      {/* ═══ WHAT IT COSTS — free vs premium ═════════════════ */}
-      <section className="mx-auto max-w-5xl px-4 py-16 sm:px-6 sm:py-20">
-        <div className="mx-auto max-w-lg text-center">
-          <Rubric className="mb-4 justify-center">What it costs</Rubric>
-          <h2 className="font-serif text-masthead font-semibold text-ink-900">
-            Launching is free. It stays free.
-          </h2>
-          <p className="mt-3 text-[15px] leading-relaxed text-ink-500">
-            Money comes from sponsor slots, not from you.
-          </p>
-        </div>
-
-        <div className="mt-10 grid gap-4 md:grid-cols-2">
-          <Card className="p-7">
-            <div className="flex items-baseline justify-between gap-3">
-              <h3 className="font-serif text-xl font-semibold text-ink-900">Free</h3>
-              <span className="figure text-2xl font-semibold text-ink-900">$0</span>
-            </div>
-            <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-ink-400">
-              forever · one launch a week
-            </p>
-            <ul className="mt-5 space-y-2.5">
-              {FREE_PERKS.slice(0, 4).map((p) => (
-                <li key={p} className="flex items-start gap-2.5 text-[14px] text-ink-700">
-                  <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-moss-500" />
-                  {p}
-                </li>
-              ))}
-            </ul>
-          </Card>
-
-          <Card className="border-brass-500/35 p-7">
-            <div className="flex items-baseline justify-between gap-3">
-              <h3 className="font-serif text-xl font-semibold text-ink-900">
-                {PRODUCTS.premium.name}
-              </h3>
-              <span className="figure text-2xl font-semibold text-ink-900">
-                ${PRODUCTS.premium.dollars}
-                <span className="ml-1 text-[13px] font-normal text-ink-400">/mo</span>
-              </span>
-            </div>
-            <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-ink-400">
-              cancel any time
-            </p>
-            <ul className="mt-5 space-y-2.5">
-              {PREMIUM_ONLY.map((p) => (
-                <li key={p} className="flex items-start gap-2.5 text-[14px] text-ink-700">
-                  <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brass-500" />
-                  {p}
-                </li>
-              ))}
-            </ul>
-          </Card>
-        </div>
-
-        <div className="mt-6 text-center">
-          <Link
-            href="/pricing"
-            className="inline-flex items-center gap-1 font-mono text-[11px] uppercase tracking-[0.1em] text-ember-600 hover:underline"
-          >
-            Full pricing — Featured, sidebar, directory blast <ArrowRight className="h-3 w-3" />
-          </Link>
-        </div>
-      </section>
-
-      {/* ═══ ADVERTISE ═══════════════════════════════════════ */}
-      <section id="advertise" className="border-y border-ink-900/12 bg-paper-100">
-        <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6 sm:py-20">
-          <div className="mx-auto max-w-lg text-center">
-            <Rubric className="mb-4 justify-center">Advertise</Rubric>
-            <h2 className="font-serif text-masthead font-semibold text-ink-900">
-              Two slots. Real scarcity.
+      {/* ═══ PRICING POINTER — the detail lives on /pricing ══ */}
+      <section className="border-y border-ink-900/12 bg-paper-100">
+        <div className="mx-auto flex max-w-4xl flex-col items-center gap-6 px-4 py-14 text-center sm:flex-row sm:justify-between sm:px-6 sm:text-left">
+          <div>
+            <Rubric className="mb-3 justify-center sm:justify-start">Pricing</Rubric>
+            <h2 className="font-serif text-section font-semibold text-ink-900">
+              Free to launch. Pay only to stand out.
             </h2>
-            <p className="mt-3 text-[15px] leading-relaxed text-ink-500">
-              Dofollow, sold by the week or the month. Live inventory below.
+            <p className="mt-2 max-w-md text-[14px] leading-relaxed text-ink-500">
+              Premium is ${PRODUCTS.premium.dollars}/mo for unlimited launches, analytics and the AI
+              Copilot. Ad slots and the directory blast are on the pricing page.
             </p>
           </div>
-
-          <div className="mt-10">
-            <AdSlotsSection />
-          </div>
+          <LinkButton href="/pricing" size="lg" variant="outline" className="shrink-0 gap-2">
+            See pricing <ArrowRight className="h-4 w-4" />
+          </LinkButton>
         </div>
       </section>
 
