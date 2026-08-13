@@ -23,10 +23,6 @@ export type ProductSpec = {
   /** Numeric price in USD — used for our own ledger only. The real charge is
    *  whatever the linked Dodo product is configured at. */
   dollars: number;
-  /** Optional display override, for a price we want shown in another currency
-   *  (e.g. the ₹1,00,000 Prime slot). Dodo remains the source of truth for the
-   *  actual charge; this is only what the buyer reads. */
-  priceLabel?: string;
   billing: Billing;
   /** Short human unit, e.g. "/ launch week". */
   unit: string;
@@ -80,10 +76,7 @@ export const PRODUCTS: Record<ProductKey, ProductSpec> = {
   feed: {
     key: "feed",
     name: "Prime Slot",
-    // Displayed in rupees per the operator's pricing; the real charge is set on
-    // the linked Dodo product. `dollars` is only our internal ledger figure.
-    dollars: 1200,
-    priceLabel: "₹1,00,000",
+    dollars: 29,
     billing: "month",
     unit: "/ month",
     slots: 1,
@@ -151,9 +144,9 @@ export function productCents(key: ProductKey): number {
   return PRODUCTS[key].dollars * 100;
 }
 
-/** What the buyer reads for a price — the override if set, else the dollar figure. */
+/** What the buyer reads for a price. */
 export function priceDisplay(key: ProductKey): string {
-  return PRODUCTS[key].priceLabel || `$${PRODUCTS[key].dollars}`;
+  return `$${PRODUCTS[key].dollars}`;
 }
 
 /**
