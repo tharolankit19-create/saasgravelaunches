@@ -33,10 +33,12 @@ export function UpvoteButton({
   const [bump, setBump] = useState(false);
 
   const dims = {
-    sm: "w-11 py-1 text-[11px]",
-    md: "w-13 py-1.5 text-[12px]",
-    lg: "w-16 py-2.5 text-sm",
+    sm: "w-11 py-1 text-[11px] gap-0",
+    md: "w-14 py-2 text-[13px] gap-0.5",
+    lg: "w-[68px] py-3.5 text-lg gap-1",
   }[size];
+
+  const icon = { sm: "h-4 w-4", md: "h-4 w-4", lg: "h-5 w-5" }[size];
 
   async function toggle() {
     if (!signedIn) {
@@ -75,16 +77,16 @@ export function UpvoteButton({
       aria-pressed={state.upvoted}
       aria-label={state.upvoted ? "Remove upvote" : "Upvote"}
       className={cn(
-        "group flex shrink-0 flex-col items-center justify-center gap-0 rounded-[3px] border transition-all active:translate-y-px",
+        "group flex shrink-0 flex-col items-center justify-center rounded-lg border transition-all active:translate-y-px",
         dims,
         state.upvoted
-          ? "border-ember-500/40 bg-ember-500/10 text-ember-600"
-          : "border-ink-900/16 bg-paper-100 text-ink-700 hover:border-ember-500/50 hover:bg-ember-500/5 hover:text-ember-600"
+          ? "border-ember-500/50 bg-ember-500/12 text-ember-600 shadow-[0_1px_0_rgba(242,103,30,0.15)]"
+          : "border-ink-900/16 bg-paper-100 text-ink-700 hover:-translate-y-px hover:border-ember-500/50 hover:bg-ember-500/5 hover:text-ember-600 hover:shadow-card"
       )}
     >
       <ChevronUp
-        className={cn("h-4 w-4 transition-transform group-hover:-translate-y-px", bump && "animate-pop")}
-        strokeWidth={2.5}
+        className={cn(icon, "transition-transform group-hover:-translate-y-px", bump && "animate-pop")}
+        strokeWidth={2.75}
       />
       <span className={cn("figure font-semibold leading-none", bump && "animate-pop")}>
         {state.count}

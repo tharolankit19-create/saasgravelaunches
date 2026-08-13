@@ -126,6 +126,43 @@ export async function getAllTimeTop(limit = 50): Promise<LaunchProduct[]> {
   return (data || []) as unknown as LaunchProduct[];
 }
 
+export type LeaderRange = "week" | "month" | "all";
+
+export function isLeaderRange(v: unknown): v is LeaderRange {
+  return v === "week" || v === "month" || v === "all";
+}
+
+/**
+ * The leaderboard, over a chosen window. Ranking is always upvotes then who
+ * launched first — the same formula the board uses; only the window changes.
+ *   week  — this ISO week's board
+ *   month — everything launched in the last ~31 days
+ *   all   — every live launch, all time
+ */
+export async function getLeaderboard(range: LeaderRange, limit = 50): Promise<LaunchProduct[]> {
+  if (range === "week") {
+    const board = await getWeekBoard(currentWeekKey());
+    return board.slice(0, limit);
+  }
+
+  const supabase = createClient();
+  let query = supabase
+    .from("launch_products")
+    .select(WITH_MAKER)
+    .eq("status", "live")
+    .order("upvote_count", { ascending: false })
+    .order("launched_at", { ascending: true })
+    .limit(limit);
+
+  if (range === "month") {
+    const since = new Date(Date.now() - 31 * 86_400_000).toISOString();
+    query = query.gte("launched_at", since);
+  }
+
+  const { data } = await query;
+  return (data || []) as unknown as LaunchProduct[];
+}
+
 /** The directory — every live launch, newest first, optionally filtered. */
 export async function getDirectory(opts: {
   category?: string;
