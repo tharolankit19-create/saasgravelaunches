@@ -33,7 +33,7 @@ export async function AdRail() {
                 />
               ) : null}
               <div className="min-w-0">
-                <p className="font-serif text-[15px] font-semibold leading-tight text-ink-900 group-hover:text-oxblood-600">
+                <p className="font-serif text-[15px] font-semibold leading-tight text-ink-900 group-hover:text-ember-600">
                   {ad.headline}
                 </p>
                 {ad.body && (
@@ -41,7 +41,7 @@ export async function AdRail() {
                 )}
               </div>
             </div>
-            <span className="mt-3 inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.1em] text-oxblood-600">
+            <span className="mt-3 inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.1em] text-ember-600">
               {ad.cta_label || "Visit"}
               <ArrowUpRight className="h-3 w-3" />
             </span>
@@ -59,7 +59,7 @@ export async function AdRail() {
           </p>
           <Link
             href="/pricing#slots"
-            className="mt-3 inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.1em] text-oxblood-600 hover:underline"
+            className="mt-3 inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.1em] text-ember-600 hover:underline"
           >
             ${PRODUCTS.sidebar.dollars}/month <ArrowUpRight className="h-3 w-3" />
           </Link>
@@ -124,7 +124,7 @@ export async function AdSlotsSection() {
 
           <Link
             href="/pricing#slots"
-            className="mt-4 inline-flex items-center justify-center gap-1.5 rounded-[3px] border border-ink-900/18 px-4 py-2 font-mono text-[11px] uppercase tracking-[0.1em] text-ink-900 transition hover:border-oxblood-500/50 hover:text-oxblood-600"
+            className="mt-4 inline-flex items-center justify-center gap-1.5 rounded-[3px] border border-ink-900/18 px-4 py-2 font-mono text-[11px] uppercase tracking-[0.1em] text-ink-900 transition hover:border-ember-500/50 hover:text-ember-600"
           >
             {open > 0 ? "Book this slot" : "Join the waitlist"}
             <ArrowUpRight className="h-3.5 w-3.5" />

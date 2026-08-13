@@ -43,7 +43,7 @@ export function ProductRow({
       {/* rank — a figure, not a badge */}
       <div className="hidden w-9 shrink-0 text-center sm:block">
         {showFeaturedMark ? (
-          <span className="font-mono text-[9px] uppercase tracking-[0.1em] text-oxblood-500">
+          <span className="font-mono text-[9px] uppercase tracking-[0.1em] text-ember-500">
             Ad
           </span>
         ) : rank ? (
@@ -64,7 +64,7 @@ export function ProductRow({
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <Link
             href={`/products/${product.slug}`}
-            className="font-serif text-[17px] font-semibold leading-tight tracking-tight text-ink-900 hover:text-oxblood-600"
+            className="font-serif text-[17px] font-semibold leading-tight tracking-tight text-ink-900 hover:text-ember-600"
           >
             {product.name}
             {/* Stretches the hit area over the row without trapping nested links. */}
@@ -77,7 +77,7 @@ export function ProductRow({
           )}
           {product.featured && (
             <span title="Editor's pick" className="inline-flex">
-              <Sparkles className="h-3.5 w-3.5 text-oxblood-500" aria-label="Editor's pick" />
+              <Sparkles className="h-3.5 w-3.5 text-ember-500" aria-label="Editor's pick" />
             </span>
           )}
         </div>
@@ -93,7 +93,7 @@ export function ProductRow({
             <Link
               key={c}
               href={`/categories/${categorySlug(c)}`}
-              className="hover:text-oxblood-600"
+              className="hover:text-ember-600"
             >
               {c}
             </Link>

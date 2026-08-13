@@ -52,8 +52,8 @@ export default async function HomePage({ searchParams }: { searchParams: { w?: s
       {/* ═══ HERO — one headline, one action, centered ═══════ */}
       <section className="stock border-b border-ink-900/12">
         <div className="ruled">
-          <div className="mx-auto max-w-3xl px-4 py-20 text-center sm:px-6 sm:py-28">
-            <span className="mb-7 inline-flex items-center gap-2 rounded-full border border-ink-900/12 bg-paper-100 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-500">
+          <div className="hero-wash mx-auto max-w-3xl px-4 py-20 text-center sm:px-6 sm:py-28">
+            <span className="mb-7 inline-flex items-center gap-2 rounded-full border border-ink-900/12 bg-paper-100 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-500 shadow-page">
               <span className="h-1.5 w-1.5 animate-blink rounded-full bg-moss-500" />
               {weekLabel(currentWeekKey())} · {first ? "our first week" : "live now"}
             </span>
@@ -61,7 +61,7 @@ export default async function HomePage({ searchParams }: { searchParams: { w?: s
             <h1 className="mx-auto max-w-2xl font-serif text-display font-semibold text-ink-900">
               Launch your SaaS.
               <br />
-              <span className="text-oxblood-500">Get your first users.</span>
+              <span className="text-ember-500">Get your first users.</span>
             </h1>
 
             <p className="mx-auto mt-5 max-w-lg text-lg leading-relaxed text-ink-500">
@@ -76,6 +76,30 @@ export default async function HomePage({ searchParams }: { searchParams: { w?: s
             <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.1em] text-ink-400">
               Free forever · no card · one minute
             </p>
+
+            {/* Quiet social proof: real makers already on the board. */}
+            {(winners.length > 0 || board.length > 0) && (
+              <div className="mt-10 flex items-center justify-center gap-3">
+                <div className="flex -space-x-2">
+                  {[...winners, ...board]
+                    .slice(0, 5)
+                    .map((p) => (
+                      <span
+                        key={p.id}
+                        className="rounded-full ring-2 ring-paper-50"
+                        title={p.name}
+                      >
+                        <ProductLogo src={p.logo_url} name={p.name} size={30} />
+                      </span>
+                    ))}
+                </div>
+                <span className="text-[13px] text-ink-500">
+                  <strong className="text-ink-900">{stats.liveTotal}</strong> products ·{" "}
+                  <strong className="text-ink-900">{stats.makers}</strong> makers ·{" "}
+                  <strong className="text-ink-900">{stats.upvotes}</strong> upvotes
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -103,8 +127,8 @@ export default async function HomePage({ searchParams }: { searchParams: { w?: s
             </div>
 
             {featured.length > 0 && (
-              <Card className="mb-4 overflow-hidden border-oxblood-500/25">
-                <p className="border-b border-ink-900/10 bg-oxblood-500/5 px-5 py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-oxblood-600">
+              <Card className="mb-4 overflow-hidden border-ember-500/25">
+                <p className="border-b border-ink-900/10 bg-ember-500/5 px-5 py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ember-600">
                   Featured · paid placement · does not affect the ranking below
                 </p>
                 {featured.map((p, i) => (
@@ -185,7 +209,7 @@ export default async function HomePage({ searchParams }: { searchParams: { w?: s
                       <span className="figure w-4 text-sm font-semibold text-ink-400">{i + 1}</span>
                       <ProductLogo src={p.logo_url} name={p.name} size={30} />
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate font-serif text-[14px] font-semibold text-ink-900 group-hover:text-oxblood-600">
+                        <span className="block truncate font-serif text-[14px] font-semibold text-ink-900 group-hover:text-ember-600">
                           {p.name}
                         </span>
                         <span className="block truncate text-[12px] text-ink-400">{p.tagline}</span>
@@ -197,7 +221,7 @@ export default async function HomePage({ searchParams }: { searchParams: { w?: s
               )}
               <Link
                 href="/leaderboard"
-                className="mt-3 inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.1em] text-oxblood-600 hover:underline"
+                className="mt-3 inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.1em] text-ember-600 hover:underline"
               >
                 Full leaderboard <ArrowRight className="h-3 w-3" />
               </Link>
@@ -235,7 +259,7 @@ export default async function HomePage({ searchParams }: { searchParams: { w?: s
               },
             ].map((s, i) => (
               <div key={s.title} className="text-center">
-                <span className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-oxblood-500/10 text-oxblood-600">
+                <span className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-ember-500/10 text-ember-600">
                   {s.icon}
                 </span>
                 <p className="mt-4 font-mono text-[10px] text-ink-400">0{i + 1}</p>
@@ -313,7 +337,7 @@ export default async function HomePage({ searchParams }: { searchParams: { w?: s
         <div className="mt-6 text-center">
           <Link
             href="/pricing"
-            className="inline-flex items-center gap-1 font-mono text-[11px] uppercase tracking-[0.1em] text-oxblood-600 hover:underline"
+            className="inline-flex items-center gap-1 font-mono text-[11px] uppercase tracking-[0.1em] text-ember-600 hover:underline"
           >
             Full pricing — Featured, sidebar, directory blast <ArrowRight className="h-3 w-3" />
           </Link>

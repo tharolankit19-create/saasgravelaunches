@@ -60,7 +60,7 @@ export function Footer() {
           <p>© {new Date().getFullYear()} Saasgrave Launches. Built for makers who ship.</p>
           <p>
             Part of{" "}
-            <a href={SAASGRAVE} className="text-ink-700 hover:text-oxblood-600">
+            <a href={SAASGRAVE} className="text-ink-700 hover:text-ember-600">
               Saasgrave
             </a>
             .
@@ -85,11 +85,11 @@ function FooterCol({
         {links.map((l) => (
           <li key={l.href + l.label}>
             {l.external ? (
-              <a href={l.href} className="text-[13px] text-ink-500 transition hover:text-oxblood-600">
+              <a href={l.href} className="text-[13px] text-ink-500 transition hover:text-ember-600">
                 {l.label}
               </a>
             ) : (
-              <Link href={l.href} className="text-[13px] text-ink-500 transition hover:text-oxblood-600">
+              <Link href={l.href} className="text-[13px] text-ink-500 transition hover:text-ember-600">
                 {l.label}
               </Link>
             )}

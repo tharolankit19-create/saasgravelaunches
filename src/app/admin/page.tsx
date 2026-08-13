@@ -65,7 +65,7 @@ export default async function AdminPage({ searchParams }: { searchParams: { days
                   "p-5",
                   f.severity === "critical" && "border-l-4 border-l-red-500/70",
                   f.severity === "warn" && "border-l-4 border-l-brass-500/70",
-                  f.severity === "info" && "border-l-4 border-l-oxblood-500/50"
+                  f.severity === "info" && "border-l-4 border-l-ember-500/50"
                 )}
               >
                 <div className="flex items-start gap-3">
@@ -74,7 +74,7 @@ export default async function AdminPage({ searchParams }: { searchParams: { days
                       "mt-0.5",
                       f.severity === "critical" && "text-red-600",
                       f.severity === "warn" && "text-brass-600",
-                      f.severity === "info" && "text-oxblood-600"
+                      f.severity === "info" && "text-ember-600"
                     )}
                   >
                     {f.severity === "critical" ? (
@@ -132,7 +132,7 @@ export default async function AdminPage({ searchParams }: { searchParams: { days
               </div>
               <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-paper-300">
                 <div
-                  className="h-full rounded-full bg-oxblood-500"
+                  className="h-full rounded-full bg-ember-500"
                   style={{ width: `${Math.max(1, step.totalRate * 100)}%` }}
                 />
               </div>
@@ -182,7 +182,7 @@ export default async function AdminPage({ searchParams }: { searchParams: { days
                 <div key={d.day} className="flex flex-1 flex-col items-center gap-1.5">
                   <div
                     title={`${d.day}: ${d.sessions} sessions`}
-                    className="w-full rounded-t bg-oxblood-500/70"
+                    className="w-full rounded-t bg-ember-500/70"
                     style={{ height: `${Math.max(2, (d.sessions / maxSessions) * 100)}%` }}
                   />
                   <span className="text-[9px] text-ink-400">{d.day.slice(8)}</span>
@@ -234,7 +234,7 @@ export default async function AdminPage({ searchParams }: { searchParams: { days
                 <div key={p.slug} className="flex items-center justify-between gap-3 p-3.5">
                   <a
                     href={`/products/${p.slug}`}
-                    className="truncate text-[13px] text-ink-700 hover:text-oxblood-600"
+                    className="truncate text-[13px] text-ink-700 hover:text-ember-600"
                   >
                     {p.slug}
                   </a>

@@ -75,7 +75,7 @@ export default async function CheckoutSuccessPage({
 
         <p className="mt-6 text-[12px] text-ink-400">
           Something wrong?{" "}
-          <Link href="/pricing" className="text-oxblood-600 hover:underline">
+          <Link href="/pricing" className="text-ember-600 hover:underline">
             See what you bought
           </Link>{" "}
           or reply to your receipt email.

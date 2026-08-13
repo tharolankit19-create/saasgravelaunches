@@ -74,7 +74,7 @@ export function CommentThread({
               <button
                 type="button"
                 onClick={() => setReplyTo(null)}
-                className="font-medium text-oxblood-600 hover:underline"
+                className="font-medium text-ember-600 hover:underline"
               >
                 cancel
               </button>
@@ -99,7 +99,7 @@ export function CommentThread({
         <div className="mb-6 rounded-xl border border-dashed border-ink-900/12 bg-paper-200/50 px-4 py-4 text-sm text-ink-500">
           <Link
             href={`/login?next=${encodeURIComponent(`/products/${slug}`)}`}
-            className="font-medium text-oxblood-600 hover:underline"
+            className="font-medium text-ember-600 hover:underline"
           >
             Sign in
           </Link>{" "}
@@ -119,7 +119,7 @@ export function CommentThread({
               {signedIn && (
                 <button
                   onClick={() => setReplyTo(c.id)}
-                  className="ml-11 mt-1 text-[12px] font-medium text-ink-400 hover:text-oxblood-600"
+                  className="ml-11 mt-1 text-[12px] font-medium text-ink-400 hover:text-ember-600"
                 >
                   Reply
                 </button>
@@ -158,12 +158,12 @@ function CommentBody({
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href={`/makers/${comment.author_id}`}
-            className="text-[13px] font-semibold text-ink-900 hover:text-oxblood-600"
+            className="text-[13px] font-semibold text-ink-900 hover:text-ember-600"
           >
             {author?.full_name || "A maker"}
           </Link>
           {isMaker && (
-            <span className="rounded-full border border-oxblood-500/20 bg-oxblood-500/8 px-2 py-0.5 text-[10px] font-medium text-oxblood-600">
+            <span className="rounded-full border border-ember-500/20 bg-ember-500/8 px-2 py-0.5 text-[10px] font-medium text-ember-600">
               Maker
             </span>
           )}

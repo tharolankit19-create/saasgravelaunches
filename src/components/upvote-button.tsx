@@ -78,8 +78,8 @@ export function UpvoteButton({
         "group flex shrink-0 flex-col items-center justify-center gap-0 rounded-[3px] border transition-all active:translate-y-px",
         dims,
         state.upvoted
-          ? "border-oxblood-500/40 bg-oxblood-500/10 text-oxblood-600"
-          : "border-ink-900/16 bg-paper-100 text-ink-700 hover:border-oxblood-500/50 hover:bg-oxblood-500/5 hover:text-oxblood-600"
+          ? "border-ember-500/40 bg-ember-500/10 text-ember-600"
+          : "border-ink-900/16 bg-paper-100 text-ink-700 hover:border-ember-500/50 hover:bg-ember-500/5 hover:text-ember-600"
       )}
     >
       <ChevronUp

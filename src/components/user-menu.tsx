@@ -42,7 +42,7 @@ export function UserMenu({
         onClick={() => setOpen((o) => !o)}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="rounded-full ring-offset-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-oxblood-500/40"
+        className="rounded-full ring-offset-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ember-500/40"
       >
         <Avatar src={avatarUrl} name={name} size={34} />
       </button>

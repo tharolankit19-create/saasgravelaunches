@@ -54,7 +54,7 @@ export default async function DirectoryPage({
               <Link
                 key={c.slug}
                 href={`/categories/${c.slug}`}
-                className="rounded-full border border-ink-900/10 bg-paper-100 px-3 py-1.5 text-[13px] font-medium text-ink-500 transition hover:border-oxblood-500/40 hover:text-oxblood-600"
+                className="rounded-full border border-ink-900/10 bg-paper-100 px-3 py-1.5 text-[13px] font-medium text-ink-500 transition hover:border-ember-500/40 hover:text-ember-600"
               >
                 {c.name}
               </Link>

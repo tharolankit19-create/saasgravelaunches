@@ -164,7 +164,7 @@ export default async function ProductPage({
 
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         <nav className="mb-5 flex items-center gap-1.5 text-[12px] text-ink-400">
-          <Link href="/products" className="hover:text-oxblood-600">
+          <Link href="/products" className="hover:text-ember-600">
             Products
           </Link>
           <span>/</span>
@@ -195,13 +195,13 @@ export default async function ProductPage({
               <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2">
                 <Link
                   href={`/embed/${product.slug}`}
-                  className="font-mono text-[10px] uppercase tracking-[0.1em] text-oxblood-600 hover:underline"
+                  className="font-mono text-[10px] uppercase tracking-[0.1em] text-ember-600 hover:underline"
                 >
                   All three live widgets →
                 </Link>
                 <Link
                   href={`/dashboard/analytics/${product.slug}`}
-                  className="font-mono text-[10px] uppercase tracking-[0.1em] text-oxblood-600 hover:underline"
+                  className="font-mono text-[10px] uppercase tracking-[0.1em] text-ember-600 hover:underline"
                 >
                   Launch analytics →
                 </Link>
@@ -231,7 +231,7 @@ export default async function ProductPage({
                       </Badge>
                     )}
                     {product.featured && (
-                      <Badge tone="oxblood">
+                      <Badge tone="orange">
                         <Sparkles className="h-3 w-3" /> Editor&apos;s pick
                       </Badge>
                     )}
@@ -249,7 +249,7 @@ export default async function ProductPage({
                       <Link
                         key={c}
                         href={`/categories/${categorySlug(c)}`}
-                        className="inline-flex items-center gap-1 hover:text-oxblood-600"
+                        className="inline-flex items-center gap-1 hover:text-ember-600"
                       >
                         <Tag className="h-3 w-3" />
                         {c}
@@ -341,7 +341,7 @@ export default async function ProductPage({
                 <Card className="divide-y divide-ink-900/8">
                   {overview.map((o) => (
                     <div key={o.label} className="flex gap-4 p-5">
-                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-oxblood-500/8 text-oxblood-600">
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-ember-500/8 text-ember-600">
                         {o.icon}
                       </span>
                       <div>
@@ -376,13 +376,13 @@ export default async function ProductPage({
               <Rubric className="mb-3">Discussion · {product.comment_count}</Rubric>
               <Card className="p-6">
                 {product.maker_note && (
-                  <div className="mb-6 rounded-xl border border-oxblood-500/20 bg-oxblood-500/6 p-4">
+                  <div className="mb-6 rounded-xl border border-ember-500/20 bg-ember-500/6 p-4">
                     <div className="flex items-center gap-2">
                       <Avatar src={maker?.avatar_url} name={maker?.full_name} size={26} />
                       <span className="text-[13px] font-semibold text-ink-900">
                         {maker?.full_name || "The maker"}
                       </span>
-                      <span className="rounded-full border border-oxblood-500/20 bg-paper-100 px-2 py-0.5 text-[10px] font-medium text-oxblood-600">
+                      <span className="rounded-full border border-ember-500/20 bg-paper-100 px-2 py-0.5 text-[10px] font-medium text-ember-600">
                         Maker
                       </span>
                     </div>
@@ -413,7 +413,7 @@ export default async function ProductPage({
                 <Link href={`/makers/${maker.id}`} className="group mt-3 flex items-center gap-3">
                   <Avatar src={maker.avatar_url} name={maker.full_name} size={44} />
                   <span className="min-w-0">
-                    <span className="block truncate text-sm font-semibold text-ink-900 group-hover:text-oxblood-600">
+                    <span className="block truncate text-sm font-semibold text-ink-900 group-hover:text-ember-600">
                       {maker.full_name || "A maker"}
                     </span>
                     {maker.maker_headline && (
@@ -431,7 +431,7 @@ export default async function ProductPage({
                     href={`https://x.com/${maker.x_handle.replace(/^@/, "")}`}
                     target="_blank"
                     rel="noopener"
-                    className="mt-3 inline-block text-[12px] font-medium text-oxblood-600 hover:underline"
+                    className="mt-3 inline-block text-[12px] font-medium text-ember-600 hover:underline"
                   >
                     @{maker.x_handle.replace(/^@/, "")} on X
                   </a>
@@ -452,7 +452,7 @@ export default async function ProductPage({
                       <Link href={`/products/${p.slug}`} className="group flex items-center gap-3">
                         <ProductLogo src={p.logo_url} name={p.name} size={32} />
                         <span className="min-w-0 flex-1">
-                          <span className="block truncate text-[13px] font-semibold text-ink-900 group-hover:text-oxblood-600">
+                          <span className="block truncate text-[13px] font-semibold text-ink-900 group-hover:text-ember-600">
                             {p.name}
                           </span>
                           <span className="block truncate text-[12px] text-ink-400">{p.tagline}</span>

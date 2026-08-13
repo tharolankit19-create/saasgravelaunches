@@ -19,7 +19,7 @@ html {
 }
 
 body {
-  background-color: #f6f4ef;
+  background-color: #faf7f1;
   color: #17150f;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -32,7 +32,7 @@ body {
 }
 
 ::selection {
-  background: rgba(140, 35, 35, 0.16);
+  background: rgba(242, 103, 30, 0.16);
   color: #17150f;
 }
 
@@ -41,30 +41,55 @@ body {
   height: 11px;
 }
 ::-webkit-scrollbar-track {
-  background: #edeae2;
+  background: #f4efe6;
 }
 ::-webkit-scrollbar-thumb {
-  background: #d3cec2;
-  border: 3px solid #edeae2;
+  background: #e9e2d5;
+  border: 3px solid #f4efe6;
   border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #beb8a9;
+  background: #dcd3c3;
 }
 
 /* ── Paper ──────────────────────────────────────────────────
-   A faint fibre tint. Two very low-opacity gradients, no image — costs
-   nothing and stops the canvas reading as flat #fff. */
+   A warm fibre tint. Low-opacity gradients, no image — costs nothing and stops
+   the canvas reading as flat #fff. */
 .stock {
   background-image:
-    radial-gradient(circle at 12% 8%, rgba(140, 35, 35, 0.035), transparent 42%),
-    radial-gradient(circle at 88% 0%, rgba(23, 21, 15, 0.035), transparent 46%);
+    radial-gradient(circle at 15% 6%, rgba(242, 103, 30, 0.05), transparent 45%),
+    radial-gradient(circle at 85% 0%, rgba(251, 139, 61, 0.05), transparent 48%),
+    radial-gradient(circle at 50% 120%, rgba(24, 21, 16, 0.03), transparent 55%);
 }
 
-/* The register's ruled grid, used behind the masthead block. */
+/* The hero's warm glow — a soft orange bloom behind the headline that lifts the
+   whole block off the page. Sits under the content (z below), never over it. */
+.hero-wash {
+  position: relative;
+  isolation: isolate;
+}
+.hero-wash::before {
+  content: "";
+  position: absolute;
+  inset: -10% -20% auto -20%;
+  height: 70%;
+  z-index: -1;
+  background:
+    radial-gradient(50% 60% at 50% 30%, rgba(242, 103, 30, 0.16), transparent 70%),
+    radial-gradient(40% 50% at 78% 20%, rgba(251, 139, 61, 0.14), transparent 72%);
+  filter: blur(36px);
+  will-change: transform, opacity;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hero-wash::before {
+    animation: aurora 16s ease-in-out infinite;
+  }
+}
+
+/* Faint dotted grid behind the masthead block. */
 .ruled {
-  background-image: linear-gradient(to bottom, rgba(23, 21, 15, 0.055) 1px, transparent 1px);
-  background-size: 100% 34px;
+  background-image: radial-gradient(rgba(24, 21, 16, 0.05) 1px, transparent 1px);
+  background-size: 22px 22px;
 }
 
 /* ── Editorial furniture ────────────────────────────────────── */
@@ -79,7 +104,7 @@ body {
   font-weight: 500;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #8c2323;
+  color: #f2671e;
 }
 .rubric::after {
   content: "";
@@ -109,7 +134,7 @@ body {
   font-size: 3.4em;
   line-height: 0.78;
   padding: 0.06em 0.09em 0 0;
-  color: #8c2323;
+  color: #f2671e;
   font-weight: 600;
 }
 
@@ -135,12 +160,12 @@ body {
   background: linear-gradient(90deg, rgba(176, 138, 62, 0.06), transparent 38%);
 }
 .rank-2 {
-  box-shadow: inset 3px 0 0 #beb8a9;
+  box-shadow: inset 3px 0 0 #dcd3c3;
   background: linear-gradient(90deg, rgba(23, 21, 15, 0.035), transparent 34%);
 }
 .rank-3 {
-  box-shadow: inset 3px 0 0 #a63a3a;
-  background: linear-gradient(90deg, rgba(166, 58, 58, 0.05), transparent 34%);
+  box-shadow: inset 3px 0 0 #fb8b3d;
+  background: linear-gradient(90deg, rgba(251, 139, 61, 0.05), transparent 34%);
 }
 
 /* ── Scroll reveal ──────────────────────────────────────────── */
@@ -193,7 +218,7 @@ body {
   margin: 0.3rem 0;
 }
 .prose-register a {
-  color: #8c2323;
+  color: #f2671e;
   text-decoration: underline;
   text-underline-offset: 3px;
 }

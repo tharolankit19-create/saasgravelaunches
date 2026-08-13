@@ -66,7 +66,7 @@ export default async function MakerPage({ params }: { params: { id: string } }) 
                   href={website}
                   target="_blank"
                   rel="noopener"
-                  className="inline-flex items-center gap-1.5 text-ink-500 hover:text-oxblood-600"
+                  className="inline-flex items-center gap-1.5 text-ink-500 hover:text-ember-600"
                 >
                   <Globe className="h-3.5 w-3.5" /> {hostOf(website)}
                 </a>
@@ -76,7 +76,7 @@ export default async function MakerPage({ params }: { params: { id: string } }) 
                   href={`https://x.com/${maker.x_handle.replace(/^@/, "")}`}
                   target="_blank"
                   rel="noopener"
-                  className="text-ink-500 hover:text-oxblood-600"
+                  className="text-ink-500 hover:text-ember-600"
                 >
                   @{maker.x_handle.replace(/^@/, "")}
                 </a>
@@ -86,7 +86,7 @@ export default async function MakerPage({ params }: { params: { id: string } }) 
                   href={`https://github.com/${String((maker as any).github_handle).replace(/^@/, "")}`}
                   target="_blank"
                   rel="noopener"
-                  className="inline-flex items-center gap-1.5 text-ink-500 hover:text-oxblood-600"
+                  className="inline-flex items-center gap-1.5 text-ink-500 hover:text-ember-600"
                 >
                   <Github className="h-3.5 w-3.5" /> GitHub
                 </a>
@@ -157,7 +157,7 @@ export default async function MakerPage({ params }: { params: { id: string } }) 
 
       <p className="mt-8 text-center text-[13px] text-ink-400">
         Building something?{" "}
-        <Link href="/launch" className="font-medium text-oxblood-600 hover:underline">
+        <Link href="/launch" className="font-medium text-ember-600 hover:underline">
           Launch it here — free.
         </Link>
       </p>

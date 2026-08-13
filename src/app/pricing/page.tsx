@@ -330,7 +330,7 @@ export default async function PricingPage() {
           </LinkButton>
           <Link
             href="/"
-            className="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-500 underline decoration-ink-900/25 underline-offset-4 hover:text-oxblood-600"
+            className="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-500 underline decoration-ink-900/25 underline-offset-4 hover:text-ember-600"
           >
             or read this week&apos;s board
           </Link>

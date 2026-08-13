@@ -107,7 +107,7 @@ export default async function DashboardPage() {
           <p className="mt-1 text-[13px] leading-relaxed text-ink-500">
             Everyone who launches here supports {SUPPORT_THRESHOLD} other makers first. It takes a
             minute and it&apos;s the reason the votes on this board mean anything.{" "}
-            <Link href="/" className="font-medium text-oxblood-600 hover:underline">
+            <Link href="/" className="font-medium text-ember-600 hover:underline">
               Browse this week →
             </Link>
           </p>
@@ -133,7 +133,7 @@ export default async function DashboardPage() {
                     <div className="flex flex-wrap items-center gap-2">
                       <Link
                         href={`/products/${p.slug}`}
-                        className="text-[15px] font-semibold text-ink-900 hover:text-oxblood-600"
+                        className="text-[15px] font-semibold text-ink-900 hover:text-ember-600"
                       >
                         {p.name}
                       </Link>
@@ -181,13 +181,13 @@ export default async function DashboardPage() {
                     />
                     <Link
                       href={`/products/${p.slug}`}
-                      className="text-[12px] font-medium text-oxblood-600 hover:underline"
+                      className="text-[12px] font-medium text-ember-600 hover:underline"
                     >
                       Badge &amp; ready-made posts →
                     </Link>
                     <Link
                       href={`/dashboard/analytics/${p.slug}`}
-                      className="text-[12px] font-medium text-oxblood-600 hover:underline"
+                      className="text-[12px] font-medium text-ember-600 hover:underline"
                     >
                       Analytics →
                     </Link>
@@ -242,7 +242,7 @@ export default async function DashboardPage() {
           <p className="mb-5 text-[13px] text-ink-500">
             This is the profile people see on your launches — and it&apos;s the same one Saasgrave
             uses.{" "}
-            <Link href={`/makers/${user.id}`} className="font-medium text-oxblood-600 hover:underline">
+            <Link href={`/makers/${user.id}`} className="font-medium text-ember-600 hover:underline">
               View your public page →
             </Link>
           </p>

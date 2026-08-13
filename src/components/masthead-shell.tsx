@@ -58,8 +58,8 @@ export function MastheadShell({
         open ? "border-ink-900/12" : "border-ink-900/8"
       )}
     >
-      {/* The oxblood rule that runs the width of the page — the masthead's spine. */}
-      <div className="h-[3px] w-full bg-oxblood-500" />
+      {/* The orange rule that runs the width of the page — the masthead's spine. */}
+      <div className="h-[3px] w-full bg-ember-500" />
 
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         {/* ── row one: always present ── */}
@@ -86,7 +86,7 @@ export function MastheadShell({
             <Link
               href="/launch"
               className={cn(
-                "inline-flex items-center gap-1.5 rounded-[3px] bg-ink-900 font-medium text-paper-100 transition hover:bg-oxblood-500",
+                "inline-flex items-center gap-1.5 rounded-[3px] bg-ink-900 font-medium text-paper-100 transition hover:bg-ember-500",
                 open ? "h-9 px-3.5 text-[13px]" : "h-8 px-3 text-[12px]"
               )}
             >

@@ -26,13 +26,11 @@ export function HeroLauncher() {
   }
 
   return (
-    <form onSubmit={go} className="mx-auto flex w-full max-w-xl flex-col gap-2 sm:flex-row">
-      <div
-        className={cn(
-          "flex flex-1 items-center gap-2 rounded-[4px] border-2 border-ink-900 bg-paper-100 px-3.5",
-          "focus-within:border-oxblood-500"
-        )}
-      >
+    <form
+      onSubmit={go}
+      className="mx-auto flex w-full max-w-xl flex-col gap-2 rounded-[8px] bg-paper-100/70 p-1.5 shadow-lift ring-1 ring-ink-900/10 backdrop-blur sm:flex-row"
+    >
+      <div className="flex flex-1 items-center gap-2 rounded-[5px] px-3.5 focus-within:bg-paper-200/60">
         <Link2 className="h-4 w-4 shrink-0 text-ink-400" />
         <input
           type="text"
@@ -46,7 +44,10 @@ export function HeroLauncher() {
       </div>
       <button
         type="submit"
-        className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-[4px] bg-oxblood-500 px-7 text-[15px] font-medium text-paper-100 transition hover:bg-oxblood-600 active:translate-y-px"
+        className={cn(
+          "inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-[5px] bg-ember-500 px-7",
+          "text-[15px] font-medium text-paper-100 shadow-glow transition hover:bg-ember-600 active:translate-y-px"
+        )}
       >
         Launch
         <ArrowRight className="h-4 w-4" />

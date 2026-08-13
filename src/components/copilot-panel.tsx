@@ -59,7 +59,7 @@ export function CopilotPanel({
       ? "text-moss-600"
       : grade === "Fair"
         ? "text-brass-600"
-        : "text-oxblood-600";
+        : "text-ember-600";
 
   return (
     <Card className="p-5 sm:p-6">
@@ -144,7 +144,7 @@ export function CopilotPanel({
                             onApplyTagline(t);
                             toast.success("Tagline applied.");
                           }}
-                          className="shrink-0 font-mono text-[10px] uppercase tracking-[0.1em] text-oxblood-600 hover:underline"
+                          className="shrink-0 font-mono text-[10px] uppercase tracking-[0.1em] text-ember-600 hover:underline"
                         >
                           Use this
                         </button>
@@ -165,7 +165,7 @@ export function CopilotPanel({
                         onApplyDescription(result.rewrite!);
                         toast.success("Description applied.");
                       }}
-                      className="mt-2 font-mono text-[10px] uppercase tracking-[0.1em] text-oxblood-600 hover:underline"
+                      className="mt-2 font-mono text-[10px] uppercase tracking-[0.1em] text-ember-600 hover:underline"
                     >
                       Use this
                     </button>
@@ -179,7 +179,7 @@ export function CopilotPanel({
               <p className="text-[13px] leading-relaxed text-ink-500">
                 The review above is free and always will be. AI rewrites — three stronger taglines
                 and a tightened description — come with{" "}
-                <Link href="/pricing" className="font-medium text-oxblood-600 hover:underline">
+                <Link href="/pricing" className="font-medium text-ember-600 hover:underline">
                   Premium
                 </Link>
                 .
@@ -201,7 +201,7 @@ function CheckRow({ check }: { check: CheckResult }) {
     ) : check.state === "warn" ? (
       <AlertTriangle className="h-3.5 w-3.5 text-brass-500" />
     ) : (
-      <AlertTriangle className="h-3.5 w-3.5 text-oxblood-500" />
+      <AlertTriangle className="h-3.5 w-3.5 text-ember-500" />
     );
 
   return (

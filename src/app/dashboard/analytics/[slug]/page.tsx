@@ -53,7 +53,7 @@ export default async function AnalyticsPage({ params }: { params: { slug: string
             </LinkButton>
             <Link
               href="/dashboard"
-              className="self-center font-mono text-[11px] uppercase tracking-[0.12em] text-ink-500 underline decoration-ink-900/25 underline-offset-4 hover:text-oxblood-600"
+              className="self-center font-mono text-[11px] uppercase tracking-[0.12em] text-ink-500 underline decoration-ink-900/25 underline-offset-4 hover:text-ember-600"
             >
               back to dashboard
             </Link>
@@ -69,7 +69,7 @@ export default async function AnalyticsPage({ params }: { params: { slug: string
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
       <nav className="mb-5 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.1em] text-ink-400">
-        <Link href="/dashboard" className="hover:text-oxblood-600">
+        <Link href="/dashboard" className="hover:text-ember-600">
           Dashboard
         </Link>
         <span>/</span>

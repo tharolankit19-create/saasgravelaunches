@@ -36,7 +36,7 @@ export default async function CategoryPage({ params }: { params: { slug: string 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
       <nav className="mb-5 flex items-center gap-1.5 text-[12px] text-ink-400">
-        <Link href="/products" className="hover:text-oxblood-600">
+        <Link href="/products" className="hover:text-ember-600">
           Directory
         </Link>
         <span>/</span>
@@ -76,7 +76,7 @@ export default async function CategoryPage({ params }: { params: { slug: string 
               <Link
                 key={c.slug}
                 href={`/categories/${c.slug}`}
-                className="rounded-full border border-ink-900/10 bg-paper-100 px-3 py-1.5 text-[13px] font-medium text-ink-500 transition hover:border-oxblood-500/40 hover:text-oxblood-600"
+                className="rounded-full border border-ink-900/10 bg-paper-100 px-3 py-1.5 text-[13px] font-medium text-ink-500 transition hover:border-ember-500/40 hover:text-ember-600"
               >
                 {c.name}
               </Link>

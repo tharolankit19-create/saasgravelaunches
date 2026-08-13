@@ -29,7 +29,7 @@ export default async function EmbedPage({ params }: { params: { slug: string } }
   return (
     <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6">
       <nav className="mb-5 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.1em] text-ink-400">
-        <Link href={`/products/${product.slug}`} className="hover:text-oxblood-600">
+        <Link href={`/products/${product.slug}`} className="hover:text-ember-600">
           {product.name}
         </Link>
         <span>/</span>

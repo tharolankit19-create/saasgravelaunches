@@ -84,7 +84,7 @@ export default async function LeaderboardPage() {
                     <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
                       <Link
                         href={`/?w=${week}`}
-                        className="text-[15px] font-semibold text-ink-900 hover:text-oxblood-600"
+                        className="text-[15px] font-semibold text-ink-900 hover:text-ember-600"
                       >
                         {weekLabel(week)}
                       </Link>
@@ -97,7 +97,7 @@ export default async function LeaderboardPage() {
                             <span className="w-5 text-center text-sm">{["🥇", "🥈", "🥉"][i]}</span>
                             <ProductLogo src={p.logo_url} name={p.name} size={30} />
                             <span className="min-w-0 flex-1">
-                              <span className="block truncate text-[13px] font-semibold text-ink-900 group-hover:text-oxblood-600">
+                              <span className="block truncate text-[13px] font-semibold text-ink-900 group-hover:text-ember-600">
                                 {p.name}
                               </span>
                               <span className="block truncate text-[12px] text-ink-400">

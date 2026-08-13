@@ -103,6 +103,23 @@ export async function POST(request: Request) {
     ? body.keywords.filter((k: unknown) => typeof k === "string").map((k: string) => k.trim().slice(0, 60)).slice(0, 8)
     : [];
 
+  const alternatives = Array.isArray(body.alternatives)
+    ? body.alternatives.filter((a: unknown) => typeof a === "string").map((a: string) => a.trim().slice(0, 40)).slice(0, 3)
+    : [];
+
+  // FAQ: keep only well-formed {q,a} pairs the autofill produced.
+  const faq = Array.isArray(body.faq)
+    ? body.faq
+        .map((it: unknown) => {
+          const o = it as Record<string, unknown>;
+          const q = typeof o?.q === "string" ? o.q.trim().slice(0, 160) : "";
+          const a = typeof o?.a === "string" ? o.a.trim().slice(0, 500) : "";
+          return q && a ? { q, a } : null;
+        })
+        .filter(Boolean)
+        .slice(0, 6)
+    : [];
+
   const text = (v: unknown, max: number) =>
     typeof v === "string" && v.trim() ? truncate(v.trim(), max) : null;
 
@@ -123,6 +140,8 @@ export async function POST(request: Request) {
     solution: text(body.solution, 400),
     unique_edge: text(body.unique_edge, 400),
     keywords,
+    alternatives,
+    faq,
     maker_note: text(body.maker_note, 800),
     seo_title: `${name} — ${tagline}`.slice(0, 70),
     seo_description: text(body.description, 155) || `${name}: ${tagline}`.slice(0, 155),

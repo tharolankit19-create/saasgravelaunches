@@ -83,7 +83,7 @@ function palette(dark: boolean): Palette {
 }
 
 const MARK = (x: number, y: number) => `
-  <rect x="${x}" y="${y}" width="26" height="26" rx="4" fill="#8c2323"/>
+  <rect x="${x}" y="${y}" width="26" height="26" rx="4" fill="#f2671e"/>
   <path d="M${x + 7} ${y + 19} L${x + 13} ${y + 9} L${x + 19} ${y + 19}" stroke="#fffdf9" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
   <path d="M${x + 9} ${y + 22} h8" stroke="#fffdf9" stroke-width="2.2" stroke-linecap="round" opacity="0.5"/>`;
 
@@ -107,7 +107,7 @@ function badgeWidget({
   return `<svg xmlns="http://www.w3.org/2000/svg" width="248" height="56" viewBox="0 0 248 56" role="img" aria-label="Listed on Saasgrave Launches">
   <title>Saasgrave Launches</title>
   <rect x="0.5" y="0.5" width="247" height="55" rx="4" fill="${p.bg}" stroke="${p.border}"/>
-  <rect x="0.5" y="0.5" width="247" height="2.5" fill="#8c2323"/>
+  <rect x="0.5" y="0.5" width="247" height="2.5" fill="#f2671e"/>
   ${MARK(13, 15)}
   <text x="49" y="25" font-family="${FONT}" font-size="7.5" letter-spacing="1.1" fill="${p.label}">${esc(top)}</text>
   <text x="49" y="41" font-family="${SERIF}" font-size="14.5" font-weight="bold" fill="${p.strong}">Saasgrave Launches</text>
@@ -115,7 +115,7 @@ function badgeWidget({
     votes
       ? `<g transform="translate(207,15)">
     <rect x="0" y="0" width="28" height="26" rx="3" fill="${p.well}" stroke="${p.border}"/>
-    <path d="M14 7 L18.5 12.5 H9.5 Z" fill="#8c2323"/>
+    <path d="M14 7 L18.5 12.5 H9.5 Z" fill="#f2671e"/>
     <text x="14" y="22" text-anchor="middle" font-family="${FONT}" font-size="9" font-weight="bold" fill="${p.strong}">${esc(votes)}</text>
   </g>`
       : ""
@@ -131,12 +131,12 @@ function upvoteWidget({ upvotes, dark }: { upvotes: number | null; dark: boolean
   return `<svg xmlns="http://www.w3.org/2000/svg" width="150" height="58" viewBox="0 0 150 58" role="img" aria-label="Upvote on Saasgrave Launches">
   <title>Upvote on Saasgrave Launches</title>
   <rect x="0.5" y="0.5" width="149" height="57" rx="4" fill="${p.bg}" stroke="${p.border}"/>
-  <rect x="0.5" y="0.5" width="149" height="2.5" fill="#8c2323"/>
+  <rect x="0.5" y="0.5" width="149" height="2.5" fill="#f2671e"/>
   <text x="14" y="26" font-family="${FONT}" font-size="7.5" letter-spacing="1.1" fill="${p.label}">UPVOTE US ON</text>
   <text x="14" y="42" font-family="${SERIF}" font-size="12.5" font-weight="bold" fill="${p.strong}">Launches</text>
   <g transform="translate(101,13)">
     <rect x="0" y="0" width="35" height="32" rx="3" fill="${p.well}" stroke="${p.border}"/>
-    <path d="M17.5 7 L23 13.5 H12 Z" fill="#8c2323"/>
+    <path d="M17.5 7 L23 13.5 H12 Z" fill="#f2671e"/>
     <text x="17.5" y="27" text-anchor="middle" font-family="${FONT}" font-size="10.5" font-weight="bold" fill="${p.strong}">${esc(votes)}</text>
   </g>
 </svg>`;
@@ -153,7 +153,7 @@ function rankWidget({
   dark: boolean;
 }) {
   const p = palette(dark);
-  const medal = rank === 1 ? "#b08a3e" : rank === 2 ? "#938d7e" : rank === 3 ? "#a63a3a" : "#8c2323";
+  const medal = rank === 1 ? "#b08a3e" : rank === 2 ? "#938d7e" : rank === 3 ? "#fb8b3d" : "#f2671e";
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="176" height="48" viewBox="0 0 176 48" role="img" aria-label="Rank on Saasgrave Launches">
   <title>Rank on Saasgrave Launches</title>

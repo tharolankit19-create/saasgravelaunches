@@ -5,10 +5,10 @@ import { cn } from "@/lib/utils";
 // Nothing here floats or glows — this is meant to read as printed matter.
 
 const base =
-  "inline-flex items-center justify-center gap-2 rounded-[3px] font-medium transition-all duration-150 active:translate-y-px disabled:opacity-40 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-oxblood-500/35 focus-visible:ring-offset-2 focus-visible:ring-offset-paper-50";
+  "inline-flex items-center justify-center gap-2 rounded-[3px] font-medium transition-all duration-150 active:translate-y-px disabled:opacity-40 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ember-500/35 focus-visible:ring-offset-2 focus-visible:ring-offset-paper-50";
 
 const variants = {
-  primary: "bg-oxblood-500 text-paper-100 hover:bg-oxblood-600 shadow-page",
+  primary: "bg-ember-500 text-paper-100 hover:bg-ember-600 shadow-page",
   ink: "bg-ink-900 text-paper-100 hover:bg-ink-700 shadow-page",
   outline:
     "border border-ink-900/18 bg-paper-100 text-ink-900 hover:border-ink-900/40 hover:bg-paper-200",
@@ -71,7 +71,7 @@ export function LinkButton({
 const tones = {
   neutral: "border-ink-900/14 bg-paper-200 text-ink-500",
   ink: "border-ink-900/20 bg-ink-900 text-paper-100",
-  oxblood: "border-oxblood-500/25 bg-oxblood-500/8 text-oxblood-600",
+  orange: "border-ember-500/25 bg-ember-500/8 text-ember-600",
   brass: "border-brass-500/35 bg-brass-500/10 text-brass-600",
   moss: "border-moss-500/30 bg-moss-500/10 text-moss-600",
 };
@@ -185,7 +185,7 @@ export function Field({
     <label className={cn("block", className)}>
       <span className="mb-1.5 flex items-baseline gap-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-ink-500">
         {label}
-        {required && <span className="text-oxblood-500">*</span>}
+        {required && <span className="text-ember-500">*</span>}
         {hint && <span className="tracking-normal text-ink-400 normal-case">{hint}</span>}
       </span>
       {children}
@@ -194,7 +194,7 @@ export function Field({
 }
 
 export const inputClass =
-  "w-full rounded-[3px] border border-ink-900/16 bg-paper-100 px-3.5 py-2.5 text-sm text-ink-900 outline-none transition placeholder:text-ink-400/80 focus:border-oxblood-500/60 focus:ring-2 focus:ring-oxblood-500/12";
+  "w-full rounded-[3px] border border-ink-900/16 bg-paper-100 px-3.5 py-2.5 text-sm text-ink-900 outline-none transition placeholder:text-ink-400/80 focus:border-ember-500/60 focus:ring-2 focus:ring-ember-500/12";
 
 export function Empty({
   title,

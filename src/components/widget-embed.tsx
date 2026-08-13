@@ -152,7 +152,7 @@ function Snippet({
         <button
           type="button"
           onClick={onCopy}
-          className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.1em] text-oxblood-600 hover:underline"
+          className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.1em] text-ember-600 hover:underline"
         >
           {copied ? <Check className="h-3 w-3 text-moss-500" /> : <Copy className="h-3 w-3" />}
           {copied ? "Copied" : "Copy"}

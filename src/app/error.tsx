@@ -10,7 +10,7 @@ export default function Error({ error, reset }: { error: Error; reset: () => voi
 
   return (
     <div className="mx-auto max-w-lg px-4 py-24 text-center sm:px-6">
-      <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-oxblood-600">Error</p>
+      <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-ember-600">Error</p>
       <h1 className="mt-3 text-3xl font-semibold tracking-tight text-ink-900">
         Something broke on our side
       </h1>

@@ -132,7 +132,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
         {isRegister ? "Already have an account? " : "New here? "}
         <Link
           href={`${isRegister ? "/login" : "/register"}?next=${encodeURIComponent(next)}`}
-          className="font-medium text-ink-900 underline underline-offset-4 hover:text-oxblood-600"
+          className="font-medium text-ink-900 underline underline-offset-4 hover:text-ember-600"
         >
           {isRegister ? "Sign in" : "Create one — free"}
         </Link>

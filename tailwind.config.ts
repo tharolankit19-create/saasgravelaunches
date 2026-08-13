@@ -9,50 +9,43 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // ── "The Launch Register" ──────────────────────────────
-        // An editorial identity, not a dashboard one. Every competitor in this
-        // space looks the same: white cards, blue or orange accent, drop
-        // shadows everywhere. This looks like a printed register — paper stock,
-        // hairline rules, one oxblood ink, serif headlines, monospaced figures.
-        // Authority instead of enthusiasm.
+        // ── "The Launch Register", warmed ──────────────────────
+        // Editorial bones — paper stock, hairline rules, serif headlines,
+        // monospaced figures — carrying Saasgrave's confident orange as the one
+        // ink, so the two products read as family. Authority, but not cold.
         paper: {
-          50: "#f6f4ef", // the page — uncoated stock
+          50: "#faf7f1", // the page — warm paper
           100: "#fffdf9", // cards — warm white, never pure #fff
-          200: "#edeae2", // wells / hover
-          300: "#e2ded4", // rules with weight
-          400: "#d3cec2", // dividers
-          500: "#beb8a9", // muted edges
+          200: "#f4efe6", // wells / hover
+          300: "#e9e2d5", // rules with weight
+          400: "#dcd3c3", // dividers
+          500: "#c7bca8", // muted edges
         },
         ink: {
-          900: "#17150f", // headlines — warm near-black
-          700: "#3a372e", // body copy
-          500: "#6b6659", // secondary
-          400: "#938d7e", // captions
+          900: "#181510", // headlines — warm near-black
+          700: "#3c372e", // body copy
+          500: "#6d675a", // secondary
+          400: "#978f7e", // captions
         },
-        // The one ink. Scarce on purpose, the way a second colour is scarce on
-        // a printed page.
-        oxblood: {
-          400: "#a63a3a",
-          500: "#8c2323",
-          600: "#6e1a1a",
-          700: "#4f1212",
+        // The one ink — Saasgrave's orange. Scarce on purpose.
+        ember: {
+          400: "#fb8b3d", // light / soft fills / gradient top
+          500: "#f2671e", // primary — buttons, marks, links
+          600: "#c2410c", // accessible orange text on paper
+          700: "#9a3412", // deep, for pressed / rules
         },
         // Functional only. Never decoration.
         brass: {
-          400: "#c9a556", // #1 rank, Premium
-          500: "#b08a3e",
-          600: "#8a6a2c",
+          400: "#d8ad55", // #1 rank, Premium
+          500: "#bf9235",
+          600: "#94701f",
         },
         moss: {
-          500: "#2f6b4f", // live / verified / slots open
-          600: "#245740",
+          500: "#2f7a4f", // live / verified / slots open
+          600: "#245f3d",
         },
       },
       fontFamily: {
-        // Fraunces for headlines (optically-sized, opinionated serif),
-        // Instrument Sans for reading, JetBrains Mono for every figure and
-        // label. Nothing shared with Saasgrave's Bricolage, nothing shared
-        // with the four competitors.
         serif: ["var(--font-serif)", "Georgia", "serif"],
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
         mono: ["var(--font-mono)", "ui-monospace", "monospace"],
@@ -63,10 +56,15 @@ const config: Config = {
         section: ["clamp(1.3rem, 1.9vw, 1.65rem)", { lineHeight: "1.16", letterSpacing: "-0.015em" }],
       },
       boxShadow: {
-        // Paper doesn't float. Elevation is a rule plus a hair of shadow.
-        page: "0 1px 0 rgba(23,21,15,0.05)",
-        card: "0 1px 2px rgba(23,21,15,0.04), 0 10px 28px -22px rgba(23,21,15,0.22)",
-        lift: "0 2px 6px rgba(23,21,15,0.06), 0 24px 48px -28px rgba(23,21,15,0.28)",
+        // Warm, layered elevation — soft ambient + a tight contact shadow, tuned
+        // brown rather than grey so cards sit on paper instead of floating on a
+        // screen. This is the difference between "designed" and "flat".
+        page: "0 1px 0 rgba(24,21,16,0.04)",
+        card: "0 1px 2px rgba(40,28,12,0.05), 0 6px 16px -8px rgba(40,28,12,0.12), 0 22px 44px -28px rgba(40,28,12,0.16)",
+        lift: "0 2px 6px rgba(40,28,12,0.07), 0 14px 28px -12px rgba(40,28,12,0.16), 0 34px 60px -34px rgba(40,28,12,0.26)",
+        // Orange CTA glow — used only on the primary launch action.
+        glow: "0 1px 2px rgba(154,52,18,0.2), 0 10px 24px -8px rgba(242,103,30,0.42)",
+        inset: "inset 0 1px 0 rgba(255,255,255,0.6)",
       },
       keyframes: {
         "fade-up": {
@@ -82,11 +80,16 @@ const config: Config = {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0.3" },
         },
+        aurora: {
+          "0%, 100%": { transform: "translate3d(0,0,0) scale(1)", opacity: "0.7" },
+          "50%": { transform: "translate3d(2%,-3%,0) scale(1.1)", opacity: "1" },
+        },
       },
       animation: {
         "fade-up": "fade-up 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards",
         pop: "pop 0.34s cubic-bezier(0.16, 1, 0.3, 1)",
         blink: "blink 2s ease-in-out infinite",
+        aurora: "aurora 16s ease-in-out infinite",
       },
     },
   },

@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 /** Bars for a daily series. */
 export function BarChart({
   data,
-  color = "#8c2323",
+  color = "#f2671e",
   height = 128,
   label,
 }: {
@@ -95,7 +95,7 @@ export function LineChart({
         <polyline
           points={points.join(" ")}
           fill="none"
-          stroke="#8c2323"
+          stroke="#f2671e"
           strokeWidth="1.6"
           vectorEffect="non-scaling-stroke"
           strokeLinejoin="round"
@@ -126,7 +126,7 @@ export function ShareBars({
           <span className="w-28 shrink-0 truncate text-[13px] text-ink-700">{r.label}</span>
           <span className="h-1.5 flex-1 overflow-hidden bg-paper-300">
             <span
-              className="block h-full bg-oxblood-500"
+              className="block h-full bg-ember-500"
               style={{ width: `${Math.max(2, r.share * 100)}%` }}
             />
           </span>
