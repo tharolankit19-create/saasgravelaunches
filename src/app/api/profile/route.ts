@@ -22,6 +22,7 @@ export async function POST(request: Request) {
       full_name: text(body.full_name, 80),
       maker_headline: text(body.maker_headline, 90),
       bio: text(body.bio, 400),
+      avatar_url: normalizeUrl(body.avatar_url),
       x_handle: text(body.x_handle, 40)?.replace(/^@/, "") ?? null,
       github_handle: text(body.github_handle, 40)?.replace(/^@/, "") ?? null,
       website_url: normalizeUrl(body.website_url),

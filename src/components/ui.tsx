@@ -109,7 +109,7 @@ export function Card({
   as?: any;
 }) {
   return (
-    <As className={cn("rounded-[4px] border border-ink-900/12 bg-paper-100 shadow-card", className)}>
+    <As className={cn("rounded-xl border border-ink-900/20 bg-paper-100 shadow-card", className)}>
       {children}
     </As>
   );
@@ -194,7 +194,7 @@ export function Field({
 }
 
 export const inputClass =
-  "w-full rounded-[3px] border border-ink-900/16 bg-paper-100 px-3.5 py-2.5 text-sm text-ink-900 outline-none transition placeholder:text-ink-400/80 focus:border-ember-500/60 focus:ring-2 focus:ring-ember-500/12";
+  "w-full rounded-lg border border-ink-900/20 bg-paper-100 px-3.5 py-2.5 text-sm text-ink-900 outline-none transition placeholder:text-ink-400/80 focus:border-ember-500/60 focus:ring-2 focus:ring-ember-500/12";
 
 export function Empty({
   title,
@@ -206,7 +206,7 @@ export function Empty({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="border border-dashed border-ink-900/16 bg-paper-100/50 px-6 py-16 text-center">
+    <div className="rounded-xl border border-dashed border-ink-900/25 bg-paper-100/50 px-6 py-16 text-center">
       <p className="font-serif text-lg font-semibold text-ink-900">{title}</p>
       {sub && <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-ink-500">{sub}</p>}
       {action && <div className="mt-6 flex justify-center">{action}</div>}

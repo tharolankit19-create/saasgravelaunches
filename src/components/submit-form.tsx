@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import { Sparkles, Loader2, ChevronDown, Check } from "lucide-react";
 import { toast } from "sonner";
 import { Button, Field, inputClass, Card } from "@/components/ui";
-import { ProductLogo } from "@/components/avatar";
 import { ImageUpload } from "@/components/image-upload";
+import { PhotoUpload } from "@/components/photo-upload";
 import { CopilotPanel } from "@/components/copilot-panel";
 import { CATEGORIES, PRICING_MODELS } from "@/lib/categories";
 import { cn } from "@/lib/utils";
@@ -303,16 +303,20 @@ export function SubmitForm({
             />
           </Field>
 
-          <Field label="Logo URL" hint="we guessed from your favicon">
-            <div className="flex items-center gap-3">
-              <ProductLogo src={draft.logo_url || null} name={draft.name} size={44} />
-              <input
-                value={draft.logo_url}
-                onChange={(e) => set("logo_url", e.target.value)}
-                placeholder="https://yourproduct.com/logo.png"
-                className={inputClass}
-              />
-            </div>
+          <Field label="Logo" hint="upload one, or paste a URL">
+            <PhotoUpload
+              value={draft.logo_url || null}
+              onChange={(url) => set("logo_url", url || "")}
+              bucket="logos"
+              name={draft.name}
+              label="Upload logo"
+            />
+            <input
+              value={draft.logo_url}
+              onChange={(e) => set("logo_url", e.target.value)}
+              placeholder="or paste a logo URL"
+              className={cn(inputClass, "mt-2.5")}
+            />
           </Field>
 
           <Field

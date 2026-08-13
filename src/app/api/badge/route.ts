@@ -91,7 +91,7 @@ function renderBadge({
   return `<svg xmlns="http://www.w3.org/2000/svg" width="250" height="54" viewBox="0 0 250 54" role="img" aria-label="Featured on Saasgrave Launches">
   <title>Featured on Saasgrave Launches</title>
   <rect x="0.5" y="0.5" width="249" height="53" rx="11" fill="${bg}" stroke="${border}"/>
-  <rect x="12" y="14" width="26" height="26" rx="7.5" fill="#5B3DF5"/>
+  <rect x="12" y="14" width="26" height="26" rx="7.5" fill="#f2671e"/>
   <path d="M19 33 L25 24 L31 33" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
   <path d="M21 37 h8" stroke="#fff" stroke-width="2.2" stroke-linecap="round" opacity="0.55"/>
   <text x="47" y="23" font-family="Verdana,DejaVu Sans,sans-serif" font-size="8" letter-spacing="0.7" fill="${label}">${escapeXml(top)}</text>
@@ -99,8 +99,8 @@ function renderBadge({
   ${
     votes
       ? `<g transform="translate(212,15)">
-    <rect x="0" y="0" width="26" height="24" rx="7" fill="${dark ? "#221f1a" : "#f1efe9"}"/>
-    <path d="M13 7 L17 12 H9 Z" fill="#5B3DF5"/>
+    <rect x="0" y="0" width="26" height="24" rx="7" fill="${dark ? "#3a1e10" : "#fdece2"}"/>
+    <path d="M13 7 L17 12 H9 Z" fill="#f2671e"/>
     <text x="13" y="21" text-anchor="middle" font-family="Verdana,DejaVu Sans,sans-serif" font-size="9" font-weight="bold" fill="${strong}">${escapeXml(votes)}</text>
   </g>`
       : ""

@@ -91,7 +91,7 @@ export function LineChart({
         role="img"
         aria-label={label || "Cumulative upvotes"}
       >
-        <polygon points={area} fill="rgba(140,35,35,0.10)" />
+        <polygon points={area} fill="rgba(242,103,30,0.10)" />
         <polyline
           points={points.join(" ")}
           fill="none"

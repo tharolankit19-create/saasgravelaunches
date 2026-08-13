@@ -24,7 +24,9 @@ import { ShareKit } from "@/components/share-kit";
 import { BadgeEmbed } from "@/components/badge-embed";
 import { CommentThread } from "@/components/comment-thread";
 import { Celebrate } from "@/components/celebrate";
+import { BarChart, LineChart } from "@/components/charts";
 import { AdRail } from "@/components/ad-rail";
+import { getProductAnalytics } from "@/lib/maker-analytics";
 import { currentUser, createAdminClient } from "@/lib/supabase/server";
 import {
   getComments,
@@ -84,11 +86,18 @@ export default async function ProductPage({
   const isOwner = user?.id === product.maker_id;
   if (product.status !== "live" && !isOwner) notFound();
 
-  const [comments, myUpvotes, rank] = await Promise.all([
+  const [comments, myUpvotes, rank, analytics] = await Promise.all([
     getComments(product.id),
     getMyUpvotes([product.id]),
     getWeekRank(product),
+    getProductAnalytics(product.slug, 14),
   ]);
+
+  // Only draw the momentum charts once there's something to draw — a flat line
+  // of zeros on a brand-new launch reads as broken, not as "no data yet".
+  const hasMomentum = analytics.totals.views > 0 || analytics.totals.upvotes > 0;
+  const viewsSeries = analytics.daily.map((d) => ({ day: d.day, value: d.views }));
+  const upvoteSeries = analytics.velocity.map((d) => ({ day: d.day, value: d.cumulative }));
 
   // A view is a side effect of rendering the page, not of the visitor's click,
   // so it's fire-and-forget and never allowed to fail the render.
@@ -286,6 +295,37 @@ export default async function ProductPage({
                 />
               </div>
             </Card>
+
+            {/* ── momentum — real charts, not a row of numbers ── */}
+            {hasMomentum && (
+              <section className="mt-8">
+                <Rubric className="mb-3">Momentum · last 14 days</Rubric>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Card className="p-5">
+                    <div className="mb-3 flex items-baseline justify-between">
+                      <span className="font-serif text-[15px] font-semibold text-ink-900">
+                        Upvotes over time
+                      </span>
+                      <span className="figure text-lg font-semibold text-ember-600">
+                        {product.upvote_count}
+                      </span>
+                    </div>
+                    <LineChart data={upvoteSeries} height={132} />
+                  </Card>
+                  <Card className="p-5">
+                    <div className="mb-3 flex items-baseline justify-between">
+                      <span className="font-serif text-[15px] font-semibold text-ink-900">
+                        Page views
+                      </span>
+                      <span className="figure text-lg font-semibold text-ink-900">
+                        {product.view_count}
+                      </span>
+                    </div>
+                    <BarChart data={viewsSeries} height={132} />
+                  </Card>
+                </div>
+              </section>
+            )}
 
             {/* ── gallery ── */}
             {gallery.length > 0 && (

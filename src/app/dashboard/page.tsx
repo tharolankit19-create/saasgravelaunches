@@ -252,6 +252,7 @@ export default async function DashboardPage() {
               full_name: profile?.full_name ?? null,
               maker_headline: (profile as any)?.maker_headline ?? null,
               bio: profile?.bio ?? null,
+              avatar_url: profile?.avatar_url ?? null,
               x_handle: profile?.x_handle ?? null,
               github_handle: (profile as any)?.github_handle ?? null,
               website_url: profile?.website_url ?? null,

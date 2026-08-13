@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button, Field, inputClass } from "@/components/ui";
+import { PhotoUpload } from "@/components/photo-upload";
 import { cn } from "@/lib/utils";
 
 /**
@@ -17,6 +18,7 @@ export function ProfileForm({
     full_name: string | null;
     maker_headline: string | null;
     bio: string | null;
+    avatar_url: string | null;
     x_handle: string | null;
     github_handle: string | null;
     website_url: string | null;
@@ -27,6 +29,7 @@ export function ProfileForm({
     full_name: initial.full_name || "",
     maker_headline: initial.maker_headline || "",
     bio: initial.bio || "",
+    avatar_url: initial.avatar_url || "",
     x_handle: initial.x_handle || "",
     github_handle: initial.github_handle || "",
     website_url: initial.website_url || "",
@@ -57,6 +60,17 @@ export function ProfileForm({
 
   return (
     <form onSubmit={save} className="space-y-4">
+      <Field label="Profile photo" hint="shown on your launches and comments">
+        <PhotoUpload
+          value={form.avatar_url || null}
+          onChange={(url) => set("avatar_url", url || "")}
+          bucket="avatars"
+          shape="round"
+          name={form.full_name}
+          label="Upload photo"
+        />
+      </Field>
+
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Name">
           <input
