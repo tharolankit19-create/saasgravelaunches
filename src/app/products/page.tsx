@@ -89,3 +89,4 @@ export default async function DirectoryPage({
     </div>
   );
 }
+<a href="https://nicklaunches.com/products/saasgrave-launches/?utm_source=ls.saasgrave.org&utm_medium=badge&utm_campaign=featured" target="_blank" rel="noopener"><img src="https://nicklaunches.com/badges/featured.png" alt="Saasgrave Launches on Nick Launches" width="244" height="56" /></a>
