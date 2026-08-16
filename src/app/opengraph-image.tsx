@@ -32,7 +32,7 @@ export default function OpengraphImage() {
           <span style={{ fontSize: 74, fontWeight: 700, color: "#12110f", lineHeight: 1.05 }}>
             Launch your SaaS in a minute.
           </span>
-          <span style={{ fontSize: 74, fontWeight: 700, color: "#5B3DF5", lineHeight: 1.05 }}>
+          <span style={{ fontSize: 74, fontWeight: 700, color: "#f2671e", lineHeight: 1.05 }}>
             Keep the backlink forever.
           </span>
         </div>
