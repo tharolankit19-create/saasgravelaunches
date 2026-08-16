@@ -138,6 +138,22 @@ export function weekWindow(key: WeekKey = currentWeekKey(), back = 3, forward = 
   return out;
 }
 
+/**
+ * The weeks a maker can schedule a launch into: this week and the next few,
+ * never a week before the platform existed. Oldest (this week) first.
+ */
+export function upcomingWeeks(count = 6): WeekKey[] {
+  const out: WeekKey[] = [];
+  let cursor = currentWeekKey();
+  // If we're somehow before the epoch, jump forward to the first real week.
+  while (isPreLaunchWeek(cursor)) cursor = shiftWeek(cursor, 1);
+  for (let i = 0; i < count; i++) {
+    out.push(cursor);
+    cursor = shiftWeek(cursor, 1);
+  }
+  return out;
+}
+
 /** Every week from the epoch up to now, newest first — the archive. */
 export function weeksSinceLaunch(limit = 26): WeekKey[] {
   const out: WeekKey[] = [];

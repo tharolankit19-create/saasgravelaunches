@@ -4,7 +4,7 @@
 
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { currentWeekKey, shiftWeek, type WeekKey } from "@/lib/week";
-import { SUPPORT_GATE_MIN_PRODUCTS } from "@/lib/pricing";
+import { SUPPORT_GATE_MIN_PRODUCTS, WEEK_SLOT_CAP } from "@/lib/pricing";
 
 export type Maker = {
   id: string;
@@ -124,6 +124,41 @@ export async function getAllTimeTop(limit = 50): Promise<LaunchProduct[]> {
     .order("launched_at", { ascending: true })
     .limit(limit);
   return (data || []) as unknown as LaunchProduct[];
+}
+
+export type WeekSlots = { week: WeekKey; used: number; cap: number; open: number };
+
+/**
+ * How many free slots are left in each of the given weeks. The cap counts only
+ * NON-Premium live launches — Premium launches into any week regardless — so
+ * this is what a free maker sees when choosing when to launch. Read through the
+ * service role so the count is the true total, not one visitor's RLS view.
+ */
+export async function getWeekSlots(weeks: WeekKey[]): Promise<WeekSlots[]> {
+  if (!weeks.length) return [];
+  try {
+    const admin = createAdminClient();
+    const { data } = await admin
+      .from("launch_products")
+      .select("launch_week, tier")
+      .eq("status", "live")
+      .in("launch_week", weeks);
+
+    const counts = new Map<string, number>();
+    for (const r of (data || []) as { launch_week: string | null; tier: string | null }[]) {
+      if (!r.launch_week || r.tier === "premium") continue; // premium doesn't consume a slot
+      counts.set(r.launch_week, (counts.get(r.launch_week) || 0) + 1);
+    }
+
+    return weeks.map((week) => {
+      const used = counts.get(week) || 0;
+      return { week, used, cap: WEEK_SLOT_CAP, open: Math.max(0, WEEK_SLOT_CAP - used) };
+    });
+  } catch (e: any) {
+    console.error("getWeekSlots:", e?.message || e);
+    // Fail OPEN — never block launching because a count hiccuped.
+    return weeks.map((week) => ({ week, used: 0, cap: WEEK_SLOT_CAP, open: WEEK_SLOT_CAP }));
+  }
 }
 
 export type LeaderRange = "week" | "month" | "all";

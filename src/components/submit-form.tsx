@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Sparkles, Loader2, ChevronDown, Check } from "lucide-react";
+import { Sparkles, Loader2, ChevronDown, Check, Calendar, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { Button, Field, inputClass, Card } from "@/components/ui";
 import { ImageUpload } from "@/components/image-upload";
@@ -54,12 +54,16 @@ const EMPTY: Draft = {
  * and puts everything else behind a disclosure that says plainly it's
  * optional. Nothing below "The essentials" blocks publishing.
  */
+type WeekOption = { week: string; label: string; range: string; open: number; cap: number };
+
 export function SubmitForm({
   canPublish,
   gateActive,
   supported,
   threshold,
   initialUrl,
+  weekOptions,
+  premium,
 }: {
   canPublish: boolean;
   /** Whether the support-three gate is switched on yet (board has depth). */
@@ -68,10 +72,19 @@ export function SubmitForm({
   threshold: number;
   /** URL carried from the landing hero — autofill fires against it on mount. */
   initialUrl?: string;
+  /** The weeks a maker can schedule into, with free-slot counts. */
+  weekOptions: WeekOption[];
+  /** Premium can launch into any week, full or not. */
+  premium: boolean;
 }) {
   const router = useRouter();
   const [draft, setDraft] = useState<Draft>(EMPTY);
   const [sourceUrl, setSourceUrl] = useState(initialUrl || "");
+  // Default to the first week a free maker can actually use (has open slots),
+  // or just the first week for Premium.
+  const [launchWeek, setLaunchWeek] = useState(
+    () => (premium ? weekOptions[0]?.week : weekOptions.find((w) => w.open > 0)?.week) || weekOptions[0]?.week || ""
+  );
   const [filling, setFilling] = useState(false);
   const [filled, setFilled] = useState(false);
   const [more, setMore] = useState(false);
@@ -175,6 +188,7 @@ export function SubmitForm({
             .map((k) => k.trim())
             .filter(Boolean),
           gallery_urls: draft.gallery_urls,
+          launch_week: launchWeek,
           faq: aiFaq,
           alternatives: aiAlternatives,
         }),
@@ -362,6 +376,73 @@ export function SubmitForm({
           </Field>
         </div>
       </Card>
+
+      {/* ── launch week ── */}
+      {weekOptions.length > 0 && (
+        <Card className="p-5 sm:p-6">
+          <div className="flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-ember-500" />
+            <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ember-600">
+              When do you launch?
+            </p>
+          </div>
+          <p className="mt-1.5 text-sm text-ink-500">
+            {premium ? (
+              <>You&apos;re Premium — launch into any week, even a full one.</>
+            ) : (
+              <>
+                Each week holds {weekOptions[0]?.cap} free launches. Pick one with room —{" "}
+                <span className="text-ink-700">Premium launches into any week.</span>
+              </>
+            )}
+          </p>
+
+          <div className="mt-4 grid gap-2 sm:grid-cols-2">
+            {weekOptions.map((w) => {
+              const full = w.open <= 0;
+              const locked = full && !premium;
+              const active = launchWeek === w.week;
+              return (
+                <button
+                  key={w.week}
+                  type="button"
+                  disabled={locked}
+                  onClick={() => setLaunchWeek(w.week)}
+                  className={cn(
+                    "flex items-center justify-between rounded-lg border px-4 py-3 text-left transition",
+                    active
+                      ? "border-ember-500/60 bg-ember-500/[0.06] ring-1 ring-ember-500/30"
+                      : locked
+                        ? "cursor-not-allowed border-ink-900/10 bg-paper-200/40 opacity-60"
+                        : "border-ink-900/15 bg-paper-100 hover:border-ember-500/40"
+                  )}
+                >
+                  <span>
+                    <span className="block text-[14px] font-semibold text-ink-900">{w.label}</span>
+                    <span className="block text-[12px] text-ink-400">{w.range}</span>
+                  </span>
+                  <span
+                    className={cn(
+                      "shrink-0 font-mono text-[10px] uppercase tracking-[0.08em]",
+                      full ? "text-ink-400" : "text-moss-600"
+                    )}
+                  >
+                    {locked ? (
+                      <span className="inline-flex items-center gap-1 text-brass-600">
+                        <Lock className="h-3 w-3" /> Premium
+                      </span>
+                    ) : full ? (
+                      "Full · Premium"
+                    ) : (
+                      `${w.open}/${w.cap} open`
+                    )}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </Card>
+      )}
 
       {/* ── optional depth ── */}
       <Card className="overflow-hidden">

@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
-import { getSupportCount, isSupportGateActive } from "@/lib/launches";
-import { FREE_LAUNCHES_PER_WEEK, SUPPORT_THRESHOLD } from "@/lib/pricing";
+import { getSupportCount, getWeekSlots, isSupportGateActive } from "@/lib/launches";
+import { FREE_LAUNCHES_PER_WEEK, SUPPORT_THRESHOLD, WEEK_SLOT_CAP } from "@/lib/pricing";
 import { isPremium } from "@/lib/premium";
 import { CATEGORY_NAMES } from "@/lib/categories";
 import { normalizeUrl, slugify, truncate } from "@/lib/utils";
-import { currentWeekKey } from "@/lib/week";
+import { currentWeekKey, isPreLaunchWeek, parseWeekKey, weekLabel, weekStart } from "@/lib/week";
 import { track } from "@/lib/analytics";
 import { sendEmail } from "@/lib/email";
 import { launchLiveEmail } from "@/lib/email-templates";
@@ -61,25 +61,55 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "That website URL doesn't look right." }, { status: 400 });
   }
 
-  const week = currentWeekKey();
+  // ── which week is this launch scheduled into? ──
+  // Founders pick a week; default to the current one. It must be a real,
+  // present-or-future week (you can't launch into the past or before the
+  // platform existed).
+  const requestedWeek =
+    typeof body.launch_week === "string" && parseWeekKey(body.launch_week)
+      ? body.launch_week.trim()
+      : currentWeekKey();
+  const week =
+    !isPreLaunchWeek(requestedWeek) &&
+    weekStart(requestedWeek).getTime() >= weekStart(currentWeekKey()).getTime()
+      ? requestedWeek
+      : currentWeekKey();
 
-  // ── anti-spam, in the two ways that actually matter ──
-  const [{ count: thisWeekCount }, premium] = await Promise.all([
-    supabase
-      .from("launch_products")
-      .select("id", { count: "exact", head: true })
-      .eq("maker_id", user.id)
-      .eq("launch_week", week)
-      .eq("status", "live"),
-    isPremium(user.id),
-  ]);
+  const premium = await isPremium(user.id);
+
+  // ── weekly capacity: 20 free slots a week; Premium ignores the cap ──
+  if (!premium) {
+    const [slots] = await getWeekSlots([week]);
+    if (slots && slots.open <= 0) {
+      await track({
+        event: "publish_blocked",
+        userId: user.id,
+        meta: { reason: "week_full", week },
+      });
+      return NextResponse.json(
+        {
+          error: `${weekLabel(week)} is full — all ${WEEK_SLOT_CAP} free slots are taken. Pick a later week, or go Premium to launch into any week even when it's full.`,
+          upgrade: "premium",
+          weekFull: true,
+        },
+        { status: 409 }
+      );
+    }
+  }
+
+  // ── one free launch per week per maker ──
+  const { count: thisWeekCount } = await supabase
+    .from("launch_products")
+    .select("id", { count: "exact", head: true })
+    .eq("maker_id", user.id)
+    .eq("launch_week", week)
+    .eq("status", "live");
 
   if (!premium && (thisWeekCount || 0) >= FREE_LAUNCHES_PER_WEEK) {
     await track({ event: "publish_blocked", userId: user.id, meta: { reason: "week_limit" } });
     return NextResponse.json(
       {
-        error:
-          "Free makers launch one product a week, and you've used this week's. Next week's board opens Monday — or Premium lifts the limit entirely.",
+        error: `Free makers launch one product per week, and you've used ${weekLabel(week)}. Pick another week — or Premium lifts the limit entirely.`,
         upgrade: "premium",
       },
       { status: 429 }

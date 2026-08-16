@@ -210,3 +210,10 @@ export const PREMIUM_ONLY = [
  */
 export const SUPPORT_THRESHOLD = 3;
 export const SUPPORT_GATE_MIN_PRODUCTS = 60;
+
+/**
+ * How many FREE (non-Premium) launches a single week can hold. Once a week is
+ * full, free makers pick another week — or take Premium, which launches into
+ * any week, full or not. Premium launches don't count against this cap.
+ */
+export const WEEK_SLOT_CAP = 20;
