@@ -69,7 +69,7 @@ export default async function ProductOgImage({ params }: { params: { slug: strin
           >
             ▲ {upvotes} upvotes
           </span>
-          <span style={{ color: "#6a655a" }}>launches.saasgrave.org</span>
+          <span style={{ color: "#6a655a" }}>ls.saasgrave.org</span>
         </div>
       </div>
     ),

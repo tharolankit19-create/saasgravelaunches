@@ -69,7 +69,7 @@ function shell(opts: { preheader: string; body: string; siteUrl: string }): stri
       You're getting this because you have a Saasgrave account.
     </p>
     <p style="margin:0; font-family:${FONT_MONO}; font-size:11px; letter-spacing:0.5px; color:#978f7e;">
-      <a href="${esc(siteUrl)}" style="color:${INK_MUTE}; text-decoration:underline;">launches.saasgrave.org</a>
+      <a href="${esc(siteUrl)}" style="color:${INK_MUTE}; text-decoration:underline;">ls.saasgrave.org</a>
     </p>
   </td></tr>
 

@@ -28,7 +28,7 @@ export type ScrapedSite = {
 };
 
 const UA =
-  "Mozilla/5.0 (compatible; SaasgraveLaunchesBot/1.0; +https://launches.saasgrave.org/about)";
+  "Mozilla/5.0 (compatible; SaasgraveLaunchesBot/1.0; +https://ls.saasgrave.org/about)";
 const MAX_BYTES = 900_000; // plenty for a landing page; stops us pulling an app bundle
 const TIMEOUT_MS = 8_000;
 

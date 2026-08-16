@@ -18,7 +18,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = { title: "Dashboard", robots: { index: false } };
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://launches.saasgrave.org";
+const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://ls.saasgrave.org";
 
 export default async function DashboardPage() {
   const user = await currentUser();

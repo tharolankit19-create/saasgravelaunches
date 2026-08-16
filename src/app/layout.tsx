@@ -20,7 +20,7 @@ const serif = Fraunces({
 const sans = Instrument_Sans({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", display: "swap" });
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://launches.saasgrave.org";
+const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://ls.saasgrave.org";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),

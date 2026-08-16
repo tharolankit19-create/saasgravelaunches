@@ -32,7 +32,7 @@ export async function GET(request: Request) {
   const dry = searchParams.get("dry") === "1";
   const testTo = searchParams.get("test")?.trim() || null;
 
-  const site = process.env.NEXT_PUBLIC_SITE_URL || "https://launches.saasgrave.org";
+  const site = process.env.NEXT_PUBLIC_SITE_URL || "https://ls.saasgrave.org";
   // Default to the week that just finished — the digest reports a closed week.
   const targetWeek = searchParams.get("week")?.trim() || shiftWeek(currentWeekKey(), -1);
 

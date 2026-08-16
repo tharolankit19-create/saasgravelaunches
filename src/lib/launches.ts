@@ -263,12 +263,24 @@ export async function getMyUpvotes(productIds: string[]): Promise<Set<string>> {
 }
 
 /**
- * Is the support-three-makers gate switched on yet? It only makes sense once
- * the board has real depth, so it stays off until there are enough live
- * products to actually support. Read through the service role so the count is
- * the true platform total, not what one visitor's RLS lets them see.
+ * Is the support-three-makers gate switched on yet?
+ *
+ * Two conditions, both required:
+ *   1. A master switch, OFF by default. In the early phase the board is too
+ *      small to ask a founder to upvote three others before their own launch —
+ *      so the whole mechanism stays off until you set SUPPORT_GATE_ENABLED=true.
+ *   2. Even when enabled, it only turns on once there's real depth
+ *      (SUPPORT_GATE_MIN_PRODUCTS live products), so it can't strand the first
+ *      makers on a near-empty board.
+ *
+ * Read through the service role so the count is the true platform total, not
+ * what one visitor's RLS lets them see.
  */
 export async function isSupportGateActive(): Promise<boolean> {
+  // Off unless explicitly turned on. This is the switch that removes the
+  // "upvote 3 first" rule entirely for now.
+  if (process.env.SUPPORT_GATE_ENABLED !== "true") return false;
+
   try {
     const admin = createAdminClient();
     const { count } = await admin

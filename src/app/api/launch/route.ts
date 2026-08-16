@@ -184,7 +184,7 @@ export async function POST(request: Request) {
   // "Your product is live." Best-effort and no-op until RESEND_API_KEY is set —
   // never let a mail hiccup fail a launch that already succeeded.
   if (user.email) {
-    const site = process.env.NEXT_PUBLIC_SITE_URL || "https://launches.saasgrave.org";
+    const site = process.env.NEXT_PUBLIC_SITE_URL || "https://ls.saasgrave.org";
     const mail = launchLiveEmail({
       productName: name,
       tagline,

@@ -47,7 +47,7 @@ export async function aiComplete(prompt: string, opts: CompleteOptions = {}): Pr
   const key = process.env.OPENROUTER_API_KEY?.trim();
   if (!key) throw new Error("AI isn't configured — set OPENROUTER_API_KEY.");
 
-  const site = process.env.NEXT_PUBLIC_SITE_URL || "https://launches.saasgrave.org";
+  const site = process.env.NEXT_PUBLIC_SITE_URL || "https://ls.saasgrave.org";
   const errors: string[] = [];
   const startedAt = Date.now();
 

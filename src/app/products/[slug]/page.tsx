@@ -41,7 +41,7 @@ import { weekLabel } from "@/lib/week";
 
 export const dynamic = "force-dynamic";
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://launches.saasgrave.org";
+const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://ls.saasgrave.org";
 
 export async function generateMetadata({
   params,
