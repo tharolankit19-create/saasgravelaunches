@@ -103,10 +103,54 @@ function fromScrape(site: ScrapedSite): Omit<AutofillResult, "source"> {
     problem: "",
     solution: "",
     unique_edge: "",
-    keywords: [],
+    // Real keyword phrases pulled from the page, so the form is never empty even
+    // when the AI is unavailable — the model improves on these when it runs.
+    keywords: deriveKeywords(site),
     faq: [],
     alternatives: [],
   };
+}
+
+const STOPWORDS = new Set(
+  ("the a an and or for to of in on with your you our we is are be it that this what how why " +
+    "get make build your best free new all can will do your app tool platform software online site " +
+    "home page welcome more learn start try use using into from by at as no not so if then than").split(
+    /\s+/
+  )
+);
+
+/**
+ * Keyword phrases without a model: the most repeated 2–3 word phrases across the
+ * title, headings and body, minus stopwords. Not as sharp as the AI's, but real
+ * search phrases the page actually uses — never generic single words.
+ */
+function deriveKeywords(site: ScrapedSite): string[] {
+  const source = `${site.title}. ${site.headings.join(". ")}. ${site.description}. ${site.text}`
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, " ");
+  const words = source.split(/\s+/).filter(Boolean);
+
+  const counts = new Map<string, number>();
+  for (let i = 0; i < words.length - 1; i++) {
+    const a = words[i];
+    const b = words[i + 1];
+    const c = words[i + 2];
+    if (STOPWORDS.has(a) || a.length < 3) continue;
+    if (!STOPWORDS.has(b) && b.length > 2) {
+      const bi = `${a} ${b}`;
+      counts.set(bi, (counts.get(bi) || 0) + 1);
+      if (c && !STOPWORDS.has(c) && c.length > 2) {
+        const tri = `${a} ${b} ${c}`;
+        counts.set(tri, (counts.get(tri) || 0) + 1);
+      }
+    }
+  }
+
+  return [...counts.entries()]
+    .filter(([, n]) => n >= 2)
+    .sort((x, y) => y[1] - x[1] || y[0].length - x[0].length)
+    .slice(0, 6)
+    .map(([phrase]) => phrase);
 }
 
 function guessCategories(text: string): string[] {
@@ -127,30 +171,31 @@ function guessPricing(text: string): string | null {
 // ─── stage 2: the model's draft ─────────────────────────────
 
 function prompt(site: ScrapedSite): string {
-  return `You are writing a launch-directory listing for the product below, from what was scraped off its own site.
+  return `You are a senior product marketer AND an SEO specialist. Write a complete, launch-ready directory listing for the product below, using what was scraped from its own site. This listing is the founder's public page and must rank — so every field is written to be specific, keyword-rich and genuinely useful, never filler.
 
-Write like a person who used the product, not a brochure. Rules:
-- Use ONLY facts present in the material. Never invent metrics, prices, customers, funding or awards.
-- Be concrete and specific. Name the actual job it does and who does it. Avoid "revolutionary", "seamless", "powerful", "cutting-edge", "game-changing", "one-stop", "supercharge" and every word like them.
-- No emojis, no exclamation marks, no trailing periods on the tagline.
-- If a field genuinely can't be supported by the facts, return "" (or [] for lists). An empty field beats a guessed one.
+Hard rules:
+- Fill EVERY field. The material almost always supports who_for, problem, solution and unique_edge — infer them from what the product plainly does. Only return "" when the page truly gives you nothing on that point.
+- Use ONLY facts present in the material. Never invent metrics, prices, customers, funding, integrations or awards.
+- Be concrete. Name the exact job it does and exactly who does it. Ban these words and anything like them: revolutionary, seamless, powerful, cutting-edge, game-changing, one-stop, supercharge, effortless, unleash, elevate, next-generation, robust, innovative, streamline.
+- The tagline is the single most important line for SEO and click-through: lead with the outcome or the exact job, include the category noun a buyer would search, 30–65 characters, Title case optional, NO trailing period, no emoji, no exclamation mark. Bad: "The best all-in-one platform". Good: "Cold-email warmup that lands you in the inbox".
+- Keywords are search phrases a real buyer would type (2–4 words each), specific to this product and its category — never single generic words like "tool" or "app".
 
-Reply with ONLY this JSON object:
+Reply with ONLY this JSON object, nothing before or after:
 {
-  "name": "the product's name, 1-4 words",
-  "tagline": "the single clearest line of what it does and for whom, 25-70 characters",
-  "description": "3-4 specific sentences: what it is, who it's for, what it replaces. 300-600 characters",
-  "who_for": "the exact audience, under 12 words (e.g. 'solo founders doing their own outbound')",
-  "problem": "the real problem it removes, 1-2 sentences, grounded in the copy",
+  "name": "the product's real name, 1-4 words",
+  "tagline": "outcome + category, 30-65 characters, no trailing period",
+  "description": "3-4 specific sentences: what it is, who it's for, what it replaces, and the one concrete thing it does best. 320-600 characters",
+  "who_for": "the exact audience, under 12 words (e.g. 'solo founders running their own cold outbound')",
+  "problem": "the real, specific problem it removes, 1-2 sentences grounded in the copy",
   "solution": "concretely how it solves that — the actual mechanism, 1-2 sentences",
-  "unique_edge": "the one thing that makes it different from the obvious alternative, 1-2 sentences",
-  "categories": ["1-2 from exactly: ${CATEGORIES.map((c) => c.name).join(", ")}"],
+  "unique_edge": "the one thing that sets it apart from the obvious alternative, 1-2 sentences",
+  "categories": ["1-2 from EXACTLY this list: ${CATEGORIES.map((c) => c.name).join(", ")}"],
   "pricing_model": "one of free, freemium, trial, paid, or \\"\\" if unclear",
-  "keywords": ["4-6 specific search phrases a buyer would type — not generic single words"],
-  "alternatives": ["0-3 well-known products this is an alternative to, ONLY if clearly implied by the copy"],
+  "keywords": ["5-7 specific 2-4 word search phrases a buyer would type"],
+  "alternatives": ["0-3 well-known products this is an alternative to, ONLY if clearly implied"],
   "faq": [
-    {"q": "a real question a buyer would ask", "a": "a direct 1-2 sentence answer from the facts"},
-    {"q": "another", "a": "..."},
+    {"q": "a real question a buyer would ask before signing up", "a": "a direct 1-2 sentence answer from the facts"},
+    {"q": "another genuine buyer question", "a": "..."},
     {"q": "a third", "a": "..."}
   ]
 }
@@ -206,7 +251,9 @@ function merge(
     unique_edge: str("unique_edge", 400),
     categories: cats.length ? cats : base.categories,
     pricing_model: PRICING_MODELS.includes(pricing) ? pricing : base.pricing_model,
-    keywords: list("keywords", 6, 60),
+    // The model's phrases when it gave any; otherwise keep the ones derived
+    // from the page so keywords are never empty.
+    keywords: list("keywords", 7, 60).length ? list("keywords", 7, 60) : base.keywords,
     alternatives: list("alternatives", 3, 40),
     faq,
   };

@@ -14,12 +14,12 @@ const config: Config = {
         // monospaced figures — carrying Saasgrave's confident orange as the one
         // ink, so the two products read as family. Authority, but not cold.
         paper: {
-          50: "#faf7f1", // the page — warm paper
-          100: "#fffdf9", // cards — warm white, never pure #fff
-          200: "#f4efe6", // wells / hover
-          300: "#e9e2d5", // rules with weight
-          400: "#dcd3c3", // dividers
-          500: "#c7bca8", // muted edges
+          50: "#f8f8f6", // the page — near-white, a whisper of warmth
+          100: "#ffffff", // cards — clean white
+          200: "#f1f0ec", // wells / hover
+          300: "#e6e4dd", // rules with weight
+          400: "#d8d5cc", // dividers
+          500: "#c4bfb2", // muted edges
         },
         ink: {
           900: "#181510", // headlines — warm near-black

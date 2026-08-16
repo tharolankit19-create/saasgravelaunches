@@ -56,7 +56,18 @@ export function Footer() {
           />
         </div>
 
-        <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-ink-900/8 pt-6 text-[12px] text-ink-400">
+        {/* As featured in — real dofollow backlinks to the boards we launched on. */}
+        <div className="mt-10 flex flex-wrap items-center gap-4 border-t border-ink-900/8 pt-6">
+          <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-400">
+            As featured on
+          </span>
+          <a href="https://www.scrolllaunch.com/products/saasgrave-launches?ref=badge" target="_blank" rel="noopener">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="https://www.scrolllaunch.com/api/badge/saasgrave-launches" alt="Featured on ScrollLaunch" width="220" height="48" loading="lazy" />
+          </a>
+        </div>
+
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-ink-900/8 pt-6 text-[12px] text-ink-400">
           <p>© {new Date().getFullYear()} Saasgrave Launches. Built for makers who ship.</p>
           <p>
             Part of{" "}
