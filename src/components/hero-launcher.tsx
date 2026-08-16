@@ -49,7 +49,7 @@ export function HeroLauncher() {
           "text-[15px] font-medium text-paper-100 shadow-glow transition hover:bg-ember-600 active:translate-y-px"
         )}
       >
-        Launch
+        Launch my product
         <ArrowRight className="h-4 w-4" />
       </button>
     </form>

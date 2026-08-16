@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Clock, Link2, Sparkles, Trophy } from "lucide-react";
+import { ArrowRight, Clock, Link2, Sparkles, Trophy, Users, TrendingUp, Check, X } from "lucide-react";
 import { Card, Rubric, LinkButton, Empty } from "@/components/ui";
 import { ProductRow } from "@/components/product-row";
 import { WeekTabs } from "@/components/week-tabs";
@@ -63,17 +63,19 @@ export default async function HomePage({ searchParams }: { searchParams: { w?: s
               className="rise mx-auto max-w-2xl font-serif text-display font-semibold text-ink-900"
               style={{ animationDelay: "70ms" }}
             >
-              Launch your SaaS.
+              You built it.
               <br />
-              <span className="text-ember-500">Get your first users.</span>
+              <span className="text-ember-500">Now get it seen.</span>
             </h1>
 
             <p
-              className="rise mx-auto mt-5 max-w-lg text-lg leading-relaxed text-ink-500"
+              className="rise mx-auto mt-5 max-w-xl text-lg leading-relaxed text-ink-500"
               style={{ animationDelay: "150ms" }}
             >
-              Paste your URL. We write the listing, you&apos;re on the board in a minute — with a
-              dofollow backlink that lasts.
+              Paste your URL. Our AI writes the whole listing, and you&apos;re on this week&apos;s
+              board in about a minute — in front of real makers, with a{" "}
+              <strong className="font-semibold text-ink-700">permanent dofollow backlink</strong>{" "}
+              that keeps working long after launch day.
             </p>
 
             <div className="rise mt-9" style={{ animationDelay: "230ms" }}>
@@ -251,6 +253,97 @@ export default async function HomePage({ searchParams }: { searchParams: { w?: s
               </Link>
             </div>
           </aside>
+        </div>
+      </section>
+
+      {/* ═══ WHAT YOU GET — outcomes, not features ═══════════ */}
+      <section className="border-t border-ink-900/12">
+        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+          <Reveal>
+            <div className="mx-auto max-w-xl text-center">
+              <Rubric className="mb-4 justify-center">Why launch here</Rubric>
+              <h2 className="font-serif text-masthead font-semibold text-ink-900">
+                Three things every launch gets.
+              </h2>
+              <p className="mx-auto mt-3 max-w-md text-[15px] leading-relaxed text-ink-500">
+                Not a wall of features — the three outcomes that actually move a new product.
+              </p>
+            </div>
+          </Reveal>
+
+          <div className="mt-12 grid gap-5 sm:grid-cols-3">
+            {[
+              {
+                icon: <Users className="h-5 w-5" />,
+                title: "Real first users",
+                body: "Your listing lands in front of the makers browsing this week's board — the people most likely to actually try a new tool and tell you what's broken.",
+              },
+              {
+                icon: <Link2 className="h-5 w-5" />,
+                title: "A permanent dofollow backlink",
+                body: "Not nofollowed, not gone in a week. A real SEO link on your product page that stays live and indexed for good — the thing that keeps sending traffic.",
+              },
+              {
+                icon: <TrendingUp className="h-5 w-5" />,
+                title: "A ranking you can win",
+                body: "Ranked by real upvotes, never pay-to-win. Land the weekly top three and you're written up in Sunday's email to every maker here.",
+              },
+            ].map((c, i) => (
+              <Reveal key={c.title} delay={i * 110}>
+                <Card className="flex h-full flex-col p-6 transition hover:shadow-lift">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-ember-500/10 text-ember-600">
+                    {c.icon}
+                  </span>
+                  <h3 className="mt-4 font-serif text-lg font-semibold text-ink-900">{c.title}</h3>
+                  <p className="mt-2 text-[14px] leading-relaxed text-ink-500">{c.body}</p>
+                </Card>
+              </Reveal>
+            ))}
+          </div>
+
+          {/* Make the switch obvious — an honest comparison (Marc #31). */}
+          <Reveal>
+            <div className="mx-auto mt-10 max-w-3xl">
+              <Card className="grid gap-px overflow-hidden bg-ink-900/10 sm:grid-cols-2">
+                <div className="bg-paper-100 p-6">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-400">
+                    Posting once, somewhere
+                  </p>
+                  <ul className="mt-3 space-y-2.5">
+                    {[
+                      "Scrolls off the feed by tomorrow",
+                      "Link is nofollow, or gone in a week",
+                      "You write the whole listing yourself",
+                      "Ranked by an algorithm you can't see",
+                    ].map((t) => (
+                      <li key={t} className="flex items-start gap-2 text-[14px] text-ink-500">
+                        <X className="mt-0.5 h-4 w-4 shrink-0 text-ink-400" />
+                        {t}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="bg-paper-100 p-6">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-ember-600">
+                    Launching here
+                  </p>
+                  <ul className="mt-3 space-y-2.5">
+                    {[
+                      "A permanent page that keeps ranking",
+                      "A real dofollow backlink, forever",
+                      "AI writes your listing in a minute",
+                      "Ranked by honest upvotes you can win",
+                    ].map((t) => (
+                      <li key={t} className="flex items-start gap-2 text-[14px] text-ink-700">
+                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-moss-500" />
+                        {t}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </Card>
+            </div>
+          </Reveal>
         </div>
       </section>
 
