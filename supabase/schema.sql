@@ -520,6 +520,15 @@ alter table public.launch_products add column if not exists featured_week   text
 create index if not exists launch_products_featured_week_idx
   on public.launch_products(featured_week, featured_until);
 
+-- ============================================================
+--  BADGE VERIFICATION — the "verified member" backlink check.
+--  A maker pastes our badge on their own site; we fetch that page and confirm
+--  the dofollow link is really there, then mark the launch verified. Additive.
+-- ============================================================
+alter table public.launch_products add column if not exists badge_verified    boolean default false;
+alter table public.launch_products add column if not exists badge_verified_at  timestamptz;
+alter table public.launch_products add column if not exists badge_checked_at   timestamptz;
+
 -- ─────────────────────────────────────────────────────────────
 --  SUBSCRIPTIONS — the $29/month Premium tier.
 --  One active row per user. The webhook is the source of truth for

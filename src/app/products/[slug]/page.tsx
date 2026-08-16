@@ -14,6 +14,7 @@ import {
   Wrench,
   Star,
   Sparkles,
+  ShieldCheck,
 } from "lucide-react";
 import { Badge, Card, Rubric, LinkButton } from "@/components/ui";
 import { Avatar, ProductLogo } from "@/components/avatar";
@@ -24,6 +25,7 @@ import { ShareKit } from "@/components/share-kit";
 import { BadgeEmbed } from "@/components/badge-embed";
 import { CommentThread } from "@/components/comment-thread";
 import { Celebrate } from "@/components/celebrate";
+import { BadgeVerify } from "@/components/badge-verify";
 import { BarChart, LineChart } from "@/components/charts";
 import { AdRail } from "@/components/ad-rail";
 import { getProductAnalytics } from "@/lib/maker-analytics";
@@ -92,6 +94,21 @@ export default async function ProductPage({
     getWeekRank(product),
     getProductAnalytics(product.slug, 14),
   ]);
+
+  // Backlink-verified status. Read defensively: on a database that hasn't run
+  // the badge_verified migration yet, this simply reads as false instead of
+  // erroring the whole page.
+  let badgeVerified = false;
+  try {
+    const { data: bv } = await createAdminClient()
+      .from("launch_products")
+      .select("badge_verified")
+      .eq("id", product.id)
+      .maybeSingle();
+    badgeVerified = Boolean((bv as any)?.badge_verified);
+  } catch {
+    /* column not present yet */
+  }
 
   // Only draw the momentum charts once there's something to draw — a flat line
   // of zeros on a brand-new launch reads as broken, not as "no data yet".
@@ -226,6 +243,11 @@ export default async function ProductPage({
                     {product.featured && (
                       <Badge tone="orange">
                         <Sparkles className="h-3 w-3" /> Editor&apos;s pick
+                      </Badge>
+                    )}
+                    {badgeVerified && (
+                      <Badge tone="moss">
+                        <ShieldCheck className="h-3 w-3" /> Verified
                       </Badge>
                     )}
                     {product.status !== "live" && <Badge>Draft — only you can see this</Badge>}
@@ -441,6 +463,9 @@ export default async function ProductPage({
                   />
                   <div className="mt-6 border-t border-ink-900/8 pt-5">
                     <BadgeEmbed slug={product.slug} siteUrl={SITE} />
+                    <div className="mt-4">
+                      <BadgeVerify slug={product.slug} initialVerified={badgeVerified} />
+                    </div>
                     <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2">
                       <Link
                         href={`/embed/${product.slug}`}
