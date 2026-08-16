@@ -315,16 +315,6 @@ export function diagnose(i: Insights): Finding[] {
     });
   }
 
-  if (i.friction.publishBlocked >= 3) {
-    out.push({
-      severity: "warn",
-      title: "Publishes are being blocked by the support rule",
-      detail: `${i.friction.publishBlocked} publish attempts were blocked because the maker hadn't upvoted three other launches yet.`,
-      action:
-        "That rule is working as designed, but make sure the form says so before they fill it in, not after they press publish.",
-    });
-  }
-
   if (i.friction.publishErrors >= 1) {
     out.push({
       severity: "critical",
@@ -387,7 +377,7 @@ export function diagnose(i: Insights): Finding[] {
       title: "Live launches with zero upvotes",
       detail: `${i.content.zeroUpvoteLive} live products have never been upvoted.`,
       action:
-        "Makers who get nothing don't come back. Feature them in the newsletter or nudge the support rule higher.",
+        "Makers who get nothing don't come back. Feature them in the newsletter or invite makers to support the quiet launches.",
     });
   }
 

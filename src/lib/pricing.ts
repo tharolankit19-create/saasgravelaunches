@@ -173,10 +173,5 @@ export const PREMIUM_ONLY = [
   "Verified badge",
 ];
 
-/**
- * Launching costs nothing, but it isn't free of effort: you support three other
- * makers before your own launch goes live. That single rule is what keeps the
- * board from becoming a wall of drive-by submissions nobody reads — and it's
- * why the upvote counts here mean something.
- */
-export const SUPPORT_THRESHOLD = 3;
+/** Launching no longer has a support gate; filling the form is enough to go live. */
+export const SUPPORT_THRESHOLD = 0;
