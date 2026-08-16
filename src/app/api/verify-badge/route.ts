@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { normalizeUrl } from "@/lib/utils";
+import { sendEmail } from "@/lib/email";
+import { launchLiveEmail } from "@/lib/email-templates";
+import { track } from "@/lib/analytics";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -32,7 +35,7 @@ export async function POST(request: Request) {
 
   const { data: product } = await supabase
     .from("launch_products")
-    .select("id, slug, website_url, maker_id")
+    .select("id, slug, name, tagline, website_url, maker_id, status")
     .eq("slug", slug)
     .maybeSingle();
 
@@ -90,36 +93,80 @@ export async function POST(request: Request) {
     hay.includes(`/api/badge/${s}`) ||
     hay.includes(`badge/${s}`);
 
-  // Persist the result. Wrapped defensively: if the badge_verified columns
-  // aren't in the database yet (schema.sql not re-run), say so plainly rather
-  // than 500.
-  try {
-    const admin = createAdminClient();
-    const patch: Record<string, unknown> = { badge_checked_at: new Date().toISOString() };
-    if (verified) {
-      patch.badge_verified = true;
-      patch.badge_verified_at = new Date().toISOString();
+  if (!verified) {
+    // Record the attempt (best-effort), then tell them plainly.
+    try {
+      await createAdminClient()
+        .from("launch_products")
+        .update({ badge_checked_at: new Date().toISOString() })
+        .eq("id", product.id);
+    } catch {
+      /* columns may not be migrated yet — harmless */
     }
-    const { error } = await admin.from("launch_products").update(patch).eq("id", product.id);
-    if (error) throw error;
-  } catch (e: any) {
-    console.error("verify-badge update:", e?.message || e);
-    return NextResponse.json(
-      {
-        verified,
-        error:
-          "Found the badge, but couldn't save it — run the latest supabase/schema.sql to add the badge_verified columns.",
-      },
-      { status: 200 }
-    );
+    return NextResponse.json({
+      verified: false,
+      error:
+        "We fetched your homepage but didn't find the badge yet. Make sure it's published and in the page HTML, then try again.",
+    });
   }
 
-  return NextResponse.json({
-    verified,
-    error: verified
-      ? null
-      : "We fetched your homepage but didn't find the badge yet. Make sure it's published and in the page HTML, then try again.",
-  });
+  // ── verified ──
+  const admin = createAdminClient();
+  const wasDraft = product.status === "draft";
+
+  // 1. Publish the draft using ONLY guaranteed columns. This must never be
+  //    blocked by a missing badge_verified column, or a gated launch could get
+  //    stuck as a draft before the migration is applied.
+  if (wasDraft) {
+    const { error } = await admin
+      .from("launch_products")
+      .update({ status: "live", launched_at: new Date().toISOString() })
+      .eq("id", product.id);
+    if (error) {
+      console.error("verify-badge publish:", error.message);
+      return NextResponse.json(
+        { verified: true, error: "Found the badge, but couldn't publish — try verify again." },
+        { status: 200 }
+      );
+    }
+  }
+
+  // 2. Record the verification flag — best-effort. If the badge_verified columns
+  //    aren't migrated yet, the launch still went live; the Verified mark just
+  //    won't show until schema.sql is run.
+  try {
+    await admin
+      .from("launch_products")
+      .update({
+        badge_verified: true,
+        badge_verified_at: new Date().toISOString(),
+        badge_checked_at: new Date().toISOString(),
+      })
+      .eq("id", product.id);
+  } catch (e: any) {
+    console.error("verify-badge flag (non-fatal):", e?.message || e);
+  }
+
+  if (wasDraft) {
+    await track({ event: "publish_success", userId: user.id, productSlug: product.slug });
+    if (user.email) {
+      const site = process.env.NEXT_PUBLIC_SITE_URL || "https://ls.saasgrave.org";
+      const mail = launchLiveEmail({
+        productName: product.name,
+        tagline: product.tagline,
+        productUrl: `${site}/products/${product.slug}`,
+        boardUrl: site,
+        siteUrl: site,
+      });
+      try {
+        await sendEmail({ to: user.email, subject: mail.subject, html: mail.html });
+      } catch (e: any) {
+        console.error("verify-badge email:", e?.message || e);
+      }
+    }
+  }
+
+  return NextResponse.json({ verified: true, published: wasDraft, slug: product.slug });
 }
 
 /** Refuse private/link-local hosts — this is a server making the maker's request. */

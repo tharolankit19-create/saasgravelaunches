@@ -2,12 +2,15 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Sparkles, Loader2, ChevronDown, Check, Calendar, Lock } from "lucide-react";
+import { Sparkles, Loader2, ChevronDown, Check, Calendar, Lock, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Button, Field, inputClass, Card } from "@/components/ui";
 import { ImageUpload } from "@/components/image-upload";
 import { PhotoUpload } from "@/components/photo-upload";
+import { BadgeEmbed } from "@/components/badge-embed";
 import { CopilotPanel } from "@/components/copilot-panel";
+
+const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://ls.saasgrave.org";
 import { CATEGORIES, PRICING_MODELS } from "@/lib/categories";
 import { cn } from "@/lib/utils";
 import { trackEvent } from "@/lib/track-client";
@@ -89,6 +92,10 @@ export function SubmitForm({
   const [filled, setFilled] = useState(false);
   const [more, setMore] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  // When a launch is held for badge verification, we hold its slug here and show
+  // the badge step instead of redirecting.
+  const [badgeSlug, setBadgeSlug] = useState<string | null>(null);
+  const [verifying, setVerifying] = useState(false);
   const autoRan = useRef(false);
 
   // High-value SEO fields the AI drafts. Not shown as editable inputs (they'd
@@ -196,6 +203,15 @@ export function SubmitForm({
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Couldn't publish that.");
 
+      // Held for badge verification — show the badge step, don't redirect.
+      if (data.needsBadge && data.slug) {
+        setBadgeSlug(data.slug);
+        setPublishing(false);
+        toast.message("Almost there — add the badge to your site to go live.");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+
       trackEvent("publish_success", { productSlug: data.slug });
       router.push(`/products/${data.slug}?launched=1`);
     } catch (e: any) {
@@ -205,7 +221,85 @@ export function SubmitForm({
     }
   }
 
+  async function verifyAndPublish() {
+    if (!badgeSlug) return;
+    setVerifying(true);
+    try {
+      const res = await fetch("/api/verify-badge", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug: badgeSlug }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Couldn't verify right now.");
+
+      if (data.verified) {
+        trackEvent("publish_success", { productSlug: badgeSlug });
+        router.push(`/products/${badgeSlug}?launched=1`);
+      } else {
+        toast.error(data.error || "We didn't find the badge on your site yet.");
+        setVerifying(false);
+      }
+    } catch (e: any) {
+      toast.error(e?.message || "Couldn't verify right now.");
+      setVerifying(false);
+    }
+  }
+
   const ready = draft.name.trim() && draft.tagline.trim() && draft.website_url.trim();
+
+  // ── badge step ── the launch is saved as a draft; add + verify the badge to
+  // go live. This is the loop that sends traffic both ways.
+  if (badgeSlug) {
+    return (
+      <div className="space-y-6">
+        <Card className="overflow-hidden">
+          <div className="flex items-start gap-3 border-b border-ink-900/8 bg-moss-500/[0.06] px-6 py-5">
+            <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-moss-600" />
+            <div>
+              <h2 className="font-serif text-xl font-semibold text-ink-900">
+                One last step — add the badge, go live
+              </h2>
+              <p className="mt-1 text-[14px] leading-relaxed text-ink-500">
+                Your listing is saved. To publish it, add the{" "}
+                <strong className="text-ink-700">Featured on Saasgrave Launches</strong> badge to
+                your site — it&apos;s how we confirm the launch is yours, and it sends visitors both
+                ways. Paste the code (or the AI prompt) below, publish your site, then verify.
+              </p>
+            </div>
+          </div>
+
+          <div className="p-6">
+            <BadgeEmbed slug={badgeSlug} siteUrl={SITE} />
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-ink-900/8 bg-paper-200/40 px-6 py-4">
+            <a
+              href="/pricing#plans"
+              className="font-mono text-[11px] uppercase tracking-[0.1em] text-ink-500 underline decoration-ink-900/25 underline-offset-4 hover:text-ember-600"
+            >
+              Or go Premium to skip verification
+            </a>
+            <Button type="button" size="lg" onClick={verifyAndPublish} disabled={verifying}>
+              {verifying ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" /> Checking your site…
+                </>
+              ) : (
+                <>
+                  <ShieldCheck className="h-4 w-4" /> Verify &amp; go live
+                </>
+              )}
+            </Button>
+          </div>
+        </Card>
+
+        <p className="text-center text-[13px] text-ink-400">
+          Added the badge but not deployed yet? Publish your site first, then hit verify.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={publish} className="space-y-6">

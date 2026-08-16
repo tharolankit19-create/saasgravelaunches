@@ -116,18 +116,32 @@ export async function POST(request: Request) {
     );
   }
 
-  const { data: duplicate } = await supabase
+  // ── badge gate ──
+  // To launch, a free maker must put our "Featured on Saasgrave Launches" badge
+  // on their site, and we verify it — that's the backlink loop that sends
+  // traffic both ways. So the launch is created as a DRAFT and only goes live
+  // once the badge is verified. Premium skips this; BADGE_REQUIRED=false turns
+  // it off entirely.
+  const badgeRequired = process.env.BADGE_REQUIRED !== "false";
+  const gateBadge = badgeRequired && !premium;
+
+  const { data: existing } = await supabase
     .from("launch_products")
-    .select("slug")
+    .select("slug, status")
     .eq("maker_id", user.id)
     .eq("website_url", website)
     .maybeSingle();
 
-  if (duplicate) {
-    return NextResponse.json(
-      { error: "You've already launched that URL.", slug: duplicate.slug },
-      { status: 409 }
-    );
+  if (existing) {
+    // Already live → nothing to do. Still a draft from a prior attempt → send
+    // them straight back to the badge step for that draft.
+    if (existing.status === "live") {
+      return NextResponse.json(
+        { error: "You've already launched that URL.", slug: existing.slug },
+        { status: 409 }
+      );
+    }
+    return NextResponse.json({ needsBadge: true, slug: existing.slug, resumed: true });
   }
 
   // ── shape the row ──
@@ -192,9 +206,10 @@ export async function POST(request: Request) {
     maker_note: text(body.maker_note, 800),
     seo_title: `${name} — ${tagline}`.slice(0, 70),
     seo_description: text(body.description, 155) || `${name}: ${tagline}`.slice(0, 155),
-    status: "live",
+    // Gated launches start as a draft and go live on badge verification.
+    status: gateBadge ? "draft" : "live",
     launch_week: week,
-    launched_at: new Date().toISOString(),
+    launched_at: gateBadge ? null : new Date().toISOString(),
   };
 
   const { data, error } = await supabase
@@ -207,6 +222,13 @@ export async function POST(request: Request) {
     console.error("launch:", error.message);
     await track({ event: "publish_error", userId: user.id, meta: { message: error.message } });
     return NextResponse.json({ error: "Couldn't publish that. Try again in a moment." }, { status: 500 });
+  }
+
+  // Gated: hold as a draft and send the maker to the badge step. The launch
+  // goes live (and the "you're live" email fires) from the verify-badge route.
+  if (gateBadge) {
+    await track({ event: "publish_pending_badge", userId: user.id, productSlug: data.slug });
+    return NextResponse.json({ needsBadge: true, slug: data.slug });
   }
 
   await track({ event: "publish_success", userId: user.id, productSlug: data.slug });
