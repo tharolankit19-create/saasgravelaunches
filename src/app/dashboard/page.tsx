@@ -7,11 +7,11 @@ import { ProductLogo } from "@/components/avatar";
 import { ProfileForm } from "@/components/profile-form";
 import { ShareRow } from "@/components/share-row";
 import { createClient, currentUser } from "@/lib/supabase/server";
-import { getMakerProducts, getSupportCount } from "@/lib/launches";
+import { getMakerProducts } from "@/lib/launches";
 import { getMakerStats, levelFor, streakLabel, isPremium } from "@/lib/premium";
 import { LevelMeter } from "@/components/charts";
 import { getMyAds } from "@/lib/ads";
-import { SUPPORT_THRESHOLD, PRODUCTS } from "@/lib/pricing";
+import { PRODUCTS } from "@/lib/pricing";
 import { monthLabel, weekLabel } from "@/lib/week";
 
 export const dynamic = "force-dynamic";
@@ -25,7 +25,7 @@ export default async function DashboardPage() {
   if (!user) redirect("/login?next=/dashboard");
 
   const supabase = createClient();
-  const [{ data: profile }, products, ads, supported] = await Promise.all([
+  const [{ data: profile }, products, ads] = await Promise.all([
     supabase
       .from("profiles")
       .select("full_name, avatar_url, bio, x_handle, github_handle, website_url, maker_headline")
@@ -33,7 +33,6 @@ export default async function DashboardPage() {
       .maybeSingle(),
     getMakerProducts(user.id),
     getMyAds(user.id),
-    getSupportCount(user.id),
   ]);
 
   const [stats, premium] = await Promise.all([getMakerStats(user.id), isPremium(user.id)]);
@@ -97,22 +96,6 @@ export default async function DashboardPage() {
           <Stat value={premium ? "Premium" : "Free"} label="Plan" />
         </div>
       </Card>
-
-      {supported < SUPPORT_THRESHOLD && (
-        <Card className="mt-5 border-brass-500/25 bg-brass-500/6 p-5">
-          <p className="text-sm font-semibold text-ink-900">
-            {SUPPORT_THRESHOLD - supported} more upvote
-            {SUPPORT_THRESHOLD - supported === 1 ? "" : "s"} before you can publish
-          </p>
-          <p className="mt-1 text-[13px] leading-relaxed text-ink-500">
-            Everyone who launches here supports {SUPPORT_THRESHOLD} other makers first. It takes a
-            minute and it&apos;s the reason the votes on this board mean anything.{" "}
-            <Link href="/" className="font-medium text-ember-600 hover:underline">
-              Browse this week →
-            </Link>
-          </p>
-        </Card>
-      )}
 
       {/* ── launches ── */}
       <section className="mt-10">
