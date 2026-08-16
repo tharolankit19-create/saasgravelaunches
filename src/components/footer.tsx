@@ -25,6 +25,26 @@ export function Footer() {
               <p className="mb-2 text-[13px] font-medium text-ink-900">The weekly digest</p>
               <NewsletterForm source="footer" />
             </div>
+            <div className="mt-6">
+              <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-400">
+                As featured in
+              </p>
+              <a
+                href="https://www.scrolllaunch.com/products/leaderboard?ref=badge"
+                target="_blank"
+                rel="noopener"
+                className="inline-flex"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="https://www.scrolllaunch.com/api/badge/leaderboard"
+                  alt="Featured on ScrollLaunch"
+                  width="220"
+                  height="48"
+                  loading="lazy"
+                />
+              </a>
+            </div>
           </div>
 
           <FooterCol

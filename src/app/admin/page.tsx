@@ -199,7 +199,7 @@ export default async function AdminPage({ searchParams }: { searchParams: { days
         <Card className="grid grid-cols-2 gap-5 p-6 sm:grid-cols-3">
           <Stat value={i.friction.abandonedDrafts} label="Opened form, didn't publish" />
           <Stat value={pct(i.friction.autofillErrorRate)} label="Autofill error rate" />
-          <Stat value={i.friction.publishBlocked} label="Blocked by support rule" />
+          <Stat value={i.friction.publishBlocked} label="Blocked publishes" />
           <Stat value={i.friction.publishErrors} label="Publish errors" />
           <Stat value={i.content.zeroUpvoteLive} label="Live with zero upvotes" />
           <Stat value={i.content.draftsTotal} label="Drafts sitting unfinished" />

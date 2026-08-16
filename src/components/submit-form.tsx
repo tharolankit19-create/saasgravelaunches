@@ -52,14 +52,8 @@ const EMPTY: Draft = {
  * optional. Nothing below "The essentials" blocks publishing.
  */
 export function SubmitForm({
-  canPublish,
-  supported,
-  threshold,
   initialUrl,
 }: {
-  canPublish: boolean;
-  supported: number;
-  threshold: number;
   /** URL carried from the landing hero — autofill fires against it on mount. */
   initialUrl?: string;
 }) {
@@ -133,6 +127,10 @@ export function SubmitForm({
 
       if (data?.source?.ai) {
         toast.success("Filled from your site. Check it over and fix anything we got wrong.");
+      } else if (data?.source?.scraped === false) {
+        toast.warning(
+          data?.source?.note || "We could not read the page, but the URL is ready — fill the rest in by hand."
+        );
       } else {
         toast.success("Pulled what we could from your page — the rest is yours to write.");
       }
@@ -146,8 +144,6 @@ export function SubmitForm({
 
   async function publish(e: React.FormEvent) {
     e.preventDefault();
-    if (!canPublish) return;
-
     setPublishing(true);
     trackEvent("publish_attempt");
     try {
@@ -460,21 +456,11 @@ export function SubmitForm({
 
       {/* ── publish ── */}
       <div className="sticky bottom-0 z-10 -mx-1 border-t border-ink-900/8 bg-paper-50/90 px-1 py-4 backdrop-blur">
-        {!canPublish && (
-          <p className="mb-3 rounded-xl border border-brass-500/25 bg-brass-500/8 px-4 py-3 text-[13px] text-ink-700">
-            Support <strong>{threshold - supported}</strong> more launch
-            {threshold - supported === 1 ? "" : "es"} before you publish your own. You&apos;ve
-            upvoted {supported} of {threshold}.{" "}
-            <a href="/" className="font-medium text-ember-600 hover:underline">
-              Go find one worth an upvote →
-            </a>
-          </p>
-        )}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-[13px] text-ink-500">
             Free, forever. Your page and its backlink stay live after the week ends.
           </p>
-          <Button type="submit" size="lg" disabled={!canPublish || !ready || publishing}>
+          <Button type="submit" size="lg" disabled={!ready || publishing}>
             {publishing ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" /> Publishing…

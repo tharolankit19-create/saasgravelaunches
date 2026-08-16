@@ -69,8 +69,8 @@ export function BadgeEmbed({
       </div>
 
       <p className="mt-1.5 text-[13px] leading-relaxed text-ink-500">
-        It shows your rank and live upvote count, and links back to your page. Makers who add it
-        keep getting traffic long after their week closes.
+        Copy the HTML and paste it on your site. There is no verification step — once your
+        listing is live, the badge works immediately and links back to your page.
       </p>
 
       <div

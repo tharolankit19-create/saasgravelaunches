@@ -134,10 +134,9 @@ deliberately *not* reachable with the read-only insights bearer token.
 
 ## The one rule
 
-A maker must upvote **3 other people's launches** before publishing their own
-(`SUPPORT_THRESHOLD` in `src/lib/pricing.ts`). It's enforced in the API, not just
-the UI, and it's the reason the ranking means anything. Free makers get
-`FREE_LAUNCHES_PER_WEEK` (one) launch a week; Premium lifts that cap.
+Launching has no upvote gate: a maker fills the product fields and the listing
+goes live immediately. Free makers get `FREE_LAUNCHES_PER_WEEK` (one) launch a
+week; Premium lifts that cap.
 
 ## Stack
 
