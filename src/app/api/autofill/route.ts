@@ -34,15 +34,10 @@ export async function POST(request: Request) {
       meta: { ai: result.source.ai, note: result.source.note?.slice(0, 200) },
     });
 
-    // A page we couldn't read at all is worth saying out loud — the maker can
-    // still type five fields, but they should know why nothing appeared.
-    if (!result.source.scraped) {
-      return NextResponse.json(
-        { error: result.source.note || "Couldn't read that site." },
-        { status: 422 }
-      );
-    }
-
+    // Never hard-error: even when the page was unreadable we still return the
+    // URL and a name guessed from the domain, so the founder lands on a
+    // partly-filled form instead of a red wall. The client reads
+    // `source.scraped` to decide the message.
     return NextResponse.json(result);
   } catch (e: any) {
     await track({

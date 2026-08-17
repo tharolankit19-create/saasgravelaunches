@@ -167,8 +167,14 @@ export function SubmitForm({
 
       if (data?.source?.ai) {
         toast.success("Filled from your site. Check it over and fix anything we got wrong.");
-      } else {
+      } else if (data?.source?.scraped) {
         toast.success("Pulled what we could from your page — the rest is yours to write.");
+      } else {
+        // Couldn't read the page (blocked, redirect, or JS-only) — but the URL
+        // and a name are in, so it's not a dead end.
+        toast.message(
+          "We couldn't read that page automatically — your URL's in, just fill the fields (it's quick)."
+        );
       }
     } catch (e: any) {
       trackEvent("autofill_error", { meta: { message: String(e?.message).slice(0, 120) } });

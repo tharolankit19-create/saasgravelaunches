@@ -27,8 +27,12 @@ export type ScrapedSite = {
   error?: string;
 };
 
+// A real browser UA. The founder is importing their OWN site, and an obvious
+// "…Bot/1.0" user-agent is exactly what Cloudflare and other WAFs block — which
+// makes the scrape fail on sites that open fine in a browser. This is a link
+// preview, so a normal desktop-Chrome UA is the right call.
 const UA =
-  "Mozilla/5.0 (compatible; SaasgraveLaunchesBot/1.0; +https://ls.saasgrave.org/about)";
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
 const MAX_BYTES = 900_000; // plenty for a landing page; stops us pulling an app bundle
 const TIMEOUT_MS = 8_000;
 
@@ -92,7 +96,11 @@ export async function scrapeSite(rawUrl: string): Promise<ScrapedSite> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
     const res = await fetch(url, {
-      headers: { "User-Agent": UA, Accept: "text/html,application/xhtml+xml" },
+      headers: {
+        "User-Agent": UA,
+        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+      },
       redirect: "follow",
       signal: controller.signal,
       cache: "no-store",
