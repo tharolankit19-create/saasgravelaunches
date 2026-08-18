@@ -34,7 +34,8 @@ export function Footer() {
               { href: "/leaderboard", label: "Leaderboard" },
               { href: "/products", label: "Directory" },
               { href: "/launch", label: "Launch a product" },
-              { href: "/pricing", label: "Advertise" },
+              { href: "/directories", label: "Directory submission" },
+              { href: "/pricing", label: "Pricing" },
             ]}
           />
 

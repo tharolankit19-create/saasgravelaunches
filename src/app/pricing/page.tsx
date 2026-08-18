@@ -399,8 +399,11 @@ export default async function PricingPage() {
           })}
         </div>
         <p className="mt-4 text-center text-[13px] text-ink-400">
-          Pay once. Tell us your product on the next step (or we&apos;ll email you). You&apos;re
-          buying back the weekend. 🔥
+          Pay once. Tell us your product on the next step (or we&apos;ll email you). Need a custom
+          size (10–200 directories)?{" "}
+          <Link href="/directories" className="font-medium text-ember-600 hover:underline">
+            See the full directory service →
+          </Link>
         </p>
       </section>
 
