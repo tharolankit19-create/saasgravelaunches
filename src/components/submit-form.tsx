@@ -254,61 +254,99 @@ export function SubmitForm({
 
   const ready = draft.name.trim() && draft.tagline.trim() && draft.website_url.trim();
 
-  // ── badge step ── the launch is saved as a draft; add + verify the badge to
-  // go live. This is the loop that sends traffic both ways.
-  if (badgeSlug) {
-    return (
-      <div className="space-y-6">
-        <Card className="overflow-hidden">
-          <div className="flex items-start gap-3 border-b border-ink-900/8 bg-moss-500/[0.06] px-6 py-5">
-            <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-moss-600" />
-            <div>
-              <h2 className="font-serif text-xl font-semibold text-ink-900">
-                One last step — add the badge, go live
-              </h2>
-              <p className="mt-1 text-[14px] leading-relaxed text-ink-500">
-                Your listing is saved. To publish it, add the{" "}
-                <strong className="text-ink-700">Featured on Saasgrave Launches</strong> badge to
-                your site — it&apos;s how we confirm the launch is yours, and it sends visitors both
-                ways. Paste the code (or the AI prompt) below, publish your site, then verify.
-              </p>
-            </div>
+  // ── badge step ── shown as an unmissable modal the moment the draft is saved.
+  // Two clear paths: add the badge and go live free, or go Premium and skip it.
+  const badgeModal = badgeSlug ? (
+    <div className="fixed inset-0 z-[90] flex items-start justify-center overflow-y-auto bg-ink-900/50 p-4 backdrop-blur-sm sm:p-6">
+      <Card className="my-6 w-full max-w-2xl overflow-hidden shadow-lift">
+        <div className="flex items-start gap-3 border-b border-ink-900/10 bg-ember-500/[0.06] px-6 py-5">
+          <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-ember-600" />
+          <div className="min-w-0">
+            <h2 className="font-serif text-xl font-semibold text-ink-900">
+              Last step — your launch isn&apos;t live yet
+            </h2>
+            <p className="mt-1 text-[14px] leading-relaxed text-ink-500">
+              We saved your listing as a draft. Pick one way to publish it:
+            </p>
           </div>
+        </div>
 
-          <div className="p-6">
-            <BadgeEmbed slug={badgeSlug} siteUrl={SITE} />
+        {/* Path A — free, with the badge */}
+        <div className="px-6 py-5">
+          <div className="mb-3 flex items-center gap-2">
+            <span className="grid h-6 w-6 place-items-center rounded-full bg-ink-900 text-[12px] font-bold text-paper-100">
+              1
+            </span>
+            <p className="text-[15px] font-semibold text-ink-900">
+              Free — add our badge to your site, then verify
+            </p>
           </div>
+          <p className="mb-4 text-[13px] leading-relaxed text-ink-500">
+            Paste the code (or the AI prompt) below onto your site&apos;s homepage or footer,
+            publish it, then hit verify. This is how the backlink sends traffic both ways.
+          </p>
+          <BadgeEmbed slug={badgeSlug} siteUrl={SITE} />
+          <Button
+            type="button"
+            size="lg"
+            onClick={verifyAndPublish}
+            disabled={verifying}
+            className="mt-5 w-full"
+          >
+            {verifying ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" /> Checking your site…
+              </>
+            ) : (
+              <>
+                <ShieldCheck className="h-4 w-4" /> I added it — verify &amp; go live
+              </>
+            )}
+          </Button>
+        </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-ink-900/8 bg-paper-200/40 px-6 py-4">
-            <a
-              href="/pricing#plans"
-              className="font-mono text-[11px] uppercase tracking-[0.1em] text-ink-500 underline decoration-ink-900/25 underline-offset-4 hover:text-ember-600"
-            >
-              Or go Premium to skip verification
-            </a>
-            <Button type="button" size="lg" onClick={verifyAndPublish} disabled={verifying}>
-              {verifying ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" /> Checking your site…
-                </>
-              ) : (
-                <>
-                  <ShieldCheck className="h-4 w-4" /> Verify &amp; go live
-                </>
-              )}
-            </Button>
+        {/* Path B — premium, skip the badge */}
+        <div className="border-t border-ink-900/10 bg-paper-200/40 px-6 py-5">
+          <div className="mb-2 flex items-center gap-2">
+            <span className="grid h-6 w-6 place-items-center rounded-full bg-brass-500 text-[12px] font-bold text-paper-50">
+              2
+            </span>
+            <p className="text-[15px] font-semibold text-ink-900">
+              Or go Premium — launch instantly, no badge needed
+            </p>
           </div>
-        </Card>
+          <p className="mb-3 text-[13px] leading-relaxed text-ink-500">
+            Premium skips verification entirely and publishes right away — plus unlimited launches,
+            analytics and the Verified mark.
+          </p>
+          <a
+            href="/pricing#plans"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-brass-500/50 px-4 py-2 text-[13px] font-medium text-brass-600 transition hover:bg-brass-500/10"
+          >
+            See Premium →
+          </a>
+        </div>
 
-        <p className="text-center text-[13px] text-ink-400">
-          Added the badge but not deployed yet? Publish your site first, then hit verify.
-        </p>
-      </div>
-    );
-  }
+        <div className="flex items-center justify-between gap-3 border-t border-ink-900/10 px-6 py-3">
+          <p className="text-[12px] text-ink-400">
+            Your draft is saved — you can finish this any time from your dashboard.
+          </p>
+          <button
+            type="button"
+            onClick={() => setBadgeSlug(null)}
+            className="font-mono text-[11px] uppercase tracking-[0.1em] text-ink-400 hover:text-ink-700"
+          >
+            Later
+          </button>
+        </div>
+      </Card>
+    </div>
+  ) : null;
 
   return (
-    <form onSubmit={publish} className="space-y-6">
+    <>
+      {badgeModal}
+      <form onSubmit={publish} className="space-y-6">
       {/* ── autofill ── */}
       <Card className="overflow-hidden">
         <div className="bg-gradient-to-br from-ember-500/8 to-moss-500/6 px-5 py-6 sm:px-6">
@@ -680,6 +718,16 @@ export function SubmitForm({
             </a>
           </p>
         )}
+        {!premium && (
+          <p className="mb-3 rounded-lg border border-ink-900/12 bg-paper-200/50 px-4 py-2.5 text-[13px] leading-relaxed text-ink-600">
+            <strong className="text-ink-900">One thing after this:</strong> free launches add our
+            badge to your site and verify it (we&apos;ll show you how in a sec). Prefer to skip it?{" "}
+            <a href="/pricing#plans" className="font-medium text-ember-600 hover:underline">
+              Premium launches instantly
+            </a>
+            .
+          </p>
+        )}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-[13px] text-ink-500">
             Free, forever. Your page and its backlink stay live after the week ends.
@@ -695,6 +743,7 @@ export function SubmitForm({
           </Button>
         </div>
       </div>
-    </form>
+      </form>
+    </>
   );
 }

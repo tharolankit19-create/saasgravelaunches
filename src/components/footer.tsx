@@ -56,15 +56,48 @@ export function Footer() {
           />
         </div>
 
-        {/* As featured in — real dofollow backlinks to the boards we launched on. */}
-        <div className="mt-10 flex flex-wrap items-center gap-4 border-t border-ink-900/8 pt-6">
-          <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-400">
+        {/* As featured on — a marquee of the boards we launched on. Real dofollow
+            backlinks both ways; append new badges to the array below. */}
+        <div className="mt-10 border-t border-ink-900/8 pt-6">
+          <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.16em] text-ink-400">
             As featured on
-          </span>
-          <a href="https://www.scrolllaunch.com/products/saasgrave-launches?ref=badge" target="_blank" rel="noopener">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="https://www.scrolllaunch.com/api/badge/saasgrave-launches" alt="Featured on ScrollLaunch" width="220" height="48" loading="lazy" />
-          </a>
+          </p>
+          <div className="marquee-mask">
+            <div className="marquee-track py-1">
+              {[0, 1].map((dup) => (
+                <div key={dup} className="flex shrink-0 items-center gap-10" aria-hidden={dup === 1}>
+                  <a
+                    href="https://www.scrolllaunch.com/products/saasgrave-launches?ref=badge"
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src="https://www.scrolllaunch.com/api/badge/saasgrave-launches"
+                      alt="Featured on ScrollLaunch"
+                      width="220"
+                      height="48"
+                      loading="lazy"
+                    />
+                  </a>
+                  <a
+                    href="https://startupfa.me/s/saasgrave?utm_source=ls.saasgrave.org"
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src="https://startupfa.me/badges/featured-badge.webp"
+                      alt="Saasgrave - Featured on Startup Fame"
+                      width="171"
+                      height="54"
+                      loading="lazy"
+                    />
+                  </a>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-ink-900/8 pt-6 text-[12px] text-ink-400">
