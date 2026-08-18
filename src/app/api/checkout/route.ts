@@ -85,15 +85,11 @@ export async function POST(request: Request) {
     // A subscription belongs to the person, not to a product.
     referenceId = user.id;
   } else {
-    // directory — a one-off service against the maker's latest launch
+    // directory (any tier) — a one-off, human-fulfilled service. No launch
+    // required: if the buyer has a launch we attach it, otherwise we bill the
+    // person and collect their product details after checkout.
     const target = await ownProduct(admin, user.id, productSlug);
-    if (!target) {
-      return NextResponse.json(
-        { error: "Launch a product first — that's what we submit to the directories." },
-        { status: 400 }
-      );
-    }
-    referenceId = target.id;
+    referenceId = target?.id ?? user.id;
   }
 
   // Best-effort ledger row. Never blocks checkout — the webhook and the success

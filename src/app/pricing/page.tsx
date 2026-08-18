@@ -8,6 +8,7 @@ import { getAvailability, getFeaturedAvailability } from "@/lib/ads";
 import { getSiteStats } from "@/lib/launches";
 import { FREE_LAUNCHES_PER_WEEK, FREE_PERKS, PRODUCTS, priceDisplay } from "@/lib/pricing";
 import { currentWeekKey, monthLabel, weekLabel } from "@/lib/week";
+import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -332,48 +333,75 @@ export default async function PricingPage() {
 
       {/* ═══ GROUP 3 · DONE FOR YOU ═══ */}
       <div id="done-for-you" className="mt-20 scroll-mt-32 border-t border-ink-900/12 pt-14">
-        <h2 className="font-serif text-masthead font-semibold text-ink-900">Done for you</h2>
-        <p className="mt-2 max-w-xl text-[14px] leading-relaxed text-ink-500">
-          One thing we do by hand, so you don&apos;t spend a week doing it yourself.
+        <h2 className="font-serif text-masthead font-semibold text-ink-900">
+          Directory submission — done by hand
+        </h2>
+        <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-ink-500">
+          Submitting a product to 100+ directories by hand takes ~70 hours. We know — we do it for
+          people. Do-follow links only, hand-picked to your niche, no bots. We start within 48 hours
+          and send a full report with every submission. No launch required.
         </p>
+        <div className="mt-4 flex flex-wrap gap-x-6 gap-y-1.5 font-mono text-[11px] uppercase tracking-[0.1em] text-ink-400">
+          <span>Do-follow only</span>
+          <span>Hand-picked, high-DR</span>
+          <span>Full report</span>
+          <span>No launch needed</span>
+        </div>
       </div>
 
-      {/* ── directory blast ── */}
+      {/* ── directory tiers ── */}
       <section id="directories" className="mt-8 scroll-mt-32">
-        <Rubric className="mb-6">The service</Rubric>
-        <Card className="grid gap-8 p-8 md:grid-cols-[1fr_1.2fr]">
-          <div>
-            <h2 className="font-serif text-2xl font-semibold text-ink-900">
-              {PRODUCTS.directory.name}
-            </h2>
-            <p className="mt-6 flex items-baseline gap-2">
-              <span className="figure text-5xl font-semibold text-ink-900">
-                ${PRODUCTS.directory.dollars}
-              </span>
-              <span className="text-sm text-ink-400">one-off</span>
-            </p>
-            <p className="mt-4 text-[14px] leading-relaxed text-ink-500">
-              {PRODUCTS.directory.tagline} Submitted personally — not by a script that fills in the
-              wrong fields and gets your listing rejected.
-            </p>
-            <BuyButton
-              product="directory"
-              label={`Order the blast — $${PRODUCTS.directory.dollars}`}
-              className="mt-7 w-full sm:w-auto"
-            />
-            <p className="mt-3 text-[12px] leading-relaxed text-ink-400">
-              You need a live launch first — that&apos;s the listing we submit.
-            </p>
-          </div>
-          <ul className="grid gap-3 self-center">
-            {PRODUCTS.directory.perks.map((p) => (
-              <li key={p} className="flex items-start gap-2.5 text-[15px] text-ink-700">
-                <Check className="mt-0.5 h-4 w-4 shrink-0 text-moss-500" />
-                {p}
-              </li>
-            ))}
-          </ul>
-        </Card>
+        <div className="grid gap-4 md:grid-cols-3">
+          {([
+            { key: "directory" as const, save: "Save 20+ hours" },
+            { key: "directoryPro" as const, save: "Save 45+ hours", popular: true },
+            { key: "directoryMax" as const, save: "Save 70+ hours" },
+          ]).map(({ key, save, popular }) => {
+            const spec = PRODUCTS[key];
+            return (
+              <Card
+                key={key}
+                className={cn(
+                  "flex flex-col p-7",
+                  popular && "border-ember-500/45 bg-ember-500/[0.03] shadow-lift"
+                )}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="font-serif text-xl font-semibold text-ink-900">{spec.name}</h3>
+                  {popular && <Badge tone="orange">Most popular</Badge>}
+                </div>
+                <p className="mt-3 flex items-baseline gap-2">
+                  <span className="figure text-4xl font-semibold text-ink-900">${spec.dollars}</span>
+                  <span className="text-[13px] text-ink-400">one-off</span>
+                </p>
+                <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.1em] text-moss-600">
+                  {save}
+                </p>
+                <p className="mt-3 text-[13px] leading-relaxed text-ink-500">{spec.tagline}</p>
+
+                <ul className="mt-5 flex-1 space-y-2.5">
+                  {spec.perks.map((p) => (
+                    <li key={p} className="flex items-start gap-2.5 text-[13px] text-ink-700">
+                      <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-moss-500" />
+                      {p}
+                    </li>
+                  ))}
+                </ul>
+
+                <BuyButton
+                  product={key}
+                  label={`Get ${spec.name} — $${spec.dollars}`}
+                  variant={popular ? "primary" : "ink"}
+                  className="mt-6 w-full"
+                />
+              </Card>
+            );
+          })}
+        </div>
+        <p className="mt-4 text-center text-[13px] text-ink-400">
+          Pay once. Tell us your product on the next step (or we&apos;ll email you). You&apos;re
+          buying back the weekend. 🔥
+        </p>
       </section>
 
       {/* ── faq ── */}

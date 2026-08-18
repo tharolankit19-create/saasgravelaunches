@@ -12,7 +12,14 @@
 // product. There is deliberately no shared fallback: a fallback is how a $9
 // upgrade ends up charging $99.
 
-export type ProductKey = "featured" | "sidebar" | "feed" | "directory" | "premium";
+export type ProductKey =
+  | "featured"
+  | "sidebar"
+  | "feed"
+  | "directory"
+  | "directoryPro"
+  | "directoryMax"
+  | "premium";
 
 /** How a purchase is charged, which decides how it expires. */
 export type Billing = "week" | "month" | "once" | "subscription";
@@ -93,21 +100,59 @@ export const PRODUCTS: Record<ProductKey, ProductSpec> = {
   },
   directory: {
     key: "directory",
-    name: "Directory Blast",
+    name: "Starter List",
     dollars: 99,
     billing: "once",
     unit: "one-off",
     slots: null,
     placement: null,
-    tagline: "We submit your product to 100+ directories by hand.",
+    tagline: "40+ directories, submitted by hand — plus a free launch on the board.",
     perks: [
-      "Submitted to 100+ startup and SaaS directories",
-      "Done manually, by a human — no bots, no spam",
-      "A report with every live link when it's finished",
-      "Turnaround within 7 days",
-      "Roughly 70 hours of work you don't do",
+      "Submitted to 40+ startup & SaaS directories by hand",
+      "Do-follow links only — no-follow is a waste of your time",
+      "A free launch on Saasgrave Launches included (dofollow backlink)",
+      "A full report with every live link",
+      "We start within 48 hours",
     ],
     envKey: "DODO_PRODUCT_ID_DIRECTORY_99",
+  },
+  directoryPro: {
+    key: "directoryPro",
+    name: "Growth List",
+    dollars: 149,
+    billing: "once",
+    unit: "one-off",
+    slots: null,
+    placement: null,
+    tagline: "80+ high-DR directories, do-follow only, plus a Featured week.",
+    perks: [
+      "Submitted to 80+ high-DR directories by hand",
+      "Only high-Domain-Rating directories — real SEO weight",
+      "A Featured week on Saasgrave Launches included",
+      "Priority queue — we start within 24 hours",
+      "Advanced report with the DR of every listing",
+      "Roughly 45 hours of copy-pasting you never touch",
+    ],
+    envKey: "DODO_PRODUCT_ID_DIRECTORY_PRO",
+  },
+  directoryMax: {
+    key: "directoryMax",
+    name: "Premium List",
+    dollars: 199,
+    billing: "once",
+    unit: "one-off",
+    slots: null,
+    placement: null,
+    tagline: "120+ high-DR directories, do-follow only — the full weekend, bought back.",
+    perks: [
+      "Submitted to 120+ high-DR directories by hand",
+      "Only the highest-DR directories, hand-picked to your niche",
+      "A Featured week + one month of Premium included",
+      "Top priority — we start within 24 hours",
+      "Advanced report: every link, DR and status",
+      "Roughly 70 hours of work you don't do",
+    ],
+    envKey: "DODO_PRODUCT_ID_DIRECTORY_MAX",
   },
   premium: {
     key: "premium",
@@ -131,7 +176,15 @@ export const PRODUCTS: Record<ProductKey, ProductSpec> = {
 };
 
 /** Display order on the pricing page: cheapest commitment first. */
-export const PRODUCT_ORDER: ProductKey[] = ["featured", "sidebar", "feed", "premium", "directory"];
+export const PRODUCT_ORDER: ProductKey[] = [
+  "featured",
+  "sidebar",
+  "feed",
+  "premium",
+  "directory",
+  "directoryPro",
+  "directoryMax",
+];
 
 /** The one we steer people towards. */
 export const MOST_PICKED: ProductKey = "premium";
@@ -165,6 +218,9 @@ export function productEnvName(key: ProductKey): string {
 export function kindFor(key: ProductKey): string {
   if (key === "sidebar") return "ad_sidebar";
   if (key === "feed") return "ad_feed";
+  // All directory tiers are the same human-fulfilled service — they settle as
+  // one kind, and the amount on the ledger tells the tiers apart.
+  if (key === "directory" || key === "directoryPro" || key === "directoryMax") return "directory";
   return key;
 }
 

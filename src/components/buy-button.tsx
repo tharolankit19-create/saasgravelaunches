@@ -21,7 +21,7 @@ export function BuyButton({
   soldOut,
   variant = "ink",
 }: {
-  product: "featured" | "sidebar" | "feed" | "directory" | "premium";
+  product: "featured" | "sidebar" | "feed" | "directory" | "directoryPro" | "directoryMax" | "premium";
   label: string;
   /** For product-scoped purchases (Featured, Directory Blast). */
   productSlug?: string;
