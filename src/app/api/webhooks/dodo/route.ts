@@ -63,6 +63,24 @@ export async function POST(req: Request) {
     return NextResponse.json({ received: true, ...res });
   }
 
+  // ── no-login Spotlight bid (pay to rank) ──
+  const bidToken = (metadata.bid_token || metadata.bidToken) as string | undefined;
+  if (kind === "outbid" || bidToken) {
+    if (!bidToken) {
+      return NextResponse.json({ received: true, note: "bid without token" });
+    }
+    // Trust what Dodo says was actually paid, not what the checkout link asked
+    // for — the amount is what buys the rank, so it must be the real charge.
+    const paidCents = firstPositive([
+      data?.total_amount,
+      data?.amount,
+      data?.subtotal_amount,
+      data?.settlement_amount,
+    ]);
+    const res = await activateBid(bidToken, paidCents, paymentId);
+    return NextResponse.json({ received: true, ...res });
+  }
+
   if (!kind || !referenceId) {
     return NextResponse.json({ received: true, note: "no metadata" });
   }
@@ -111,6 +129,54 @@ async function markDirectoryOrderPaid(token: string, paymentId?: string) {
 
   await admin.from("launch_directory_orders").update(patch).eq("id", order.id);
   return { orderId: order.id, status: (patch.status as string) || order.status };
+}
+
+/** First finite, positive number in the list, or undefined. */
+function firstPositive(vals: any[]): number | undefined {
+  for (const v of vals) {
+    const n = Number(v);
+    if (Number.isFinite(n) && n > 0) return Math.round(n);
+  }
+  return undefined;
+}
+
+/**
+ * Confirm a Spotlight bid and put it on the board.
+ *
+ * Sets the row live with a 24-hour clock, and pins the amount to what Dodo
+ * actually charged (falling back to the requested amount only if the event
+ * omits it). Idempotent: a Dodo retry that lands on an already-active row just
+ * re-stamps the payment id; it never resets the clock backwards.
+ */
+async function activateBid(token: string, paidCents?: number, paymentId?: string) {
+  let admin;
+  try {
+    admin = createAdminClient();
+  } catch {
+    return { note: "no service role" };
+  }
+
+  const { data: bid } = await admin
+    .from("launch_bids")
+    .select("id, status, amount_cents")
+    .eq("public_token", token)
+    .single();
+  if (!bid) return { note: "bid not found" };
+
+  const patch: Record<string, unknown> = {};
+  if (paymentId) patch.dodo_payment_id = paymentId;
+
+  if (bid.status === "pending") {
+    const now = new Date();
+    patch.status = "active";
+    patch.activated_at = now.toISOString();
+    patch.expires_at = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
+    if (paidCents && paidCents > 0) patch.amount_cents = paidCents;
+  }
+
+  if (Object.keys(patch).length === 0) return { bidId: bid.id, status: bid.status };
+  await admin.from("launch_bids").update(patch).eq("id", bid.id);
+  return { bidId: bid.id, status: (patch.status as string) || bid.status };
 }
 
 /**
