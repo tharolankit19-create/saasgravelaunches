@@ -1,0 +1,84 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { ListChecks, Link2, LayoutList, ArrowUpRight } from "lucide-react";
+import { Rubric, Card } from "@/components/ui";
+import { ALL_DIRECTORIES } from "@/lib/directories";
+
+const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://ls.saasgrave.org";
+
+export const metadata: Metadata = {
+  title: "Free tools for founders — directories, launch checklist, UTM builder",
+  description:
+    "Free tools to launch and grow your SaaS: a 120 high-DR directory tracker, an interactive launch checklist, and a UTM link builder. No signup.",
+  alternates: { canonical: `${SITE}/tools` },
+};
+
+const TOOLS = [
+  {
+    href: "/free-directories",
+    icon: <LayoutList className="h-5 w-5" />,
+    title: "120 Directory Tracker",
+    body: `Every high-DR startup directory worth submitting to, with DR, do-follow status and a built-in tracker. ${ALL_DIRECTORIES.length} listed.`,
+    tag: "Most used",
+  },
+  {
+    href: "/tools/launch-checklist",
+    icon: <ListChecks className="h-5 w-5" />,
+    title: "SaaS Launch Checklist",
+    body: "The 15 things that actually move the needle before, during and after launch day. Interactive, saved in your browser.",
+  },
+  {
+    href: "/tools/utm-builder",
+    icon: <Link2 className="h-5 w-5" />,
+    title: "UTM Link Builder",
+    body: "Tag your launch links so you know which channel sent the users. Build, copy, done.",
+  },
+];
+
+export default function ToolsPage() {
+  return (
+    <div className="mx-auto max-w-5xl px-4 py-14 sm:px-6">
+      <Rubric className="mb-3 max-w-sm">Free forever</Rubric>
+      <h1 className="font-serif text-display font-semibold text-ink-900">Free tools for founders</h1>
+      <p className="mt-5 max-w-2xl text-lg leading-relaxed text-ink-700">
+        Small, sharp tools to launch and grow — no signup, nothing leaves your browser. Built by the
+        team behind Saasgrave Launches.
+      </p>
+
+      <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {TOOLS.map((t) => (
+          <Link key={t.href} href={t.href} className="group">
+            <Card className="flex h-full flex-col p-6 transition hover:shadow-lift">
+              <div className="flex items-center justify-between">
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-ember-500/10 text-ember-600">
+                  {t.icon}
+                </span>
+                {t.tag && (
+                  <span className="rounded-full border border-ember-500/30 bg-ember-500/5 px-2.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-ember-600">
+                    {t.tag}
+                  </span>
+                )}
+              </div>
+              <h2 className="mt-4 font-serif text-lg font-semibold text-ink-900 group-hover:text-ember-600">
+                {t.title}
+              </h2>
+              <p className="mt-2 flex-1 text-[14px] leading-relaxed text-ink-500">{t.body}</p>
+              <span className="mt-4 inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.1em] text-ember-600">
+                Open <ArrowUpRight className="h-3 w-3" />
+              </span>
+            </Card>
+          </Link>
+        ))}
+      </div>
+
+      <div className="mt-12 rounded-xl border border-ink-900/12 bg-paper-100 p-6 text-center">
+        <p className="text-[15px] text-ink-700">
+          Ready to launch?{" "}
+          <Link href="/launch" className="font-semibold text-ember-600 hover:underline">
+            Paste your URL and go live in a minute →
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+}
