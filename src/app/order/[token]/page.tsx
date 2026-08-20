@@ -11,13 +11,15 @@ import {
   ORDER_STATUS_STEPS,
   statusMeta,
   pipelineProgress,
-  paymentLinkFor,
+  paymentLinkForOrder,
   isOrderTier,
   type OrderStatus,
 } from "@/lib/directory-orders";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
+
+const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://ls.saasgrave.org";
 
 export const metadata: Metadata = {
   title: "Your directory blast — live status",
@@ -80,7 +82,7 @@ export default async function OrderStatusPage({ params }: { params: { token: str
             submitting your product. Come back to this page any time to watch it live.
           </p>
           <a
-            href={paymentLinkFor(order.tier)}
+            href={paymentLinkForOrder(order.tier, order.public_token, `${SITE}/order/${order.public_token}`)}
             target="_blank"
             rel="noopener"
             className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-ink-900 text-[15px] font-medium text-paper-100 transition hover:bg-ember-500"

@@ -3,7 +3,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 import {
   ORDER_TIERS,
   isOrderTier,
-  paymentLinkFor,
+  paymentLinkForOrder,
   newOrderToken,
   cleanXHandle,
 } from "@/lib/directory-orders";
@@ -103,9 +103,10 @@ export async function POST(request: Request) {
     );
   }
 
+  const origin = new URL(request.url).origin;
   return NextResponse.json({
     token,
     statusUrl: `/order/${token}`,
-    paymentLink: paymentLinkFor(tier),
+    paymentLink: paymentLinkForOrder(tier, token, `${origin}/order/${token}`),
   });
 }

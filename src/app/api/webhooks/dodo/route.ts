@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import crypto from "node:crypto";
 import { fulfilPurchase } from "@/lib/fulfil";
+import { createAdminClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -49,6 +50,19 @@ export async function POST(req: Request) {
   const paymentId = data?.payment_id || data?.id;
   const subscriptionId = data?.subscription_id || data?.subscription?.id;
 
+  // ── no-login directory-blast order ──
+  // The hosted payment link carries the order's token as metadata. Match it and
+  // flip the order to "paid" — no user, no reference_id, so this is handled
+  // before the logged-in fulfilment path.
+  const orderToken = (metadata.order_token || metadata.orderToken) as string | undefined;
+  if (kind === "directory_order" || orderToken) {
+    if (!orderToken) {
+      return NextResponse.json({ received: true, note: "directory order without token" });
+    }
+    const res = await markDirectoryOrderPaid(orderToken, paymentId);
+    return NextResponse.json({ received: true, ...res });
+  }
+
   if (!kind || !referenceId) {
     return NextResponse.json({ received: true, note: "no metadata" });
   }
@@ -61,6 +75,42 @@ export async function POST(req: Request) {
     dodoSubscriptionId: subscriptionId,
   });
   return NextResponse.json({ received: true, ...result });
+}
+
+/**
+ * Confirm payment on a no-login directory order.
+ *
+ * Idempotent by design — Dodo retries, and the buyer may already be further
+ * along. We only ever advance a fresh order (received / on_hold) to "paid";
+ * an order the operator has already moved to in_progress or completed is left
+ * exactly where it is. The payment id is recorded either way.
+ */
+async function markDirectoryOrderPaid(token: string, paymentId?: string) {
+  let admin;
+  try {
+    admin = createAdminClient();
+  } catch {
+    return { note: "no service role" };
+  }
+
+  const { data: order } = await admin
+    .from("launch_directory_orders")
+    .select("id, status")
+    .eq("public_token", token)
+    .single();
+  if (!order) return { note: "order not found" };
+
+  const patch: Record<string, unknown> = {};
+  if (paymentId) patch.dodo_payment_id = paymentId;
+  if (order.status === "received" || order.status === "on_hold") {
+    patch.status = "paid";
+    patch.live_note =
+      "Payment confirmed — you're in the queue. We'll start submitting your product shortly.";
+  }
+  if (Object.keys(patch).length === 0) return { orderId: order.id, status: order.status };
+
+  await admin.from("launch_directory_orders").update(patch).eq("id", order.id);
+  return { orderId: order.id, status: (patch.status as string) || order.status };
 }
 
 /**

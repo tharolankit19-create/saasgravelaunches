@@ -72,6 +72,25 @@ export function paymentLinkFor(key: OrderTierKey): string {
   return override || ORDER_TIERS[key].paymentLink;
 }
 
+/**
+ * The payment link for a SPECIFIC order — the base tier link with the order's
+ * token attached as Dodo checkout metadata, plus a return URL. The webhook
+ * reads `metadata.order_token` off the succeeded event and flips that exact
+ * order to "paid". Dodo forwards `metadata_*` query params through to the
+ * event's metadata, and honours `redirect_url` after a successful charge.
+ */
+export function paymentLinkForOrder(
+  key: OrderTierKey,
+  token: string,
+  redirectUrl?: string
+): string {
+  const url = new URL(paymentLinkFor(key));
+  url.searchParams.set("metadata_kind", "directory_order");
+  url.searchParams.set("metadata_order_token", token);
+  if (redirectUrl) url.searchParams.set("redirect_url", redirectUrl);
+  return url.toString();
+}
+
 // ─── The status pipeline the buyer watches ──────────────────
 // Kept deliberately short and honest. `admin_notes` carries the live, human
 // "what's happening right now" line on top of whichever step is current.
