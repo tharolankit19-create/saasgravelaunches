@@ -87,8 +87,18 @@ export async function POST(request: Request) {
   });
 
   if (error) {
+    // Surface the real reason so a missing migration (42P01) or a column
+    // mismatch (42703) is obvious rather than a blank "try again".
+    console.error("directory-order insert failed:", error);
+    const missingTable = error.code === "42P01";
     return NextResponse.json(
-      { error: "Couldn't save your order. Please try again." },
+      {
+        error: missingTable
+          ? "Ordering isn't set up yet — the orders table is missing. (Run the migration.)"
+          : "Couldn't save your order. Please try again.",
+        code: error.code,
+        detail: error.message,
+      },
       { status: 500 }
     );
   }
