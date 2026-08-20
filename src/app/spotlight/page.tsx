@@ -4,6 +4,8 @@ import { Flame, MousePointerClick } from "lucide-react";
 import { Rubric } from "@/components/ui";
 import { OutbidForm } from "@/components/outbid-form";
 import { OrderLiveRefresh } from "@/components/order-live-refresh";
+import { SpotlightTicker } from "@/components/spotlight-ticker";
+import { BidCountdown } from "@/components/bid-countdown";
 import { TrackOnMount } from "@/components/tracker";
 import { createAdminClient } from "@/lib/supabase/server";
 import { rankBids, nextTopBid, dollars, OUTBID_HOURS, type BidRow } from "@/lib/outbid";
@@ -39,20 +41,47 @@ async function loadBoard(): Promise<BidRow[]> {
   }
 }
 
-function ago(iso: string | null): string {
-  if (!iso) return "";
-  const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
-  if (s < 60) return "just now";
-  if (s < 3600) return `${Math.floor(s / 60)}m ago`;
-  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
-  return `${Math.floor(s / 86400)}d ago`;
+/**
+ * Real liveness — never fabricated. `online` is distinct sessions seen in the
+ * last five minutes; `views24h` is spotlight page views in the last day. If
+ * there's genuinely no traffic yet we return zeros and the badge stays hidden,
+ * because a sad "0 online" is worse than none.
+ */
+async function loadStats(): Promise<{ online: number; views24h: number }> {
+  try {
+    const admin = createAdminClient();
+    const fiveMin = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+    const [live, views] = await Promise.all([
+      admin
+        .from("launch_events")
+        .select("session_id")
+        .gte("created_at", fiveMin)
+        .limit(5000),
+      admin
+        .from("launch_events")
+        .select("id", { count: "exact", head: true })
+        .eq("event", "spotlight_view")
+        .gte("created_at", dayAgo),
+    ]);
+
+    const online = new Set((live.data || []).map((r: any) => r.session_id).filter(Boolean)).size;
+    return { online, views24h: views.count || 0 };
+  } catch {
+    return { online: 0, views24h: 0 };
+  }
 }
 
 export default async function SpotlightPage({ searchParams }: { searchParams: { paid?: string } }) {
-  const board = await loadBoard();
+  const [board, stats] = await Promise.all([loadBoard(), loadStats()]);
   const topCents = board[0]?.amount_cents ?? null;
   const claim = nextTopBid(topCents);
   const totalCents = board.reduce((s, b) => s + b.amount_cents, 0);
+  const recent = [...board].sort(
+    (a, b) => new Date(b.activated_at || 0).getTime() - new Date(a.activated_at || 0).getTime()
+  );
+  const showLive = stats.online > 0 || stats.views24h > 0;
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
@@ -67,6 +96,24 @@ export default async function SpotlightPage({ searchParams }: { searchParams: { 
         <div className="mt-4 rounded-lg border border-moss-500/40 bg-moss-500/5 px-4 py-3 text-[13px] text-ink-700">
           Payment received — your bid goes live the moment we confirm it (usually seconds). Pull to
           refresh if it&apos;s not showing yet.
+        </div>
+      )}
+
+      {/* ── live pill (real data only) ── */}
+      {showLive && (
+        <div className="mt-5 flex justify-center">
+          <span className="inline-flex items-center gap-2 rounded-full border border-ink-900/10 bg-paper-100 px-4 py-1.5 text-[12px] text-ink-600 shadow-card">
+            {stats.online > 0 && (
+              <>
+                <span className="h-2 w-2 animate-blink rounded-full bg-moss-500" />
+                <span className="font-semibold text-ink-900">{stats.online.toLocaleString()} online</span>
+              </>
+            )}
+            {stats.online > 0 && stats.views24h > 0 && <span className="text-ink-300">·</span>}
+            {stats.views24h > 0 && (
+              <span>{stats.views24h.toLocaleString()} views in 24h</span>
+            )}
+          </span>
         </div>
       )}
 
@@ -87,11 +134,18 @@ export default async function SpotlightPage({ searchParams }: { searchParams: { 
 
       {/* ── the bid box ── */}
       <div className="mt-8 rounded-2xl border border-ink-900/15 bg-paper-100 p-6 shadow-card sm:p-8">
-        <OutbidForm suggested={claim} />
+        <OutbidForm suggested={claim} topCents={topCents} />
       </div>
 
+      {/* ── live ticker of latest bids ── */}
+      {recent.length >= 2 && (
+        <div className="mt-8">
+          <SpotlightTicker bids={recent} />
+        </div>
+      )}
+
       {/* ── the board ── */}
-      <div className="mt-10 space-y-2.5">
+      <div className="mt-8 space-y-2.5">
         {board.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-ink-900/25 bg-paper-100/50 px-6 py-14 text-center">
             <p className="font-serif text-xl font-semibold text-ink-900">The board is wide open.</p>
@@ -164,12 +218,12 @@ function BidRowCard({ bid, rank }: { bid: BidRow; rank: number }) {
         ) : (
           <p className="truncate text-[13px] text-ink-400">{bid.display_url}</p>
         )}
-        <p className="mt-0.5 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.1em] text-ink-400">
-          {ago(bid.activated_at)}
+        <p className="mt-0.5 flex flex-wrap items-center gap-x-2.5 gap-y-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-ink-400">
           <span className="inline-flex items-center gap-1">
             <MousePointerClick className="h-3 w-3" />
             {bid.clicks ?? 0} clicks
           </span>
+          <BidCountdown expiresAt={bid.expires_at} />
         </p>
       </div>
 

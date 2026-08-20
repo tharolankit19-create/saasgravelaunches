@@ -11,7 +11,7 @@ import { trackEvent } from "@/lib/track-client";
  * game — the stepper and the big number make raising your bid a one-tap
  * reflex, which is the entire point of a bidding war.
  */
-export function OutbidForm({ suggested }: { suggested: number }) {
+export function OutbidForm({ suggested, topCents }: { suggested: number; topCents: number | null }) {
   const [entry, setEntry] = useState("");
   const [amount, setAmount] = useState(Math.max(OUTBID_MIN_DOLLARS, suggested));
   const [tagline, setTagline] = useState("");
@@ -22,6 +22,12 @@ export function OutbidForm({ suggested }: { suggested: number }) {
 
   const step = amount >= 500 ? 50 : amount >= 100 ? 10 : 5;
   const bump = (d: number) => setAmount((a) => Math.max(OUTBID_MIN_DOLLARS, a + d));
+
+  // Would this bid top the board? Drives the button and the pressure line.
+  const takesTop = !topCents || topCents <= 0 || amount * 100 > topCents;
+  const buttonLabel = takesTop
+    ? `Claim #1 · $${amount.toLocaleString()}`
+    : `Get on the board · $${amount.toLocaleString()}`;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -79,8 +85,15 @@ export function OutbidForm({ suggested }: { suggested: number }) {
             <Plus className="h-5 w-5" />
           </button>
         </div>
-        <p className="mt-2 text-[12px] text-ink-400">
-          Pay less than #1 and you still land on the board — at whatever place your bid takes.
+        <p
+          className={cn(
+            "mt-2 text-[12px] font-medium",
+            takesTop ? "text-ember-600" : "text-ink-400"
+          )}
+        >
+          {takesTop
+            ? "🔥 This bid takes #1 right now."
+            : "Pay less than #1 and you still land on the board — at whatever place your bid takes."}
         </p>
       </div>
 
@@ -101,7 +114,7 @@ export function OutbidForm({ suggested }: { suggested: number }) {
           className="inline-flex h-14 items-center justify-center gap-2 rounded-full bg-ember-500 px-8 text-[15px] font-semibold text-paper-100 transition hover:bg-ember-600 disabled:opacity-50"
         >
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-          Outbid · ${amount.toLocaleString()}
+          {buttonLabel}
         </button>
       </div>
 
