@@ -32,19 +32,27 @@ export default async function AdminPage({ searchParams }: { searchParams: { days
             Last {days} days · generated {new Date(i.generatedAt).toLocaleString()}
           </p>
         </div>
-        <div className="flex gap-1.5">
-          {[1, 7, 30].map((d) => (
-            <a
-              key={d}
-              href={`/admin?days=${d}`}
-              className={cn(
-                "rounded-lg px-3 py-1.5 text-[13px] font-medium transition",
-                d === days ? "bg-ink-900 text-white" : "text-ink-500 hover:bg-paper-200"
-              )}
-            >
-              {d}d
-            </a>
-          ))}
+        <div className="flex items-center gap-3">
+          <a
+            href="/admin/orders"
+            className="rounded-lg border border-ink-900/15 px-3 py-1.5 text-[13px] font-medium text-ink-700 transition hover:border-ink-900/40 hover:bg-paper-200"
+          >
+            Directory orders →
+          </a>
+          <div className="flex gap-1.5">
+            {[1, 7, 30].map((d) => (
+              <a
+                key={d}
+                href={`/admin?days=${d}`}
+                className={cn(
+                  "rounded-lg px-3 py-1.5 text-[13px] font-medium transition",
+                  d === days ? "bg-ink-900 text-white" : "text-ink-500 hover:bg-paper-200"
+                )}
+              >
+                {d}d
+              </a>
+            ))}
+          </div>
         </div>
       </div>
 

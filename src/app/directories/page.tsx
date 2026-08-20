@@ -2,11 +2,18 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Check, Clock, FileText, Link2, Sparkles } from "lucide-react";
 import { Badge, Card, Rubric } from "@/components/ui";
-import { BuyButton } from "@/components/buy-button";
 import { DirectoryCustom } from "@/components/directory-custom";
 import { TrackOnMount } from "@/components/tracker";
-import { PRODUCTS } from "@/lib/pricing";
+import { PRODUCTS, type ProductKey } from "@/lib/pricing";
+import { type OrderTierKey } from "@/lib/directory-orders";
 import { cn } from "@/lib/utils";
+
+// The pricing catalogue and the no-login order tiers are the same three plans.
+const ORDER_PLAN: Record<Extract<ProductKey, "directory" | "directoryPro" | "directoryMax">, OrderTierKey> = {
+  directory: "starter49",
+  directoryPro: "growth99",
+  directoryMax: "premium149",
+};
 
 export const dynamic = "force-dynamic";
 
@@ -23,10 +30,10 @@ const TIERS = [
 ];
 
 const STEPS = [
-  { n: "01", title: "Pay once", body: "Pick a tier and check out. No account or launch required." },
-  { n: "02", title: "Tell us your product", body: "Right after payment, share your URL, tagline and category." },
+  { n: "01", title: "Tell us your product", body: "Fill three quick fields — product, a handle, your email. No account." },
+  { n: "02", title: "Pay securely", body: "Pick a tier and pay through a secure link. You get a private tracking page." },
   { n: "03", title: "We submit by hand", body: "We hand-pick high-DR directories in your niche and submit manually." },
-  { n: "04", title: "Get your report", body: "A full report with every submission, link and status to track each backlink." },
+  { n: "04", title: "Watch it live", body: "Track every submission on your page, then get a full report with every live link." },
 ];
 
 export default function DirectoriesPage() {
@@ -84,12 +91,18 @@ export default function DirectoriesPage() {
                 ))}
               </ul>
 
-              <BuyButton
-                product={key}
-                label={`Get ${spec.name} — $${spec.dollars}`}
-                variant={popular ? "primary" : "ink"}
-                className="mt-6 w-full"
-              />
+              <Link
+                href={`/directories/order?plan=${ORDER_PLAN[key]}`}
+                className={cn(
+                  "mt-6 inline-flex h-11 w-full items-center justify-center rounded-lg text-[14px] font-medium transition",
+                  popular
+                    ? "bg-ember-500 text-paper-100 hover:bg-ember-600"
+                    : "bg-ink-900 text-paper-100 hover:bg-ember-500"
+                )}
+              >
+                Get {spec.name} — ${spec.dollars}
+              </Link>
+              <p className="mt-2 text-center text-[11px] text-ink-400">Pay &amp; track — no account</p>
             </Card>
           );
         })}
