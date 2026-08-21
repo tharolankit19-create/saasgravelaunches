@@ -5,6 +5,7 @@ import { Toaster } from "sonner";
 import { Analytics } from "@vercel/analytics/next";
 import { Masthead } from "@/components/masthead";
 import { Footer } from "@/components/footer";
+import { ConditionalChrome } from "@/components/conditional-chrome";
 import { Tracker } from "@/components/tracker";
 import "./globals.css";
 
@@ -94,9 +95,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
 
-        <Masthead />
+        <ConditionalChrome>
+          <Masthead />
+        </ConditionalChrome>
         <main>{children}</main>
-        <Footer />
+        <ConditionalChrome>
+          <Footer />
+        </ConditionalChrome>
 
         {/* useSearchParams needs a boundary or every page opts out of static rendering. */}
         <Suspense fallback={null}>

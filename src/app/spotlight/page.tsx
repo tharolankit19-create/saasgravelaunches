@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Flame, MousePointerClick } from "lucide-react";
-import { Rubric } from "@/components/ui";
 import { OutbidForm } from "@/components/outbid-form";
 import { OrderLiveRefresh } from "@/components/order-live-refresh";
 import { SpotlightTicker } from "@/components/spotlight-ticker";
@@ -43,33 +42,28 @@ async function loadBoard(): Promise<BidRow[]> {
 
 /**
  * Real liveness — never fabricated. `online` is distinct sessions seen in the
- * last five minutes; `views24h` is spotlight page views in the last day. If
- * there's genuinely no traffic yet we return zeros and the badge stays hidden,
- * because a sad "0 online" is worse than none.
+ * last five minutes; `visitors` is the all-time count of real Spotlight page
+ * views, which grows honestly into a big number as traffic arrives. If there's
+ * genuinely nothing yet we return zeros and the badge stays hidden, because a
+ * sad "0 online" is worse than none — and a made-up number is worse than both.
  */
-async function loadStats(): Promise<{ online: number; views24h: number }> {
+async function loadStats(): Promise<{ online: number; visitors: number }> {
   try {
     const admin = createAdminClient();
     const fiveMin = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-    const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
     const [live, views] = await Promise.all([
-      admin
-        .from("launch_events")
-        .select("session_id")
-        .gte("created_at", fiveMin)
-        .limit(5000),
+      admin.from("launch_events").select("session_id").gte("created_at", fiveMin).limit(5000),
       admin
         .from("launch_events")
         .select("id", { count: "exact", head: true })
-        .eq("event", "spotlight_view")
-        .gte("created_at", dayAgo),
+        .eq("event", "spotlight_view"),
     ]);
 
     const online = new Set((live.data || []).map((r: any) => r.session_id).filter(Boolean)).size;
-    return { online, views24h: views.count || 0 };
+    return { online, visitors: views.count || 0 };
   } catch {
-    return { online: 0, views24h: 0 };
+    return { online: 0, visitors: 0 };
   }
 }
 
@@ -81,56 +75,75 @@ export default async function SpotlightPage({ searchParams }: { searchParams: { 
   const recent = [...board].sort(
     (a, b) => new Date(b.activated_at || 0).getTime() - new Date(a.activated_at || 0).getTime()
   );
-  const showLive = stats.online > 0 || stats.views24h > 0;
+  const showLive = stats.online > 0 || stats.visitors > 0;
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+    <div className="min-h-screen bg-paper-50">
       <TrackOnMount event="spotlight_view" />
 
-      <div className="flex items-center justify-between">
-        <Rubric>The Spotlight · pay to rank</Rubric>
-        <OrderLiveRefresh />
-      </div>
-
-      {searchParams.paid && (
-        <div className="mt-4 rounded-lg border border-moss-500/40 bg-moss-500/5 px-4 py-3 text-[13px] text-ink-700">
-          Payment received — your bid goes live the moment we confirm it (usually seconds). Pull to
-          refresh if it&apos;s not showing yet.
-        </div>
-      )}
-
-      {/* ── live pill (real data only) ── */}
-      {showLive && (
-        <div className="mt-5 flex justify-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-ink-900/10 bg-paper-100 px-4 py-1.5 text-[12px] text-ink-600 shadow-card">
-            {stats.online > 0 && (
-              <>
-                <span className="h-2 w-2 animate-blink rounded-full bg-moss-500" />
-                <span className="font-semibold text-ink-900">{stats.online.toLocaleString()} online</span>
-              </>
-            )}
-            {stats.online > 0 && stats.views24h > 0 && <span className="text-ink-300">·</span>}
-            {stats.views24h > 0 && (
-              <span>{stats.views24h.toLocaleString()} views in 24h</span>
-            )}
+      {/* ── its own minimal top bar — no Saasgrave masthead here ── */}
+      <div className="h-[3px] w-full bg-ember-500" />
+      <header className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4 sm:px-6">
+        <Link href="/spotlight" className="flex items-center gap-2">
+          <Flame className="h-5 w-5 text-ember-500" />
+          <span className="font-serif text-lg font-semibold tracking-tight text-ink-900">
+            Spotlight
           </span>
+        </Link>
+        <Link
+          href="/launch"
+          className="rounded-full border border-ink-900/15 px-3.5 py-1.5 text-[12px] font-medium text-ink-700 transition hover:border-ember-500 hover:text-ember-600"
+        >
+          Launch your SaaS free →
+        </Link>
+      </header>
+
+      <div className="mx-auto max-w-3xl px-4 pb-16 pt-4 sm:px-6">
+        <div className="flex items-center justify-end">
+          <OrderLiveRefresh />
         </div>
-      )}
 
-      {/* ── hero ── */}
-      <h1 className="mt-4 text-center font-serif text-display font-semibold text-ink-900">
-        Will you take <span className="text-ember-600">#1</span>?
-      </h1>
-      <p className="mx-auto mt-3 max-w-xl text-center text-[15px] leading-relaxed text-ink-600">
-        No ads, no API keys, no revenue share. Just outbid the competition to sit at the top of the
-        board — in front of everyone who lands on Saasgrave Launches.
-      </p>
+        {searchParams.paid && (
+          <div className="mt-2 rounded-lg border border-moss-500/40 bg-moss-500/5 px-4 py-3 text-[13px] text-ink-700">
+            Payment received — your bid goes live the moment we confirm it (usually seconds). Pull to
+            refresh if it&apos;s not showing yet.
+          </div>
+        )}
 
-      {board.length > 0 && (
-        <p className="mt-4 text-center font-mono text-[11px] uppercase tracking-[0.14em] text-ink-400">
-          {board.length} live · {dollars(totalCents)} on the board · #1 is {dollars(topCents || 0)}
+        {/* ── live pill (real data only — never fabricated) ── */}
+        {showLive && (
+          <div className="mt-3 flex justify-center">
+            <span className="inline-flex items-center gap-2 rounded-full border border-ink-900/10 bg-paper-100 px-4 py-1.5 text-[12px] text-ink-600 shadow-card">
+              {stats.online > 0 && (
+                <>
+                  <span className="h-2 w-2 animate-blink rounded-full bg-moss-500" />
+                  <span className="font-semibold text-ink-900">
+                    {stats.online.toLocaleString()} online
+                  </span>
+                </>
+              )}
+              {stats.online > 0 && stats.visitors > 0 && <span className="text-ink-300">·</span>}
+              {stats.visitors > 0 && (
+                <span>{stats.visitors.toLocaleString()} visitors</span>
+              )}
+            </span>
+          </div>
+        )}
+
+        {/* ── hero ── */}
+        <h1 className="mt-4 text-center font-serif text-display font-semibold text-ink-900">
+          Will you take <span className="text-ember-600">#1</span>?
+        </h1>
+        <p className="mx-auto mt-3 max-w-xl text-center text-[15px] leading-relaxed text-ink-600">
+          No ads, no API keys, no revenue share. Just outbid the competition to sit at the top of the
+          board — in front of everyone who lands here.
         </p>
-      )}
+
+        {board.length > 0 && (
+          <p className="mt-4 text-center font-mono text-[11px] uppercase tracking-[0.14em] text-ink-400">
+            {board.length} live · {dollars(totalCents)} on the board · #1 is {dollars(topCents || 0)}
+          </p>
+        )}
 
       {/* ── the bid box ── */}
       <div className="mt-8 rounded-2xl border border-ink-900/15 bg-paper-100 p-6 shadow-card sm:p-8">
@@ -158,14 +171,33 @@ export default async function SpotlightPage({ searchParams }: { searchParams: { 
         )}
       </div>
 
-      {/* ── footnote ── */}
-      <p className="mt-8 text-center text-[12px] leading-relaxed text-ink-400">
-        Every bid stays on the board for {OUTBID_HOURS} hours, then drops off unless someone re-bids.
-        Prefer to launch for free instead?{" "}
-        <Link href="/launch" className="underline hover:text-ember-600">
-          Launch on the weekly board →
-        </Link>
-      </p>
+        {/* ── Saasgrave promo — the one place it shows through ── */}
+        <div className="mt-10 flex flex-col items-center justify-between gap-3 rounded-2xl border border-ink-900/12 bg-paper-100 p-5 text-center sm:flex-row sm:text-left">
+          <div>
+            <p className="text-[14px] font-semibold text-ink-900">Don&apos;t want to pay to rank?</p>
+            <p className="mt-0.5 text-[13px] text-ink-500">
+              Launch your SaaS free on Saasgrave Launches — a real board, real votes, a dofollow
+              backlink you keep.
+            </p>
+          </div>
+          <Link
+            href="/launch"
+            className="shrink-0 rounded-full bg-ink-900 px-5 py-2.5 text-[13px] font-medium text-paper-100 transition hover:bg-ember-500"
+          >
+            Launch free →
+          </Link>
+        </div>
+
+        {/* ── footnote ── */}
+        <p className="mt-8 text-center text-[12px] leading-relaxed text-ink-400">
+          Every bid stays on the board for {OUTBID_HOURS} hours, then drops off unless someone
+          re-bids. Part of{" "}
+          <Link href="/" className="underline hover:text-ember-600">
+            Saasgrave Launches
+          </Link>
+          .
+        </p>
+      </div>
     </div>
   );
 }
