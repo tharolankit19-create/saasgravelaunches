@@ -20,7 +20,7 @@ export function OutbidForm({ suggested, topCents }: { suggested: number; topCent
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const step = amount >= 500 ? 50 : amount >= 100 ? 10 : 5;
+  const step = amount >= 500 ? 50 : amount >= 100 ? 10 : amount >= 20 ? 5 : 1;
   const bump = (d: number) => setAmount((a) => Math.max(OUTBID_MIN_DOLLARS, a + d));
 
   // Would this bid top the board? Drives the button and the pressure line.

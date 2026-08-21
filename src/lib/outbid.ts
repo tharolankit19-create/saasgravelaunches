@@ -9,8 +9,8 @@
 /** Hours a paid bid stays on the board before it expires. */
 export const OUTBID_HOURS = 24;
 
-/** Floor bid, in whole dollars. */
-export const OUTBID_MIN_DOLLARS = 5;
+/** Floor bid, in whole dollars. A dollar gets you on the board; climbing costs more. */
+export const OUTBID_MIN_DOLLARS = 1;
 
 /** Sane ceiling so a fat-fingered quantity can't ask for a million-dollar charge. */
 export const OUTBID_MAX_DOLLARS = 1_000_000;
