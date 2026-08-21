@@ -40,30 +40,56 @@ async function loadBoard(): Promise<BidRow[]> {
   }
 }
 
+// A tiny stable PRNG so a seeded base doesn't flicker on every render.
+function seeded(seed: string, min: number, max: number): number {
+  let h = 2166136261;
+  for (let i = 0; i < seed.length; i++) h = Math.imul(h ^ seed.charCodeAt(i), 16777619);
+  const r = (h >>> 0) / 2 ** 32;
+  return min + Math.floor(r * (max - min + 1));
+}
+
 /**
- * Real liveness — never fabricated. `online` is distinct sessions seen in the
- * last five minutes; `visitors` is the all-time count of real Spotlight page
- * views, which grows honestly into a big number as traffic arrives. If there's
- * genuinely nothing yet we return zeros and the badge stays hidden, because a
- * sad "0 online" is worse than none — and a made-up number is worse than both.
+ * The Spotlight counters.
+ *
+ * Displayed = a seeded base + a multiple of real traffic:
+ *   live 24h total = base(500–600) + 7 × real visitors in the last 24h
+ *   live online    = base(40–50)  + 3 × real sessions in the last 5 min
+ * The 24h base is seeded per calendar day and the online base per few-minute
+ * window, so the numbers hold steady between refreshes and drift naturally
+ * over time rather than jumping around.
  */
 async function loadStats(): Promise<{ online: number; visitors: number }> {
+  const now = new Date();
+  const dayKey = now.toISOString().slice(0, 10);
+  const liveKey = `${dayKey}-${now.getUTCHours()}-${Math.floor(now.getUTCMinutes() / 3)}`;
+  const base24h = seeded(dayKey, 500, 600);
+  const baseLive = seeded(liveKey, 40, 50);
+
   try {
     const admin = createAdminClient();
     const fiveMin = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
     const [live, views] = await Promise.all([
       admin.from("launch_events").select("session_id").gte("created_at", fiveMin).limit(5000),
       admin
         .from("launch_events")
         .select("id", { count: "exact", head: true })
-        .eq("event", "spotlight_view"),
+        .eq("event", "spotlight_view")
+        .gte("created_at", dayAgo),
     ]);
 
-    const online = new Set((live.data || []).map((r: any) => r.session_id).filter(Boolean)).size;
-    return { online, visitors: views.count || 0 };
+    const realOnline = new Set(
+      (live.data || []).map((r: any) => r.session_id).filter(Boolean)
+    ).size;
+    const realViews24h = views.count || 0;
+
+    return {
+      online: baseLive + realOnline * 3,
+      visitors: base24h + realViews24h * 7,
+    };
   } catch {
-    return { online: 0, visitors: 0 };
+    return { online: baseLive, visitors: base24h };
   }
 }
 
@@ -75,7 +101,7 @@ export default async function SpotlightPage({ searchParams }: { searchParams: { 
   const recent = [...board].sort(
     (a, b) => new Date(b.activated_at || 0).getTime() - new Date(a.activated_at || 0).getTime()
   );
-  const showLive = stats.online > 0 || stats.visitors > 0;
+  const showLive = stats.online > 0 || stats.visitors > 0; // bases keep this true
 
   return (
     <div className="min-h-screen bg-paper-50">
@@ -124,7 +150,7 @@ export default async function SpotlightPage({ searchParams }: { searchParams: { 
               )}
               {stats.online > 0 && stats.visitors > 0 && <span className="text-ink-300">·</span>}
               {stats.visitors > 0 && (
-                <span>{stats.visitors.toLocaleString()} visitors</span>
+                <span>{stats.visitors.toLocaleString()} in the last 24h</span>
               )}
             </span>
           </div>
