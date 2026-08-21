@@ -136,23 +136,26 @@ export default async function SpotlightPage({ searchParams }: { searchParams: { 
           </div>
         )}
 
-        {/* ── live pill (real data only — never fabricated) ── */}
+        {/* ── live counter — big and prominent ── */}
         {showLive && (
           <div className="mt-3 flex justify-center">
-            <span className="inline-flex items-center gap-2 rounded-full border border-ink-900/10 bg-paper-100 px-4 py-1.5 text-[12px] text-ink-600 shadow-card">
-              {stats.online > 0 && (
-                <>
-                  <span className="h-2 w-2 animate-blink rounded-full bg-moss-500" />
-                  <span className="font-semibold text-ink-900">
-                    {stats.online.toLocaleString()} online
-                  </span>
-                </>
-              )}
-              {stats.online > 0 && stats.visitors > 0 && <span className="text-ink-300">·</span>}
-              {stats.visitors > 0 && (
-                <span>{stats.visitors.toLocaleString()} in the last 24h</span>
-              )}
-            </span>
+            <div className="inline-flex items-center gap-4 rounded-full border border-ink-900/12 bg-paper-100 px-6 py-3 shadow-lift">
+              <span className="inline-flex items-center gap-2">
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-moss-500/70" />
+                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-moss-500" />
+                </span>
+                <span className="text-[16px] leading-none">
+                  <span className="font-bold text-ink-900">{stats.online.toLocaleString()}</span>{" "}
+                  <span className="text-ink-500">online</span>
+                </span>
+              </span>
+              <span className="h-5 w-px bg-ink-900/15" />
+              <span className="text-[16px] leading-none">
+                <span className="font-bold text-ink-900">{stats.visitors.toLocaleString()}</span>{" "}
+                <span className="text-ink-500">in the last 24h</span>
+              </span>
+            </div>
           </div>
         )}
 
