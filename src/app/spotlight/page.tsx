@@ -4,10 +4,9 @@ import { Flame, MousePointerClick } from "lucide-react";
 import { OutbidForm } from "@/components/outbid-form";
 import { OrderLiveRefresh } from "@/components/order-live-refresh";
 import { SpotlightTicker } from "@/components/spotlight-ticker";
-import { BidCountdown } from "@/components/bid-countdown";
 import { TrackOnMount } from "@/components/tracker";
 import { createAdminClient } from "@/lib/supabase/server";
-import { rankBids, nextTopBid, dollars, OUTBID_HOURS, type BidRow } from "@/lib/outbid";
+import { rankBids, nextTopBid, dollars, type BidRow } from "@/lib/outbid";
 import { cn } from "@/lib/utils";
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://ls.saasgrave.org";
@@ -24,20 +23,27 @@ export const metadata: Metadata = {
 async function loadBoard(): Promise<BidRow[]> {
   try {
     const admin = createAdminClient();
-    const since = new Date(Date.now() - (OUTBID_HOURS + 1) * 60 * 60 * 1000).toISOString();
     const { data } = await admin
       .from("launch_bids")
       .select(
         "id, entry_key, display_url, url, handle, product_name, tagline, logo_url, amount_cents, status, clicks, public_token, activated_at, expires_at"
       )
       .eq("status", "active")
-      .gte("activated_at", since)
       .order("amount_cents", { ascending: false })
       .limit(500);
     return rankBids((data as BidRow[]) || []);
   } catch {
     return [];
   }
+}
+
+function ago(iso: string | null): string {
+  if (!iso) return "";
+  const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+  if (s < 60) return "just now";
+  if (s < 3600) return `${Math.floor(s / 60)}m ago`;
+  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+  return `${Math.floor(s / 86400)}d ago`;
 }
 
 // A tiny stable PRNG so a seeded base doesn't flicker on every render.
@@ -219,8 +225,7 @@ export default async function SpotlightPage({ searchParams }: { searchParams: { 
 
         {/* ── footnote ── */}
         <p className="mt-8 text-center text-[12px] leading-relaxed text-ink-400">
-          Every bid stays on the board for {OUTBID_HOURS} hours, then drops off unless someone
-          re-bids. Part of{" "}
+          Your bid stays on the board — the only way up is to bid higher. Part of{" "}
           <Link href="/" className="underline hover:text-ember-600">
             Saasgrave Launches
           </Link>
@@ -280,11 +285,11 @@ function BidRowCard({ bid, rank }: { bid: BidRow; rank: number }) {
           <p className="truncate text-[13px] text-ink-400">{bid.display_url}</p>
         )}
         <p className="mt-0.5 flex flex-wrap items-center gap-x-2.5 gap-y-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-ink-400">
+          {bid.activated_at && <span>{ago(bid.activated_at)}</span>}
           <span className="inline-flex items-center gap-1">
             <MousePointerClick className="h-3 w-3" />
             {bid.clicks ?? 0} clicks
           </span>
-          <BidCountdown expiresAt={bid.expires_at} />
         </p>
       </div>
 

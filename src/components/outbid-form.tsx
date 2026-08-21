@@ -159,7 +159,7 @@ export function OutbidForm({ suggested, topCents }: { suggested: number; topCent
       )}
       <p className="mt-3 text-center text-[11px] text-ink-400">
         Already listed? Enter the same URL and bid higher to climb back up. No account needed · your
-        bid stays live for 24 hours.
+        bid stays on the board.
       </p>
     </form>
   );

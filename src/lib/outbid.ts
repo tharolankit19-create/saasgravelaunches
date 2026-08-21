@@ -132,15 +132,14 @@ export type BidRow = {
 };
 
 /**
- * The live board: the single highest active bid per product, ranked by amount.
- * "Active" is decided here, in the query's clock, so no cron is needed to
- * expire anything — a bid past its 24 hours simply stops being counted.
+ * The board: the single highest active bid per product, ranked by amount.
+ * Bids are permanent — once paid they stay on the board, and the only way to
+ * move up is to bid higher. Nothing expires.
  */
-export function rankBids(rows: BidRow[], now = Date.now()): BidRow[] {
+export function rankBids(rows: BidRow[]): BidRow[] {
   const best = new Map<string, BidRow>();
   for (const r of rows) {
     if (r.status !== "active") continue;
-    if (!r.expires_at || new Date(r.expires_at).getTime() <= now) continue;
     const cur = best.get(r.entry_key);
     if (!cur || r.amount_cents > cur.amount_cents) best.set(r.entry_key, r);
   }

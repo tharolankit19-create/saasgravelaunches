@@ -143,10 +143,10 @@ function firstPositive(vals: any[]): number | undefined {
 /**
  * Confirm a Spotlight bid and put it on the board.
  *
- * Sets the row live with a 24-hour clock, and pins the amount to what Dodo
- * actually charged (falling back to the requested amount only if the event
- * omits it). Idempotent: a Dodo retry that lands on an already-active row just
- * re-stamps the payment id; it never resets the clock backwards.
+ * Sets the row live (permanently — bids don't expire), and pins the amount to
+ * what Dodo actually charged, falling back to the requested amount only if the
+ * event omits it. Idempotent: a Dodo retry on an already-active row just
+ * re-stamps the payment id.
  */
 async function activateBid(token: string, paidCents?: number, paymentId?: string) {
   let admin;
@@ -167,10 +167,9 @@ async function activateBid(token: string, paidCents?: number, paymentId?: string
   if (paymentId) patch.dodo_payment_id = paymentId;
 
   if (bid.status === "pending") {
-    const now = new Date();
     patch.status = "active";
-    patch.activated_at = now.toISOString();
-    patch.expires_at = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
+    patch.activated_at = new Date().toISOString();
+    patch.expires_at = null; // permanent — bids stay on the board
     if (paidCents && paidCents > 0) patch.amount_cents = paidCents;
   }
 
