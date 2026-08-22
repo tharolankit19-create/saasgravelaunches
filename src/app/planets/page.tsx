@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Sun, MousePointerClick, CreditCard, Rocket } from "lucide-react";
 import { PlanetUniverseLoader } from "@/components/planet-universe-loader";
+import { PlanetsIntro } from "@/components/planets-intro";
 import { TrackOnMount } from "@/components/tracker";
 import { createAdminClient } from "@/lib/supabase/server";
 import { BODIES, ownersByPlanet, dollars, type Owner } from "@/lib/planets";
@@ -45,6 +46,8 @@ export default async function PlanetsPage({ searchParams }: { searchParams: { cl
   return (
     <div className="min-h-screen bg-[#05060e] text-white">
       <TrackOnMount event="planets_view" />
+      <PlanetsIntro />
+
 
       {/* ── its own minimal top bar ── */}
       <div className="h-[3px] w-full bg-ember-500" />
