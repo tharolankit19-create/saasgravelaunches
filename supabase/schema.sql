@@ -278,6 +278,34 @@ create trigger launch_directory_orders_touch
   for each row execute function public.launch_touch_updated_at();
 
 -- ─────────────────────────────────────────────────────────────
+--  PLANET CLAIMS — the "conquer the solar system" pay-to-own board.
+--
+--  Each celestial body is a slot one SaaS can own. Bigger body = higher floor
+--  price; to take a body someone else owns, you pay more than they did. No
+--  login required; additive, RLS off, service-role only, opaque token per row.
+-- ─────────────────────────────────────────────────────────────
+create table if not exists public.launch_planet_claims (
+  id              uuid primary key default gen_random_uuid(),
+  planet_id       text not null,               -- fixed body key, e.g. 'jupiter'
+  public_token    text unique not null,
+  product_name    text,
+  url             text not null,
+  logo_url        text,
+  tagline         text,
+  amount_cents    int not null,
+  status          text not null default 'pending',  -- pending | active
+  contact_email   text,
+  user_id         uuid references public.profiles(id) on delete set null,
+  dodo_payment_id text,
+  created_at      timestamptz default now(),
+  activated_at    timestamptz
+);
+create index if not exists launch_planet_claims_planet_idx
+  on public.launch_planet_claims(planet_id, status, amount_cents desc);
+create index if not exists launch_planet_claims_token_idx
+  on public.launch_planet_claims(public_token);
+
+-- ─────────────────────────────────────────────────────────────
 --  SHARED PLUMBING — created ONLY if missing.
 --
 --  On the live project all of this already exists and these blocks do

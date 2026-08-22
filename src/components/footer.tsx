@@ -32,6 +32,7 @@ export function Footer() {
             links={[
               { href: "/", label: "This week" },
               { href: "/leaderboard", label: "Leaderboard" },
+              { href: "/planets", label: "Conquer the planets" },
               { href: "/products", label: "Directory" },
               { href: "/launch", label: "Launch a product" },
               { href: "/free-directories", label: "120 directories (free)" },

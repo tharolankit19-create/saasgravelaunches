@@ -63,6 +63,22 @@ export async function POST(req: Request) {
     return NextResponse.json({ received: true, ...res });
   }
 
+  // ── no-login planet claim (conquer the solar system) ──
+  const claimToken = (metadata.claim_token || metadata.claimToken) as string | undefined;
+  if (kind === "planet" || claimToken) {
+    if (!claimToken) {
+      return NextResponse.json({ received: true, note: "claim without token" });
+    }
+    const paidCents = firstPositive([
+      data?.total_amount,
+      data?.amount,
+      data?.subtotal_amount,
+      data?.settlement_amount,
+    ]);
+    const res = await activatePlanetClaim(claimToken, paidCents, paymentId);
+    return NextResponse.json({ received: true, ...res });
+  }
+
   if (!kind || !referenceId) {
     return NextResponse.json({ received: true, note: "no metadata" });
   }
@@ -111,6 +127,51 @@ async function markDirectoryOrderPaid(token: string, paymentId?: string) {
 
   await admin.from("launch_directory_orders").update(patch).eq("id", order.id);
   return { orderId: order.id, status: (patch.status as string) || order.status };
+}
+
+/** First finite, positive number in the list, or undefined. */
+function firstPositive(vals: any[]): number | undefined {
+  for (const v of vals) {
+    const n = Number(v);
+    if (Number.isFinite(n) && n > 0) return Math.round(n);
+  }
+  return undefined;
+}
+
+/**
+ * Confirm a planet claim and put it on the map.
+ *
+ * The amount is pinned to what Dodo actually charged (so a tampered checkout
+ * link can't cheaply seize a body), falling back to the requested amount only
+ * if the event omits it. Idempotent: a retry on an already-active row just
+ * re-stamps the payment id.
+ */
+async function activatePlanetClaim(token: string, paidCents?: number, paymentId?: string) {
+  let admin;
+  try {
+    admin = createAdminClient();
+  } catch {
+    return { note: "no service role" };
+  }
+
+  const { data: claim } = await admin
+    .from("launch_planet_claims")
+    .select("id, status")
+    .eq("public_token", token)
+    .single();
+  if (!claim) return { note: "claim not found" };
+
+  const patch: Record<string, unknown> = {};
+  if (paymentId) patch.dodo_payment_id = paymentId;
+  if (claim.status === "pending") {
+    patch.status = "active";
+    patch.activated_at = new Date().toISOString();
+    if (paidCents && paidCents > 0) patch.amount_cents = paidCents;
+  }
+  if (Object.keys(patch).length === 0) return { claimId: claim.id, status: claim.status };
+
+  await admin.from("launch_planet_claims").update(patch).eq("id", claim.id);
+  return { claimId: claim.id, status: (patch.status as string) || claim.status };
 }
 
 /**
