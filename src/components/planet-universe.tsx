@@ -370,8 +370,8 @@ function ClaimPanel({ body, owner, onClose }: { body: Body; owner?: Owner; onClo
         </div>
         <p className="text-center text-[11px] text-white/45">
           {owner
-            ? `Beat ${dollars(owner.amount_cents)} to seize ${body.name}. Min $${need}.`
-            : `Floor is $${body.minDollars}. Bid more to defend it longer.`}
+            ? `Seize ${body.name} for $${need} — that's 1.5× the current ${dollars(owner.amount_cents)}.`
+            : `Floor is $${body.minDollars}. Bid more to make it costlier to steal.`}
         </p>
 
         {error && <p className="text-center text-[12px] text-red-400">{error}</p>}

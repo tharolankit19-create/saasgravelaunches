@@ -34,7 +34,7 @@ async function loadOwners(): Promise<Record<string, Owner>> {
 
 const STEPS = [
   { icon: <MousePointerClick className="h-4 w-4" />, title: "Pick a body", body: "Spin the system and click any planet, moon or rock." },
-  { icon: <CreditCard className="h-4 w-4" />, title: "Name your bid & pay", body: "Bigger bodies cost more. Beat the current holder to take it." },
+  { icon: <CreditCard className="h-4 w-4" />, title: "Name your bid & pay", body: "Cheap to grab an empty body. To steal a held one, pay 1.5× its price." },
   { icon: <Sun className="h-4 w-4" />, title: "Own it in space", body: "Your logo lands on the body — until someone pays more." },
 ];
 
