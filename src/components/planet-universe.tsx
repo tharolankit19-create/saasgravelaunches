@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Stars, Html } from "@react-three/drei";
 import * as THREE from "three";
-import { Loader2, X, Globe } from "lucide-react";
+import { Loader2, X, Globe, Trophy } from "lucide-react";
 import {
   BODIES,
   bodyById,
@@ -13,32 +13,36 @@ import {
   type Body,
   type Owner,
 } from "@/lib/planets";
-import { cn } from "@/lib/utils";
 import { trackEvent } from "@/lib/track-client";
 
 /**
  * The whole game in one client island: a 3D solar system you can spin and
  * zoom, every body a slot a SaaS can own. Click a body to open the claim
- * panel; owned bodies wear their owner's logo and name in space.
+ * panel; owned bodies wear their owner's logo and name in space. A live
+ * leaderboard sits on the left.
  */
 export function PlanetUniverse({ owners }: { owners: Record<string, Owner> }) {
   const [selected, setSelected] = useState<string | null>(null);
   const body = selected ? bodyById(selected) : null;
   const owner = selected ? owners[selected] : undefined;
 
+  const ranked = Object.values(owners).sort((a, b) => b.amount_cents - a.amount_cents);
+
   return (
-    <div className="relative h-[calc(100vh-4rem)] min-h-[560px] w-full overflow-hidden bg-[#05060e]">
-      <Canvas camera={{ position: [0, 15, 30], fov: 50 }} dpr={[1, 2]}>
+    <div className="relative h-[calc(100vh-3.5rem)] min-h-[560px] w-full overflow-hidden bg-[#05060e]">
+      <Canvas camera={{ position: [0, 16, 32], fov: 50 }} dpr={[1, 2]} gl={{ antialias: true }}>
         <color attach="background" args={["#05060e"]} />
-        <ambientLight intensity={0.28} />
-        <pointLight position={[0, 0, 0]} intensity={3} distance={0} decay={0} color="#ffd9a0" />
-        <Stars radius={120} depth={60} count={4000} factor={4} saturation={0} fade speed={0.6} />
+        <fog attach="fog" args={["#05060e", 45, 90]} />
+        <ambientLight intensity={0.35} />
+        <hemisphereLight args={["#8fa8ff", "#0a0a16", 0.5]} />
+        <pointLight position={[0, 0, 0]} intensity={4} distance={0} decay={0} color="#ffd9a0" />
+        <Stars radius={130} depth={70} count={5000} factor={4.5} saturation={0} fade speed={0.5} />
 
         {/* faint orbit rings */}
         {BODIES.filter((b) => b.orbit > 0).map((b) => (
           <mesh key={`ring-${b.id}`} rotation={[-Math.PI / 2, 0, 0]}>
-            <ringGeometry args={[b.orbit - 0.015, b.orbit + 0.015, 128]} />
-            <meshBasicMaterial color="#8fa3d0" transparent opacity={0.1} side={THREE.DoubleSide} />
+            <ringGeometry args={[b.orbit - 0.02, b.orbit + 0.02, 160]} />
+            <meshBasicMaterial color="#8fa3d0" transparent opacity={0.12} side={THREE.DoubleSide} />
           </mesh>
         ))}
 
@@ -54,29 +58,62 @@ export function PlanetUniverse({ owners }: { owners: Record<string, Owner> }) {
 
         <OrbitControls
           enablePan={false}
-          minDistance={8}
-          maxDistance={60}
+          minDistance={9}
+          maxDistance={64}
           autoRotate
-          autoRotateSpeed={0.35}
-          maxPolarAngle={Math.PI / 1.7}
+          autoRotateSpeed={0.3}
+          maxPolarAngle={Math.PI / 1.6}
         />
       </Canvas>
 
       {/* hint */}
-      <div className="pointer-events-none absolute left-4 top-4 max-w-xs">
-        <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/50">
+      <div className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2">
+        <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/45">
           Drag to orbit · scroll to zoom · click a body to claim it
         </p>
       </div>
 
+      {/* leaderboard */}
+      <div className="absolute left-3 top-3 w-[220px] max-w-[60vw] rounded-2xl border border-white/10 bg-[#0b0d18cc] p-3 backdrop-blur-md">
+        <p className="mb-2 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-white/50">
+          <Trophy className="h-3 w-3 text-ember-500" /> Leaderboard
+        </p>
+        {ranked.length === 0 ? (
+          <p className="py-2 text-[12px] leading-relaxed text-white/50">
+            No planets claimed yet. Be the first to plant your flag. 🚩
+          </p>
+        ) : (
+          <ol className="space-y-1">
+            {ranked.slice(0, 8).map((o, i) => {
+              const b = bodyById(o.planet_id);
+              return (
+                <li key={o.planet_id}>
+                  <button
+                    onClick={() => setSelected(o.planet_id)}
+                    className="flex w-full items-center gap-2 rounded-lg px-1.5 py-1 text-left transition hover:bg-white/5"
+                  >
+                    <span className="w-4 shrink-0 font-mono text-[11px] text-white/40">{i + 1}</span>
+                    <span
+                      className="h-2.5 w-2.5 shrink-0 rounded-full"
+                      style={{ background: b?.color }}
+                    />
+                    <span className="min-w-0 flex-1 truncate text-[12px] font-medium text-white">
+                      {o.product_name}
+                    </span>
+                    <span className="shrink-0 font-mono text-[11px] font-semibold text-ember-400">
+                      {dollars(o.amount_cents)}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ol>
+        )}
+      </div>
+
       {/* claim panel */}
       {body && (
-        <ClaimPanel
-          key={body.id}
-          body={body}
-          owner={owner}
-          onClose={() => setSelected(null)}
-        />
+        <ClaimPanel key={body.id} body={body} owner={owner} onClose={() => setSelected(null)} />
       )}
     </div>
   );
@@ -104,13 +141,14 @@ function BodyMesh({
       group.current.position.x = Math.cos(a) * body.orbit;
       group.current.position.z = Math.sin(a) * body.orbit;
     }
-    if (mesh.current) mesh.current.rotation.y += 0.003;
+    if (mesh.current) mesh.current.rotation.y += 0.0025;
   });
 
   const isStar = body.kind === "star";
 
   return (
     <group ref={group}>
+      {/* the body */}
       <mesh
         ref={mesh}
         onClick={(e) => {
@@ -128,45 +166,77 @@ function BodyMesh({
         }}
         scale={hover ? 1.08 : 1}
       >
-        <sphereGeometry args={[body.radius, 48, 48]} />
+        <sphereGeometry args={[body.radius, 64, 64]} />
         {isStar ? (
-          <meshBasicMaterial color={body.color} />
+          <meshBasicMaterial color={"#ffdd8a"} />
         ) : (
-          <meshStandardMaterial
+          <meshPhysicalMaterial
             color={body.color}
-            roughness={0.85}
-            metalness={0.1}
-            emissive={owner ? body.color : "#000000"}
-            emissiveIntensity={owner ? 0.25 : 0}
+            roughness={0.42}
+            metalness={0.05}
+            clearcoat={0.6}
+            clearcoatRoughness={0.35}
+            sheen={0.4}
+            sheenColor={body.color}
+            emissive={body.color}
+            emissiveIntensity={owner ? 0.32 : 0.08}
           />
         )}
       </mesh>
 
+      {/* atmosphere / glossy rim glow */}
+      <mesh scale={hover ? 1.08 : 1}>
+        <sphereGeometry args={[body.radius * (isStar ? 1.35 : 1.14), 32, 32]} />
+        <meshBasicMaterial
+          color={isStar ? "#ff9d2f" : body.color}
+          transparent
+          opacity={isStar ? 0.28 : 0.14}
+          side={THREE.BackSide}
+          depthWrite={false}
+        />
+      </mesh>
+
+      {/* sun corona */}
+      {isStar && (
+        <>
+          <mesh>
+            <sphereGeometry args={[body.radius * 1.9, 32, 32]} />
+            <meshBasicMaterial
+              color="#ff8a1e"
+              transparent
+              opacity={0.12}
+              side={THREE.BackSide}
+              depthWrite={false}
+            />
+          </mesh>
+          <pointLight intensity={1.6} distance={50} color="#ffcf8a" />
+        </>
+      )}
+
       {/* selection / ownership halo */}
       {(selected || owner) && (
         <mesh rotation={[-Math.PI / 2, 0, 0]}>
-          <ringGeometry args={[body.radius * 1.25, body.radius * 1.4, 64]} />
+          <ringGeometry args={[body.radius * 1.3, body.radius * 1.5, 72]} />
           <meshBasicMaterial
             color={selected ? "#f2671e" : "#7dd3a0"}
             transparent
-            opacity={selected ? 0.9 : 0.6}
+            opacity={selected ? 0.95 : 0.65}
             side={THREE.DoubleSide}
           />
         </mesh>
       )}
 
+      {/* Saturn/Uranus-style ring */}
       {body.ring && (
-        <mesh rotation={[Math.PI / 2.3, 0, 0]}>
-          <ringGeometry args={[body.radius * 1.5, body.radius * 2.2, 64]} />
-          <meshBasicMaterial color="#d9c9a0" transparent opacity={0.45} side={THREE.DoubleSide} />
+        <mesh rotation={[Math.PI / 2.3, 0, 0.3]}>
+          <ringGeometry args={[body.radius * 1.55, body.radius * 2.3, 80]} />
+          <meshBasicMaterial color="#e4d3a6" transparent opacity={0.5} side={THREE.DoubleSide} />
         </mesh>
       )}
 
-      {isStar && <pointLight intensity={1.2} distance={40} color="#ffcf8a" />}
-
       {/* owner label floating above the body */}
       {owner && (
-        <Html center distanceFactor={16} position={[0, body.radius + 0.5, 0]} zIndexRange={[10, 0]}>
+        <Html center distanceFactor={15} position={[0, body.radius + 0.6, 0]} zIndexRange={[10, 0]}>
           <a
             href={owner.url}
             target="_blank"
@@ -186,15 +256,7 @@ function BodyMesh({
   );
 }
 
-function ClaimPanel({
-  body,
-  owner,
-  onClose,
-}: {
-  body: Body;
-  owner?: Owner;
-  onClose: () => void;
-}) {
+function ClaimPanel({ body, owner, onClose }: { body: Body; owner?: Owner; onClose: () => void }) {
   const need = requiredDollars(body, owner?.amount_cents ?? null);
   const [url, setUrl] = useState("");
   const [name, setName] = useState("");
@@ -229,7 +291,7 @@ function ClaimPanel({
   }
 
   return (
-    <div className="absolute inset-x-3 bottom-3 z-10 mx-auto max-w-md rounded-2xl border border-white/12 bg-[#0c0e1acc] p-5 text-white shadow-2xl backdrop-blur-md sm:inset-x-auto sm:right-4 sm:top-4 sm:bottom-auto sm:w-[360px]">
+    <div className="absolute inset-x-3 bottom-3 z-10 mx-auto max-w-md rounded-2xl border border-white/12 bg-[#0c0e1ae6] p-5 text-white shadow-2xl backdrop-blur-md sm:inset-x-auto sm:right-4 sm:top-4 sm:bottom-auto sm:w-[360px]">
       <button
         onClick={onClose}
         aria-label="Close"
@@ -241,7 +303,7 @@ function ClaimPanel({
       <div className="flex items-center gap-2">
         <span
           className="h-5 w-5 rounded-full"
-          style={{ background: body.color, boxShadow: `0 0 12px ${body.color}` }}
+          style={{ background: body.color, boxShadow: `0 0 14px ${body.color}` }}
         />
         <h2 className="font-serif text-xl font-semibold">{body.name}</h2>
         <span className="rounded-full border border-white/15 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-white/60">

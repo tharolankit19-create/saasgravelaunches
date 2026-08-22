@@ -11,7 +11,7 @@ const PlanetUniverse = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex h-[calc(100vh-4rem)] min-h-[560px] w-full items-center justify-center bg-[#05060e]">
+      <div className="flex h-[calc(100vh-3.5rem)] min-h-[560px] w-full items-center justify-center bg-[#05060e]">
         <span className="inline-flex items-center gap-2 font-mono text-[12px] uppercase tracking-[0.16em] text-white/50">
           <Loader2 className="h-4 w-4 animate-spin" /> Entering orbit…
         </span>
