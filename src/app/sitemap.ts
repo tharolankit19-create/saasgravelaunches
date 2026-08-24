@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { createAdminClient } from "@/lib/supabase/server";
 import { CATEGORIES } from "@/lib/categories";
+import { PLATFORMS } from "@/lib/compare";
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://ls.saasgrave.org";
 
@@ -20,6 +21,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE}/tools`, changeFrequency: "weekly", priority: 0.7 },
     { url: `${SITE}/tools/utm-builder`, changeFrequency: "monthly", priority: 0.6 },
     { url: `${SITE}/tools/launch-checklist`, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${SITE}/tools/meta-tags`, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${SITE}/tools/launch-post`, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${SITE}/alternatives`, changeFrequency: "weekly", priority: 0.8 },
+    ...PLATFORMS.map((p) => ({
+      url: `${SITE}/alternatives/${p.slug}`,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    })),
     ...CATEGORIES.map((c) => ({
       url: `${SITE}/categories/${c.slug}`,
       changeFrequency: "weekly" as const,

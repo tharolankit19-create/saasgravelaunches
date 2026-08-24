@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ListChecks, Link2, LayoutList, ArrowUpRight } from "lucide-react";
+import { ListChecks, Link2, LayoutList, ArrowUpRight, Code2, Megaphone, GitCompare } from "lucide-react";
 import { Rubric, Card } from "@/components/ui";
 import { ALL_DIRECTORIES } from "@/lib/directories";
 
@@ -28,10 +28,30 @@ const TOOLS = [
     body: "The 15 things that actually move the needle before, during and after launch day. Interactive, saved in your browser.",
   },
   {
+    href: "/tools/launch-post",
+    icon: <Megaphone className="h-5 w-5" />,
+    title: "Launch Post Generator",
+    body: "Ready-to-post launch copy for X, Show HN and LinkedIn from one fill. Sounds like a real maker.",
+    tag: "New",
+  },
+  {
+    href: "/tools/meta-tags",
+    icon: <Code2 className="h-5 w-5" />,
+    title: "Meta Tag & OG Generator",
+    body: "SEO, Open Graph and Twitter tags with a live Google + social preview. Copy into your <head>.",
+    tag: "New",
+  },
+  {
     href: "/tools/utm-builder",
     icon: <Link2 className="h-5 w-5" />,
     title: "UTM Link Builder",
     body: "Tag your launch links so you know which channel sent the users. Build, copy, done.",
+  },
+  {
+    href: "/alternatives",
+    icon: <GitCompare className="h-5 w-5" />,
+    title: "Where to launch your SaaS",
+    body: "An honest comparison of Product Hunt, BetaList, Peerlist and more — free vs paid, dofollow vs nofollow.",
   },
 ];
 

@@ -37,6 +37,7 @@ export function Footer() {
               { href: "/launch", label: "Launch a product" },
               { href: "/free-directories", label: "120 directories (free)" },
               { href: "/tools", label: "Free tools" },
+              { href: "/alternatives", label: "Where to launch (compare)" },
               { href: "/directories", label: "Directory submission" },
               { href: "/pricing", label: "Pricing" },
             ]}
