@@ -38,6 +38,7 @@ export function Footer() {
               { href: "/free-directories", label: "120 directories (free)" },
               { href: "/tools", label: "Free tools" },
               { href: "/alternatives", label: "Where to launch (compare)" },
+              { href: "/blog", label: "Articles" },
               { href: "/directories", label: "Directory submission" },
               { href: "/pricing", label: "Pricing" },
             ]}

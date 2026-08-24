@@ -40,20 +40,35 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // through the service role: the sitemap is built without a session, and the
   // anon client would only ever see what RLS allows a stranger to see.
   try {
-    const { data } = await createAdminClient()
-      .from("launch_products")
-      .select("slug, updated_at")
-      .eq("status", "live")
-      .order("updated_at", { ascending: false })
-      .limit(5000);
+    const admin = createAdminClient();
+    const [products, articles] = await Promise.all([
+      admin
+        .from("launch_products")
+        .select("slug, updated_at")
+        .eq("status", "live")
+        .order("updated_at", { ascending: false })
+        .limit(5000),
+      admin
+        .from("launch_articles")
+        .select("slug, updated_at")
+        .eq("status", "published")
+        .order("updated_at", { ascending: false })
+        .limit(5000),
+    ]);
 
     return [
       ...staticPages,
-      ...(data || []).map((p: any) => ({
+      ...((products.data as any[]) || []).map((p) => ({
         url: `${SITE}/products/${p.slug}`,
         lastModified: p.updated_at ? new Date(p.updated_at) : undefined,
         changeFrequency: "weekly" as const,
         priority: 0.7,
+      })),
+      ...((articles.data as any[]) || []).map((a) => ({
+        url: `${SITE}/blog/${a.slug}`,
+        lastModified: a.updated_at ? new Date(a.updated_at) : undefined,
+        changeFrequency: "monthly" as const,
+        priority: 0.6,
       })),
     ];
   } catch {

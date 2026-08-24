@@ -39,6 +39,12 @@ export default async function AdminPage({ searchParams }: { searchParams: { days
           >
             Directory orders →
           </a>
+          <a
+            href="/admin/articles"
+            className="rounded-lg border border-ink-900/15 px-3 py-1.5 text-[13px] font-medium text-ink-700 transition hover:border-ink-900/40 hover:bg-paper-200"
+          >
+            Articles →
+          </a>
           <div className="flex gap-1.5">
             {[1, 7, 30].map((d) => (
               <a

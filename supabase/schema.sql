@@ -278,6 +278,26 @@ create trigger launch_directory_orders_touch
   for each row execute function public.launch_touch_updated_at();
 
 -- ─────────────────────────────────────────────────────────────
+--  ARTICLES — AI-written SEO blog posts (the Premium+ deliverable).
+--  Hosted on our domain with dofollow links to the buyer's product. Additive.
+-- ─────────────────────────────────────────────────────────────
+create table if not exists public.launch_articles (
+  id            uuid primary key default gen_random_uuid(),
+  slug          text unique not null,
+  title         text not null,
+  subtitle      text,
+  body_md       text not null,
+  product_name  text,
+  product_url   text,
+  product_slug  text,
+  status        text not null default 'published',   -- published | draft
+  created_at    timestamptz default now(),
+  updated_at    timestamptz default now()
+);
+create index if not exists launch_articles_status_idx on public.launch_articles(status, created_at desc);
+create index if not exists launch_articles_slug_idx on public.launch_articles(slug);
+
+-- ─────────────────────────────────────────────────────────────
 --  PLANET CLAIMS — the "conquer the solar system" pay-to-own board.
 --
 --  Each celestial body is a slot one SaaS can own. Bigger body = higher floor
