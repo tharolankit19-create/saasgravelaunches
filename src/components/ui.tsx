@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 // Nothing here floats or glows — this is meant to read as printed matter.
 
 const base =
-  "inline-flex items-center justify-center gap-2 rounded-[3px] font-medium transition-all duration-150 active:translate-y-px disabled:opacity-40 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ember-500/35 focus-visible:ring-offset-2 focus-visible:ring-offset-paper-50";
+  "inline-flex items-center justify-center gap-2 rounded-full font-medium transition-all duration-150 active:translate-y-px disabled:opacity-40 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ember-500/35 focus-visible:ring-offset-2 focus-visible:ring-offset-paper-50";
 
 const variants = {
   primary: "bg-ember-500 text-paper-100 hover:bg-ember-600 shadow-page",
@@ -88,7 +88,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-[2px] border px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-[0.08em]",
+        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 font-mono text-[10px] font-medium uppercase tracking-[0.08em]",
         tones[tone],
         className
       )}
@@ -109,7 +109,7 @@ export function Card({
   as?: any;
 }) {
   return (
-    <As className={cn("rounded-xl border border-ink-900/20 bg-paper-100 shadow-card", className)}>
+    <As className={cn("rounded-2xl border border-ink-900/10 bg-paper-100 shadow-card", className)}>
       {children}
     </As>
   );

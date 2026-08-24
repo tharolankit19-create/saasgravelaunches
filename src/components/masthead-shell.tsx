@@ -60,9 +60,6 @@ export function MastheadShell({
         open ? "border-ink-900/12" : "border-ink-900/8"
       )}
     >
-      {/* The orange rule that runs the width of the page — the masthead's spine. */}
-      <div className="h-[3px] w-full bg-ember-500" />
-
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         {/* ── row one: always present ── */}
         <div
@@ -88,8 +85,8 @@ export function MastheadShell({
             <Link
               href="/launch"
               className={cn(
-                "inline-flex items-center gap-1.5 rounded-[3px] bg-ink-900 font-medium text-paper-100 transition hover:bg-ember-500",
-                open ? "h-9 px-3.5 text-[13px]" : "h-8 px-3 text-[12px]"
+                "inline-flex items-center gap-1.5 rounded-full bg-ember-500 font-medium text-paper-100 transition hover:bg-ember-600",
+                open ? "h-9 px-4 text-[13px]" : "h-8 px-3.5 text-[12px]"
               )}
             >
               <Plus className="h-3.5 w-3.5" />
@@ -114,7 +111,7 @@ export function MastheadShell({
                   key={n.href}
                   href={n.href}
                   className={cn(
-                    "shrink-0 rounded-[2px] px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.1em] transition",
+                    "shrink-0 rounded-full px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.1em] transition",
                     active
                       ? "bg-ink-900 text-paper-100"
                       : "text-ink-500 hover:bg-paper-200 hover:text-ink-900"
@@ -138,7 +135,7 @@ export function MastheadShell({
                   name="q"
                   placeholder="Search products…"
                   aria-label="Search products"
-                  className="h-8 w-44 rounded-[3px] border border-ink-900/14 bg-paper-100 pl-8 pr-3 text-[13px] text-ink-900 outline-none transition placeholder:text-ink-400 focus:w-56 focus:border-ember-500/50"
+                  className="h-8 w-44 rounded-full border border-ink-900/14 bg-paper-100 pl-8 pr-3 text-[13px] text-ink-900 outline-none transition placeholder:text-ink-400 focus:w-56 focus:border-ember-500/50"
                 />
               </div>
             </form>

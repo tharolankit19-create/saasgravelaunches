@@ -19,8 +19,8 @@ html {
 }
 
 body {
-  background-color: #faf7f1;
-  color: #17150f;
+  background-color: #fbfbfc;
+  color: #16181d;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -41,15 +41,15 @@ body {
   height: 11px;
 }
 ::-webkit-scrollbar-track {
-  background: #f4efe6;
+  background: #f4f5f7;
 }
 ::-webkit-scrollbar-thumb {
-  background: #e9e2d5;
-  border: 3px solid #f4efe6;
+  background: #dbdee4;
+  border: 3px solid #f4f5f7;
   border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #dcd3c3;
+  background: #c2c6ce;
 }
 
 /* ── Paper ──────────────────────────────────────────────────
@@ -57,9 +57,7 @@ body {
    the canvas reading as flat #fff. */
 .stock {
   background-image:
-    radial-gradient(circle at 15% 6%, rgba(242, 103, 30, 0.03), transparent 45%),
-    radial-gradient(circle at 85% 0%, rgba(251, 139, 61, 0.025), transparent 48%),
-    radial-gradient(circle at 50% 120%, rgba(24, 21, 16, 0.025), transparent 55%);
+    radial-gradient(circle at 50% 120%, rgba(22, 24, 29, 0.02), transparent 55%);
 }
 
 /* The hero's warm glow — a soft orange bloom behind the headline that lifts the
@@ -75,44 +73,13 @@ body {
   height: 88%;
   z-index: -1;
   background:
-    radial-gradient(52% 62% at 50% 28%, rgba(242, 103, 30, 0.1), transparent 70%),
-    radial-gradient(44% 52% at 80% 16%, rgba(251, 139, 61, 0.08), transparent 72%),
-    radial-gradient(40% 48% at 20% 22%, rgba(194, 65, 12, 0.06), transparent 72%);
-  filter: blur(40px);
+    radial-gradient(50% 60% at 50% 24%, rgba(242, 103, 30, 0.04), transparent 72%);
+  filter: blur(48px);
   will-change: transform, opacity;
 }
-/* A soft spotlight beam fanning up behind the headline — gives the empty space
-   a centre of gravity without an image. Masked to fade top and bottom. */
-.hero-wash::after {
-  content: "";
-  position: absolute;
-  inset: -6% 0 auto 0;
-  height: 78%;
-  z-index: -1;
-  background:
-    conic-gradient(
-      from 210deg at 50% -8%,
-      transparent 0deg,
-      rgba(242, 103, 30, 0.09) 24deg,
-      transparent 48deg,
-      rgba(251, 139, 61, 0.08) 66deg,
-      transparent 92deg,
-      rgba(242, 103, 30, 0.07) 116deg,
-      transparent 140deg
-    );
-  -webkit-mask-image: radial-gradient(70% 90% at 50% 6%, #000 20%, transparent 75%);
-  mask-image: radial-gradient(70% 90% at 50% 6%, #000 20%, transparent 75%);
-  opacity: 0.9;
-}
-@media (prefers-reduced-motion: no-preference) {
-  .hero-wash::before {
-    animation: aurora 16s ease-in-out infinite;
-  }
-}
-
 /* Faint dotted grid behind the masthead block. */
 .ruled {
-  background-image: radial-gradient(rgba(24, 21, 16, 0.05) 1px, transparent 1px);
+  background-image: radial-gradient(rgba(22, 24, 29, 0.04) 1px, transparent 1px);
   background-size: 22px 22px;
 }
 
@@ -128,13 +95,13 @@ body {
   font-weight: 500;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #f2671e;
+  color: #666b74;
 }
 .rubric::after {
   content: "";
   flex: 1;
   height: 1px;
-  background: rgba(23, 21, 15, 0.14);
+  background: rgba(22, 24, 29, 0.1);
 }
 /* Centered rubrics (section intros) drop the trailing rule. */
 .rubric.justify-center {
