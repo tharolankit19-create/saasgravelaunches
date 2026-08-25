@@ -7,6 +7,7 @@ import {
   newOrderToken,
   cleanXHandle,
 } from "@/lib/directory-orders";
+import { readCookie } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -104,9 +105,10 @@ export async function POST(request: Request) {
   }
 
   const origin = new URL(request.url).origin;
+  const visitorId = readCookie(request, "datafast_visitor_id");
   return NextResponse.json({
     token,
     statusUrl: `/order/${token}`,
-    paymentLink: paymentLinkForOrder(tier, token, `${origin}/order/${token}`),
+    paymentLink: paymentLinkForOrder(tier, token, `${origin}/order/${token}`, visitorId),
   });
 }

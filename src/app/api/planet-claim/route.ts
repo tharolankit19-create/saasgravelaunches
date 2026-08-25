@@ -12,6 +12,7 @@ import {
   CLAIM_MAX_DOLLARS,
   type Owner,
 } from "@/lib/planets";
+import { readCookie } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -107,8 +108,9 @@ export async function POST(request: Request) {
   }
 
   const origin = new URL(request.url).origin;
+  const visitorId = readCookie(request, "datafast_visitor_id");
   return NextResponse.json({
     token,
-    checkoutUrl: claimCheckoutLink(token, amount, `${origin}/planets?claimed=${planetId}`),
+    checkoutUrl: claimCheckoutLink(token, amount, `${origin}/planets?claimed=${planetId}`, visitorId),
   });
 }

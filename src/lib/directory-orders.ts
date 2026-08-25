@@ -82,11 +82,13 @@ export function paymentLinkFor(key: OrderTierKey): string {
 export function paymentLinkForOrder(
   key: OrderTierKey,
   token: string,
-  redirectUrl?: string
+  redirectUrl?: string,
+  visitorId?: string
 ): string {
   const url = new URL(paymentLinkFor(key));
   url.searchParams.set("metadata_kind", "directory_order");
   url.searchParams.set("metadata_order_token", token);
+  if (visitorId) url.searchParams.set("metadata_datafast_visitor_id", visitorId);
   if (redirectUrl) url.searchParams.set("redirect_url", redirectUrl);
   return url.toString();
 }

@@ -92,12 +92,18 @@ export function claimUnitDollars(): number {
  * Checkout link for one claim. The token rides along as metadata so the webhook
  * can activate that exact row, and redirect_url returns the buyer to the map.
  */
-export function claimCheckoutLink(token: string, amountDollars: number, redirectUrl?: string): string {
+export function claimCheckoutLink(
+  token: string,
+  amountDollars: number,
+  redirectUrl?: string,
+  visitorId?: string
+): string {
   const url = new URL(claimPaymentBase());
   const quantity = Math.max(1, Math.round(amountDollars / claimUnitDollars()));
   url.searchParams.set("quantity", String(quantity));
   url.searchParams.set("metadata_kind", "planet");
   url.searchParams.set("metadata_claim_token", token);
+  if (visitorId) url.searchParams.set("metadata_datafast_visitor_id", visitorId);
   if (redirectUrl) url.searchParams.set("redirect_url", redirectUrl);
   return url.toString();
 }

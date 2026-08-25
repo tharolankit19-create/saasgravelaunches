@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import Script from "next/script";
 import { Fraunces, Instrument_Sans, JetBrains_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import { Analytics } from "@vercel/analytics/next";
@@ -122,6 +123,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
         <Analytics />
+
+        {/* DataFast analytics — loads on every page. */}
+        <Script
+          src="https://datafa.st/js/script.js"
+          data-website-id="dfid_LEES9dGL6NR5NpEkQRE9t"
+          data-domain="ls.saasgrave.org"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );

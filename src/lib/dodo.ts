@@ -26,6 +26,8 @@ export type CheckoutArgs = {
   productId?: string;
   /** Env var name to quote when it's missing, so the error is actionable. */
   productEnvName?: string;
+  /** DataFast visitor id (from the datafast_visitor_id cookie) for revenue attribution. */
+  visitorId?: string;
 };
 
 export async function createDodoCheckout({
@@ -36,6 +38,7 @@ export async function createDodoCheckout({
   successUrl,
   productId,
   productEnvName,
+  visitorId,
 }: CheckoutArgs): Promise<string> {
   const key = apiKey();
   const resolved = productId?.trim();
@@ -52,7 +55,13 @@ export async function createDodoCheckout({
     product_cart: [{ product_id: resolved, quantity: 1 }],
     return_url: successUrl,
     customer: email ? { email } : undefined,
-    metadata: { kind, reference_id: referenceId, user_id: userId },
+    metadata: {
+      kind,
+      reference_id: referenceId,
+      user_id: userId,
+      // DataFast revenue attribution — links this payment back to the visitor.
+      ...(visitorId ? { datafast_visitor_id: visitorId } : {}),
+    },
   };
 
   // Try the configured environment first; on a 401 (a test key pointed at live,

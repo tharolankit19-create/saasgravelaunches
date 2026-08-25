@@ -12,6 +12,7 @@ import {
   PRODUCTS,
 } from "@/lib/pricing";
 import { currentWeekKey, monthKey, weekLabel } from "@/lib/week";
+import { readCookie } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -124,6 +125,7 @@ export async function POST(request: Request) {
       successUrl: `${origin}/checkout/success?${params.toString()}`,
       productId: productDodoId(product),
       productEnvName: productEnvName(product),
+      visitorId: readCookie(request, "datafast_visitor_id"),
     });
     return NextResponse.json({ url });
   } catch (e: any) {
