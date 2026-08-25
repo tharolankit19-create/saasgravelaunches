@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { LogoMark } from "@/components/logo";
 import { NewsletterForm } from "@/components/newsletter-form";
+import { TinyStartupsBadge } from "@/components/tiny-startups-badge";
 import { CATEGORIES } from "@/lib/categories";
 
 const SAASGRAVE = process.env.NEXT_PUBLIC_SAASGRAVE_URL || "https://saasgrave.org";
@@ -100,6 +101,7 @@ export function Footer() {
                       loading="lazy"
                     />
                   </a>
+                  <TinyStartupsBadge uid={dup} />
                 </div>
               ))}
             </div>
