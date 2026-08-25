@@ -102,6 +102,20 @@ export function Footer() {
                     />
                   </a>
                   <TinyStartupsBadge uid={dup} />
+                  <a
+                    href="https://tools.launchllama.co?utm_source=badge&utm_medium=referral"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src="https://tools.launchllama.co/featured-badge-white.png?v=2"
+                      alt="As seen on Launch Llama Newsletter"
+                      width="200"
+                      height="50"
+                      loading="lazy"
+                    />
+                  </a>
                 </div>
               ))}
             </div>
