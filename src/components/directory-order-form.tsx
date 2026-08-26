@@ -219,7 +219,7 @@ export function DirectoryOrderForm({ initialTier }: { initialTier?: OrderTierKey
           <button
             type="submit"
             disabled={busy}
-            className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-ink-900 text-[15px] font-medium text-paper-100 transition hover:bg-ember-500 disabled:opacity-50"
+            className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-ember-500 text-[15px] font-semibold text-white transition hover:bg-ember-600 disabled:opacity-50"
           >
             {busy ? (
               <>

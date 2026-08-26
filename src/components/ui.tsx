@@ -183,18 +183,28 @@ export function Field({
 }) {
   return (
     <label className={cn("block", className)}>
-      <span className="mb-1.5 flex items-baseline gap-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-ink-500">
-        {label}
-        {required && <span className="text-ember-500">*</span>}
-        {hint && <span className="tracking-normal text-ink-400 normal-case">{hint}</span>}
+      {/* Sentence case at a readable size — the old 10px mono caps were a
+          decoration you had to squint at, not a label. */}
+      <span className="mb-2 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+        <span className="text-[13px] font-semibold text-ink-900">{label}</span>
+        {required && <span className="text-[13px] font-semibold text-ember-500">*</span>}
+        {hint && <span className="text-[12px] text-ink-400">{hint}</span>}
       </span>
       {children}
     </label>
   );
 }
 
+/**
+ * A field you can actually see.
+ *
+ * A hairline outline on white reads as nothing — makers couldn't tell where one
+ * input ended and the next began. So a field is a *filled* shape at rest (tinted
+ * well + defined border), and turns white with an ember ring the moment it has
+ * focus. That contrast is what makes a form legible at a glance.
+ */
 export const inputClass =
-  "w-full rounded-lg border border-ink-900/20 bg-paper-100 px-3.5 py-2.5 text-sm text-ink-900 outline-none transition placeholder:text-ink-400/80 focus:border-ember-500/60 focus:ring-2 focus:ring-ember-500/12";
+  "w-full rounded-xl border border-ink-900/15 bg-paper-200/60 px-4 py-3 text-[15px] text-ink-900 outline-none transition placeholder:text-ink-400 hover:border-ink-900/25 focus:border-ember-500/70 focus:bg-paper-100 focus:ring-4 focus:ring-ember-500/10";
 
 export function Empty({
   title,
