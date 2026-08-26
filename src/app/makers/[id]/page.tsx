@@ -8,8 +8,8 @@ import { ProductRow } from "@/components/product-row";
 import { currentUser } from "@/lib/supabase/server";
 import { getMaker, getMakerProducts, getMyUpvotes } from "@/lib/launches";
 import { normalizeUrl, hostOf } from "@/lib/utils";
-import { getMakerStats, levelFor, streakLabel } from "@/lib/premium";
-import { LevelMeter } from "@/components/charts";
+import { getMakerStats } from "@/lib/premium";
+import { MakerLevel } from "@/components/maker-level";
 
 export const dynamic = "force-dynamic";
 
@@ -34,7 +34,6 @@ export default async function MakerPage({ params }: { params: { id: string } }) 
     currentUser(),
     getMakerStats(params.id),
   ]);
-  const { level, next, progress } = levelFor(stats.reputation);
   const isSelf = user?.id === params.id;
   const live = products.filter((p) => p.status === "live");
   const visible = isSelf ? products : live;
@@ -109,20 +108,11 @@ export default async function MakerPage({ params }: { params: { id: string } }) 
             <Stat value={views} label="Page views" />
           </div>
 
-          <div className="mt-6 max-w-sm">
-            <div className="flex items-baseline justify-between gap-3">
-              <p className="font-serif text-[15px] font-semibold text-ink-900">{level.name}</p>
-              <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-ink-400">
-                {streakLabel(stats.streak_weeks)}
-              </p>
-            </div>
-            <LevelMeter progress={progress} className="mt-2" />
-            <p className="mt-1.5 font-mono text-[10px] text-ink-400">
-              {next
-                ? `${stats.reputation} / ${next.min} to ${next.name}`
-                : `${stats.reputation} — top level`}
-            </p>
-          </div>
+          <MakerLevel
+            reputation={stats.reputation}
+            streakWeeks={stats.streak_weeks}
+            className="mt-6"
+          />
         </div>
       </Card>
 

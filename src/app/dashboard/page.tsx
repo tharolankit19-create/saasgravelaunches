@@ -8,8 +8,8 @@ import { ProfileForm } from "@/components/profile-form";
 import { ShareRow } from "@/components/share-row";
 import { createClient, currentUser } from "@/lib/supabase/server";
 import { getMakerProducts, getSupportCount, isSupportGateActive } from "@/lib/launches";
-import { getMakerStats, levelFor, streakLabel, isPremium } from "@/lib/premium";
-import { LevelMeter } from "@/components/charts";
+import { getMakerStats, streakLabel, isPremium } from "@/lib/premium";
+import { MakerLevel } from "@/components/maker-level";
 import { getMyAds } from "@/lib/ads";
 import { SUPPORT_THRESHOLD, PRODUCTS } from "@/lib/pricing";
 import { monthLabel, weekLabel } from "@/lib/week";
@@ -38,8 +38,6 @@ export default async function DashboardPage() {
   ]);
 
   const [stats, premium] = await Promise.all([getMakerStats(user.id), isPremium(user.id)]);
-  const { level, next, progress } = levelFor(stats.reputation);
-
   const live = products.filter((p) => p.status === "live");
   const totals = live.reduce(
     (acc, p) => ({
@@ -78,26 +76,14 @@ export default async function DashboardPage() {
       </Card>
 
       {/* ── standing ── */}
-      <Card className="mt-4 flex flex-wrap items-center gap-x-8 gap-y-5 p-6">
-        <div className="min-w-[190px] flex-1">
-          <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-400">
-            Your standing
-          </p>
-          <p className="mt-1.5 font-serif text-xl font-semibold text-ink-900">{level.name}</p>
-          <p className="mt-0.5 text-[13px] text-ink-500">{level.blurb}</p>
-          <LevelMeter progress={progress} className="mt-3" />
-          <p className="mt-1.5 font-mono text-[10px] text-ink-400">
-            {next
-              ? `${stats.reputation} / ${next.min} to ${next.name}`
-              : `${stats.reputation} — top level`}
-          </p>
-        </div>
-        <div className="grid grid-cols-3 gap-6">
+      <div className="mt-4 grid gap-4 lg:grid-cols-[1.6fr_1fr]">
+        <MakerLevel reputation={stats.reputation} streakWeeks={stats.streak_weeks} />
+        <Card className="grid grid-cols-3 items-center gap-6 p-6 lg:grid-cols-1 lg:gap-5">
           <Stat value={stats.streak_weeks} label="Week streak" hint={streakLabel(stats.streak_weeks)} />
           <Stat value={stats.upvotes_given} label="Support given" />
           <Stat value={premium ? "Premium" : "Free"} label="Plan" />
-        </div>
-      </Card>
+        </Card>
+      </div>
 
       {gateActive && supported < SUPPORT_THRESHOLD && (
         <Card className="mt-5 border-brass-500/25 bg-brass-500/6 p-5">
