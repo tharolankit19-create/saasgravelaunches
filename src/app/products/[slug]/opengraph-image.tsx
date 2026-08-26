@@ -16,9 +16,11 @@ function Caret({ color, size = 18 }: { color: string; size?: number }) {
 }
 
 /**
- * The social card for a launch — the thing makers actually share, so it has to
- * earn the click in a crowded feed. Dark with an ember bloom, the product's own
- * logo big and centre, and the vote count as the proof.
+ * The social card for a launch — the thing makers actually share.
+ *
+ * Same light stock as the site card so the two read as one brand: the maker's
+ * own logo carries the image, the tagline does the selling, and the vote count
+ * is the proof.
  */
 export default async function ProductOgImage({ params }: { params: { slug: string } }) {
   const product = await getProductBySlug(params.slug).catch(() => null);
@@ -35,57 +37,52 @@ export default async function ProductOgImage({ params }: { params: { slug: strin
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          background: "#0a0b10",
-          padding: "58px 66px",
+          background: "#fbfbfc",
+          padding: "56px 64px",
           fontFamily: "sans-serif",
           position: "relative",
           overflow: "hidden",
         }}
       >
-        {/* ember bloom behind the product */}
-        <div
-          style={{
-            position: "absolute",
-            top: -240,
-            right: -160,
-            width: 860,
-            height: 700,
-            display: "flex",
-            background:
-              "radial-gradient(circle at 50% 45%, rgba(242,103,30,0.5), rgba(242,103,30,0) 62%)",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            bottom: -300,
-            left: -200,
-            width: 820,
-            height: 700,
-            display: "flex",
-            background:
-              "radial-gradient(circle at 50% 50%, rgba(64,110,255,0.28), rgba(64,110,255,0) 64%)",
-          }}
-        />
         <div
           style={{
             position: "absolute",
             top: 0,
             left: 0,
             right: 0,
-            height: 8,
+            height: 10,
             display: "flex",
             background: "#f2671e",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            top: -200,
+            right: -140,
+            width: 760,
+            height: 620,
+            display: "flex",
+            background:
+              "radial-gradient(circle at 50% 45%, rgba(242,103,30,0.14), rgba(242,103,30,0) 66%)",
           }}
         />
 
         {/* ── header ── */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 13 }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={logoMarkDataUri(44)} width={44} height={44} alt="" />
-            <span style={{ fontSize: 24, fontWeight: 700, color: "#ffffff" }}>
-              Saasgrave Launches
+            <img src={logoMarkDataUri(38)} width={38} height={38} alt="" />
+            <span
+              style={{
+                display: "flex",
+                fontSize: 15,
+                fontWeight: 700,
+                letterSpacing: 3.2,
+                color: "#666b74",
+              }}
+            >
+              SAASGRAVE LAUNCHES
             </span>
           </div>
           <span
@@ -93,15 +90,13 @@ export default async function ProductOgImage({ params }: { params: { slug: strin
               display: "flex",
               padding: "10px 22px",
               borderRadius: 999,
-              border: "1px solid rgba(242,103,30,0.6)",
-              background: "rgba(242,103,30,0.16)",
-              color: "#ffb37a",
+              background: "#f2671e",
+              color: "#ffffff",
               fontSize: 19,
               fontWeight: 700,
-              letterSpacing: 1.6,
             }}
           >
-            LAUNCHING THIS WEEK
+            Launching this week
           </span>
         </div>
 
@@ -111,21 +106,24 @@ export default async function ProductOgImage({ params }: { params: { slug: strin
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={product.logo_url}
-              width={150}
-              height={150}
+              width={156}
+              height={156}
               alt=""
               style={{
                 borderRadius: 30,
-                border: "1px solid rgba(255,255,255,0.16)",
+                border: "1px solid rgba(22,24,29,0.12)",
                 background: "#ffffff",
+                boxShadow: "0 18px 44px -20px rgba(22,24,29,0.4)",
               }}
             />
           ) : null}
-          <div style={{ display: "flex", flexDirection: "column", maxWidth: 820 }}>
-            <span style={{ fontSize: 72, fontWeight: 800, color: "#ffffff", lineHeight: 1.02 }}>
+          <div style={{ display: "flex", flexDirection: "column", maxWidth: 810 }}>
+            <span
+              style={{ fontSize: 76, fontWeight: 800, color: "#16181d", lineHeight: 1.02, letterSpacing: -2 }}
+            >
               {name}
             </span>
-            <span style={{ marginTop: 16, fontSize: 33, color: "#a8adb8", lineHeight: 1.28 }}>
+            <span style={{ marginTop: 16, fontSize: 33, color: "#666b74", lineHeight: 1.28 }}>
               {tagline}
             </span>
           </div>
@@ -153,15 +151,15 @@ export default async function ProductOgImage({ params }: { params: { slug: strin
               display: "flex",
               padding: "13px 26px",
               borderRadius: 999,
-              border: "1px solid rgba(255,255,255,0.18)",
-              background: "rgba(255,255,255,0.05)",
-              color: "#e6e8ec",
+              border: "1px solid rgba(22,24,29,0.14)",
+              background: "#ffffff",
+              color: "#393c44",
               fontWeight: 600,
             }}
           >
             Permanent dofollow backlink
           </span>
-          <span style={{ marginLeft: "auto", color: "#7c828e", fontWeight: 600 }}>
+          <span style={{ marginLeft: "auto", color: "#9aa0aa", fontWeight: 600 }}>
             ls.saasgrave.org
           </span>
         </div>

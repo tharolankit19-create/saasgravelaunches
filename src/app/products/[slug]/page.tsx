@@ -15,6 +15,7 @@ import {
   Star,
   Sparkles,
   ShieldCheck,
+  Linkedin,
 } from "lucide-react";
 import { Badge, Card, Rubric, LinkButton } from "@/components/ui";
 import { Avatar, ProductLogo } from "@/components/avatar";
@@ -301,6 +302,36 @@ export default async function ProductPage({
                   rank={rank}
                   slug={product.slug}
                 />
+
+                {/* The company's own accounts, when the maker gave them. */}
+                {((product as any).x_url || (product as any).linkedin_url) && (
+                  <span className="flex items-center gap-2">
+                    {(product as any).x_url && (
+                      <a
+                        href={(product as any).x_url}
+                        target="_blank"
+                        rel="noopener"
+                        title="Company on X"
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-ink-900/12 text-ink-500 transition hover:border-ink-900/35 hover:text-ink-900"
+                      >
+                        <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor">
+                          <path d="M18.9 2H22l-7 8 8.2 12h-6.4l-5-7.3L5.9 22H2.8l7.5-8.6L2.5 2h6.6l4.5 6.7L18.9 2Zm-1.1 18h1.7L7.3 3.8H5.5L17.8 20Z" />
+                        </svg>
+                      </a>
+                    )}
+                    {(product as any).linkedin_url && (
+                      <a
+                        href={(product as any).linkedin_url}
+                        target="_blank"
+                        rel="noopener"
+                        title="Company on LinkedIn"
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-ink-900/12 text-ink-500 transition hover:border-ink-900/35 hover:text-ink-900"
+                      >
+                        <Linkedin className="h-4 w-4" />
+                      </a>
+                    )}
+                  </span>
+                )}
               </div>
 
               <div className="mt-5 grid grid-cols-3 gap-4 border-t border-ink-900/8 pt-5 text-center sm:max-w-md sm:text-left">

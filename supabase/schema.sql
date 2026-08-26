@@ -634,6 +634,14 @@ alter table public.launch_products add column if not exists badge_verified    bo
 alter table public.launch_products add column if not exists badge_verified_at  timestamptz;
 alter table public.launch_products add column if not exists badge_checked_at   timestamptz;
 
+-- ============================================================
+--  PRODUCT SOCIALS — the company's own X and LinkedIn pages.
+--  Both optional; shown on the product page so visitors can follow the
+--  company, not just the maker. Additive.
+-- ============================================================
+alter table public.launch_products add column if not exists x_url        text;
+alter table public.launch_products add column if not exists linkedin_url text;
+
 -- ─────────────────────────────────────────────────────────────
 --  SUBSCRIPTIONS — the $29/month Premium tier.
 --  One active row per user. The webhook is the source of truth for

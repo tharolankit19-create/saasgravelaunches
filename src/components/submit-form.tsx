@@ -31,6 +31,8 @@ type Draft = {
   unique_edge: string;
   keywords: string;
   maker_note: string;
+  x_url: string;
+  linkedin_url: string;
 };
 
 const EMPTY: Draft = {
@@ -48,6 +50,8 @@ const EMPTY: Draft = {
   unique_edge: "",
   keywords: "",
   maker_note: "",
+  x_url: "",
+  linkedin_url: "",
 };
 
 /**
@@ -676,6 +680,27 @@ export function SubmitForm({
                 className={cn(inputClass, "resize-y")}
               />
             </Field>
+
+            {/* The company's own accounts — both optional. Visitors who like a
+                product usually want to follow the company, not just the maker. */}
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="X (company account)" hint="— optional">
+                <input
+                  value={draft.x_url}
+                  onChange={(e) => set("x_url", e.target.value.slice(0, 200))}
+                  placeholder="x.com/yourcompany"
+                  className={inputClass}
+                />
+              </Field>
+              <Field label="LinkedIn company page" hint="— optional">
+                <input
+                  value={draft.linkedin_url}
+                  onChange={(e) => set("linkedin_url", e.target.value.slice(0, 250))}
+                  placeholder="linkedin.com/company/yourcompany"
+                  className={inputClass}
+                />
+              </Field>
+            </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Who is it for?">

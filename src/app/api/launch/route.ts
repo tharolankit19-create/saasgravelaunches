@@ -183,6 +183,29 @@ export async function POST(request: Request) {
   const text = (v: unknown, max: number) =>
     typeof v === "string" && v.trim() ? truncate(v.trim(), max) : null;
 
+  /**
+   * Accept a company social however the founder types it — a full URL, a bare
+   * domain path, or just the handle — and store one canonical URL. Anything
+   * that isn't on the expected host is dropped rather than linked blindly.
+   */
+  const socialUrl = (v: unknown, host: string): string | null => {
+    if (typeof v !== "string" || !v.trim()) return null;
+    let raw = v.trim();
+    if (raw.startsWith("@")) raw = raw.slice(1);
+    if (!/^https?:\/\//i.test(raw)) {
+      raw = raw.includes(".") ? `https://${raw}` : `https://${host}/${raw}`;
+    }
+    try {
+      const u = new URL(raw);
+      const h = u.hostname.replace(/^www\./, "").toLowerCase();
+      const ok = host === "x.com" ? h === "x.com" || h === "twitter.com" : h.endsWith(host);
+      if (!ok) return null;
+      return u.toString().slice(0, 250);
+    } catch {
+      return null;
+    }
+  };
+
   const slug = await uniqueSlug(name);
 
   const row = {
@@ -204,6 +227,10 @@ export async function POST(request: Request) {
     alternatives,
     faq,
     maker_note: text(body.maker_note, 800),
+    // Company socials — both optional, stored as full URLs so the product page
+    // can link straight out.
+    x_url: socialUrl(body.x_url, "x.com"),
+    linkedin_url: socialUrl(body.linkedin_url, "linkedin.com"),
     seo_title: `${name} — ${tagline}`.slice(0, 70),
     seo_description: text(body.description, 155) || `${name}: ${tagline}`.slice(0, 155),
     // Gated launches start as a draft and go live on badge verification.
