@@ -44,6 +44,20 @@ export type AutofillResult = {
 
 const PRICING_MODELS = ["free", "freemium", "trial", "paid"];
 
+/**
+ * Phase 1 — what the page itself already tells us. No model, so it comes back
+ * in a second or two and the founder watches the form fill immediately instead
+ * of staring at a spinner while a free model queues.
+ */
+export async function autofillQuick(rawUrl: string): Promise<AutofillResult> {
+  const site = await scrapeSite(rawUrl);
+  return {
+    ...fromScrape(site),
+    source: { scraped: site.ok, ai: false, via: site.source, note: site.ok ? undefined : site.error },
+  };
+}
+
+/** Phase 2 — the full pass, with the model. Reuses the cached scrape. */
 export async function autofillFromUrl(rawUrl: string): Promise<AutofillResult> {
   const site = await scrapeSite(rawUrl);
   const base = fromScrape(site);
@@ -178,7 +192,8 @@ Hard rules:
 - Use ONLY facts present in the material. Never invent metrics, prices, customers, funding, integrations or awards.
 - Be concrete. Name the exact job it does and exactly who does it. Ban these words and anything like them: revolutionary, seamless, powerful, cutting-edge, game-changing, one-stop, supercharge, effortless, unleash, elevate, next-generation, robust, innovative, streamline.
 - The tagline is the single most important line for SEO and click-through: lead with the outcome or the exact job, include the category noun a buyer would search, 30–65 characters, Title case optional, NO trailing period, no emoji, no exclamation mark. Bad: "The best all-in-one platform". Good: "Cold-email warmup that lands you in the inbox".
-- Keywords are search phrases a real buyer would type (2–4 words each), specific to this product and its category — never single generic words like "tool" or "app".
+- Keywords/tags carry the SEO. Return AT LEAST 5 and up to 7. Each is a phrase a real buyer would actually type (2–4 words), specific to this product and its category. Mix three kinds: what it is ("cold email warmup tool"), the job it does ("land in primary inbox"), and who it's for ("outbound for solo founders"). NEVER single generic words like "tool", "app", "software", "platform", "AI".
+- Write for the founder, in their product's own vocabulary — reuse the exact nouns their site uses for the thing they built. If their site says "workspace", don't say "dashboard".
 
 Reply with ONLY this JSON object, nothing before or after:
 {
@@ -191,7 +206,7 @@ Reply with ONLY this JSON object, nothing before or after:
   "unique_edge": "the one thing that sets it apart from the obvious alternative, 1-2 sentences",
   "categories": ["1-2 from EXACTLY this list: ${CATEGORIES.map((c) => c.name).join(", ")}"],
   "pricing_model": "one of free, freemium, trial, paid, or \\"\\" if unclear",
-  "keywords": ["5-7 specific 2-4 word search phrases a buyer would type"],
+  "keywords": ["AT LEAST 5, up to 7 specific 2-4 word search phrases a buyer would type"],
   "alternatives": ["0-3 well-known products this is an alternative to, ONLY if clearly implied"],
   "faq": [
     {"q": "a real question a buyer would ask before signing up", "a": "a direct 1-2 sentence answer from the facts"},
@@ -202,6 +217,20 @@ Reply with ONLY this JSON object, nothing before or after:
 
 MATERIAL:
 ${scrapeDigest(site)}`;
+}
+
+/** The model's tags first, topped up from the page-derived ones, de-duped. */
+function atLeastThree(fromAi: string[], derived: string[]): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const k of [...fromAi, ...derived]) {
+    const key = k.toLowerCase().trim();
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    out.push(k);
+    if (out.length >= 7) break;
+  }
+  return out;
 }
 
 function merge(
@@ -251,9 +280,9 @@ function merge(
     unique_edge: str("unique_edge", 400),
     categories: cats.length ? cats : base.categories,
     pricing_model: PRICING_MODELS.includes(pricing) ? pricing : base.pricing_model,
-    // The model's phrases when it gave any; otherwise keep the ones derived
-    // from the page so keywords are never empty.
-    keywords: list("keywords", 7, 60).length ? list("keywords", 7, 60) : base.keywords,
+    // Tags are the SEO surface, so never ship fewer than three: take the
+    // model's phrases and top up from the ones derived off the page.
+    keywords: atLeastThree(list("keywords", 7, 60), base.keywords),
     alternatives: list("alternatives", 3, 40),
     faq,
   };

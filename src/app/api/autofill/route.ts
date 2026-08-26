@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { autofillFromUrl } from "@/lib/autofill";
+import { autofillFromUrl, autofillQuick } from "@/lib/autofill";
 import { currentUser } from "@/lib/supabase/server";
 import { track } from "@/lib/analytics";
 
@@ -20,13 +20,16 @@ export async function POST(request: Request) {
   const user = await currentUser();
   if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
 
-  const { url } = await request.json().catch(() => ({ url: null }));
+  const { url, stage } = await request.json().catch(() => ({ url: null, stage: null }));
   if (!url || typeof url !== "string") {
     return NextResponse.json({ error: "Paste your product's URL." }, { status: 400 });
   }
 
   try {
-    const result = await autofillFromUrl(url);
+    // stage "quick" skips the model entirely so the form fills in a second or
+    // two; the client then calls again for the AI pass, which reuses the
+    // cached scrape.
+    const result = stage === "quick" ? await autofillQuick(url) : await autofillFromUrl(url);
 
     await track({
       event: result.source.scraped ? "autofill_success" : "autofill_error",

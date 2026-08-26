@@ -98,6 +98,9 @@ export function SubmitForm({
   const [badgeSlug, setBadgeSlug] = useState<string | null>(null);
   const [verifying, setVerifying] = useState(false);
   const [showSupport, setShowSupport] = useState(false);
+  // Phase 1 landed and the AI pass is still running — the form is usable, we
+  // just say so rather than blocking it.
+  const [polishing, setPolishing] = useState(false);
   const autoRan = useRef(false);
 
   // High-value SEO fields the AI drafts. Not shown as editable inputs (they'd
@@ -126,6 +129,27 @@ export function SubmitForm({
 
     setFilling(true);
     trackEvent("autofill_attempt");
+
+    // Phase 1: no model, so this lands in a second or two — the founder sees
+    // the name, logo, tagline and description appear instead of a spinner.
+    let quickOk = false;
+    try {
+      const qres = await fetch("/api/autofill", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url, stage: "quick" }),
+      });
+      const qdata = await qres.json();
+      if (qres.ok && qdata?.source?.scraped) {
+        quickOk = true;
+        applyAutofill(qdata, url);
+        setFilled(true);
+        setPolishing(true);
+      }
+    } catch {
+      /* the full pass below is the real attempt */
+    }
+
     try {
       const res = await fetch("/api/autofill", {
         method: "POST",
@@ -135,29 +159,7 @@ export function SubmitForm({
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Couldn't read that site.");
 
-      setDraft((d) => ({
-        ...d,
-        name: data.name || d.name,
-        tagline: data.tagline || d.tagline,
-        website_url: data.website_url || url,
-        logo_url: data.logo_url || d.logo_url,
-        // Seed the gallery with the site's OG image only if the maker hasn't
-        // added their own screenshots yet — their uploads always win.
-        gallery_urls:
-          d.gallery_urls.length > 0
-            ? d.gallery_urls
-            : Array.isArray(data.gallery_urls)
-              ? data.gallery_urls.slice(0, 5)
-              : d.gallery_urls,
-        description: data.description || d.description,
-        categories: data.categories?.length ? data.categories : d.categories,
-        pricing_model: data.pricing_model || d.pricing_model,
-        who_for: data.who_for || d.who_for,
-        problem: data.problem || d.problem,
-        solution: data.solution || d.solution,
-        unique_edge: data.unique_edge || d.unique_edge,
-        keywords: (data.keywords || []).join(", ") || d.keywords,
-      }));
+      applyAutofill(data, url);
       if (Array.isArray(data.faq) && data.faq.length) setAiFaq(data.faq);
       if (Array.isArray(data.alternatives) && data.alternatives.length)
         setAiAlternatives(data.alternatives);
@@ -180,10 +182,44 @@ export function SubmitForm({
       }
     } catch (e: any) {
       trackEvent("autofill_error", { meta: { message: String(e?.message).slice(0, 120) } });
-      toast.error(e?.message || "Couldn't read that site. Fill it in by hand — it's five fields.");
+      // Phase 1 already filled the basics, so this is a downgrade, not a failure.
+      if (quickOk) {
+        toast.message("Filled from your page. The AI polish didn't finish — edit anything below.");
+      } else {
+        toast.error(e?.message || "Couldn't read that site. Fill it in by hand — it's five fields.");
+      }
     } finally {
       setFilling(false);
+      setPolishing(false);
     }
+  }
+
+  /** Write an autofill payload into the draft. Shared by both phases — a later
+   *  phase only overwrites a field when it actually has something to say. */
+  function applyAutofill(data: any, url: string) {
+    setDraft((d) => ({
+      ...d,
+      name: data.name || d.name,
+      tagline: data.tagline || d.tagline,
+      website_url: data.website_url || url,
+      logo_url: data.logo_url || d.logo_url,
+      // Seed the gallery with the site's OG image only if the maker hasn't
+      // added their own screenshots yet — their uploads always win.
+      gallery_urls:
+        d.gallery_urls.length > 0
+          ? d.gallery_urls
+          : Array.isArray(data.gallery_urls)
+            ? data.gallery_urls.slice(0, 5)
+            : d.gallery_urls,
+      description: data.description || d.description,
+      categories: data.categories?.length ? data.categories : d.categories,
+      pricing_model: data.pricing_model || d.pricing_model,
+      who_for: data.who_for || d.who_for,
+      problem: data.problem || d.problem,
+      solution: data.solution || d.solution,
+      unique_edge: data.unique_edge || d.unique_edge,
+      keywords: (data.keywords || []).join(", ") || d.keywords,
+    }));
   }
 
   // Launch tap → show the optional "support 3 makers" popup first. The popup's
@@ -393,7 +429,11 @@ export function SubmitForm({
               }}
             />
             <Button type="button" onClick={autofill} disabled={filling} size="md" className="sm:w-40">
-              {filling ? (
+              {polishing ? (
+                <>
+                  <Sparkles className="h-4 w-4 animate-pulse" /> Polishing…
+                </>
+              ) : filling ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" /> Reading…
                 </>
@@ -407,9 +447,16 @@ export function SubmitForm({
 
           {filled && (
             <div className="mt-2.5 space-y-1">
-              <p className="inline-flex items-center gap-1.5 text-[12px] font-medium text-moss-600">
-                <Check className="h-3.5 w-3.5" /> Filled in below — everything is editable.
-              </p>
+              {polishing ? (
+                <p className="inline-flex items-center gap-1.5 text-[12px] font-medium text-ember-600">
+                  <Sparkles className="h-3.5 w-3.5 animate-pulse" /> Filled from your page — AI is
+                  writing the tagline, tags and problem/solution now…
+                </p>
+              ) : (
+                <p className="inline-flex items-center gap-1.5 text-[12px] font-medium text-moss-600">
+                  <Check className="h-3.5 w-3.5" /> Filled in below — everything is editable.
+                </p>
+              )}
               {aiExtras && (
                 <p className="text-[12px] text-ink-500">
                   We also drafted{" "}

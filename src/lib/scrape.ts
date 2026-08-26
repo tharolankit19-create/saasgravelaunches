@@ -36,7 +36,30 @@ const UA =
 const MAX_BYTES = 900_000; // plenty for a landing page; stops us pulling an app bundle
 const TIMEOUT_MS = 8_000;
 
+// A tiny in-process cache. Autofill runs in two phases — an instant pass that
+// fills what the page already says, then an AI pass that enriches it — and both
+// need the same scrape. Without this the second phase would re-fetch the site
+// and pay the whole latency again.
+const CACHE_TTL_MS = 90_000;
+const cache = new Map<string, { at: number; site: ScrapedSite }>();
+
 export async function scrapeSite(rawUrl: string): Promise<ScrapedSite> {
+  const key = (normalizeUrl(rawUrl) || rawUrl).toLowerCase();
+  const hit = cache.get(key);
+  if (hit && Date.now() - hit.at < CACHE_TTL_MS) return hit.site;
+
+  const site = await scrapeSiteFresh(rawUrl);
+  if (site.ok) {
+    cache.set(key, { at: Date.now(), site });
+    // Keep the map from growing forever in a long-lived server process.
+    if (cache.size > 200) {
+      for (const [k, v] of cache) if (Date.now() - v.at > CACHE_TTL_MS) cache.delete(k);
+    }
+  }
+  return site;
+}
+
+async function scrapeSiteFresh(rawUrl: string): Promise<ScrapedSite> {
   const url = normalizeUrl(rawUrl);
   if (!url) throw new Error("That doesn't look like a URL. Try https://yoursite.com");
 
@@ -139,10 +162,7 @@ export async function scrapeSite(rawUrl: string): Promise<ScrapedSite> {
     .filter((t) => t.length > 2 && t.length < 140)
     .slice(0, 12);
 
-  const iconHref =
-    /<link[^>]+rel=["'][^"']*icon[^"']*["'][^>]*href=["']([^"']+)["']/i.exec(html)?.[1] ||
-    /<link[^>]+href=["']([^"']+)["'][^>]*rel=["'][^"']*icon[^"']*["']/i.exec(html)?.[1] ||
-    null;
+  const iconHref = pickIcon(html);
 
   return {
     ...shell,
@@ -157,6 +177,37 @@ export async function scrapeSite(rawUrl: string): Promise<ScrapedSite> {
     headings,
     text: readableText(html).slice(0, 6000),
   };
+}
+
+/**
+ * Pick the best logo on the page.
+ *
+ * The first `rel="icon"` is usually a 16px favicon.ico, which looks like mush
+ * next to a product name. Prefer an apple-touch-icon (180px and usually the
+ * real mark), then the largest declared `sizes`, and only then fall back.
+ */
+function pickIcon(html: string): string | null {
+  const links = [...html.matchAll(/<link\b[^>]*>/gi)].map((m) => m[0]);
+  const attr = (tag: string, name: string) =>
+    new RegExp(`${name}=["']([^"']+)["']`, "i").exec(tag)?.[1] || "";
+
+  let best: { href: string; score: number } | null = null;
+  for (const tag of links) {
+    const rel = attr(tag, "rel").toLowerCase();
+    const href = attr(tag, "href");
+    if (!href || !/icon/.test(rel)) continue;
+
+    // apple-touch-icon wins outright — it's the mark, at a usable size.
+    let score = /apple-touch-icon/.test(rel) ? 1000 : 0;
+    const px = Number(attr(tag, "sizes").split(/[x×]/)[0]) || 0;
+    score += Math.min(px, 512);
+    // an .ico is almost always the tiny legacy one
+    if (/\.ico(\?|$)/i.test(href)) score -= 40;
+    if (/\.svg(\?|$)/i.test(href)) score += 120; // scales cleanly
+
+    if (!best || score > best.score) best = { href, score };
+  }
+  return best?.href || null;
 }
 
 /** Everything the AI is allowed to see, as one compact block. */
