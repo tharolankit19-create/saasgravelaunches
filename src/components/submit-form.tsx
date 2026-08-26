@@ -9,6 +9,7 @@ import { ImageUpload } from "@/components/image-upload";
 import { PhotoUpload } from "@/components/photo-upload";
 import { BadgeEmbed } from "@/components/badge-embed";
 import { CopilotPanel } from "@/components/copilot-panel";
+import { SupportPopup } from "@/components/support-popup";
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://ls.saasgrave.org";
 import { CATEGORIES, PRICING_MODELS } from "@/lib/categories";
@@ -96,6 +97,7 @@ export function SubmitForm({
   // the badge step instead of redirecting.
   const [badgeSlug, setBadgeSlug] = useState<string | null>(null);
   const [verifying, setVerifying] = useState(false);
+  const [showSupport, setShowSupport] = useState(false);
   const autoRan = useRef(false);
 
   // High-value SEO fields the AI drafts. Not shown as editable inputs (they'd
@@ -184,8 +186,15 @@ export function SubmitForm({
     }
   }
 
-  async function publish(e: React.FormEvent) {
+  // Launch tap → show the optional "support 3 makers" popup first. The popup's
+  // Continue button runs the real publish.
+  function requestLaunch(e: React.FormEvent) {
     e.preventDefault();
+    if (!canPublish) return;
+    setShowSupport(true);
+  }
+
+  async function doPublish() {
     if (!canPublish) return;
 
     setPublishing(true);
@@ -211,6 +220,7 @@ export function SubmitForm({
 
       // Held for badge verification — show the badge step, don't redirect.
       if (data.needsBadge && data.slug) {
+        setShowSupport(false);
         setBadgeSlug(data.slug);
         setPublishing(false);
         toast.message("Almost there — add the badge to your site to go live.");
@@ -346,7 +356,13 @@ export function SubmitForm({
   return (
     <>
       {badgeModal}
-      <form onSubmit={publish} className="space-y-6">
+      <SupportPopup
+        open={showSupport}
+        publishing={publishing}
+        onContinue={doPublish}
+        onClose={() => setShowSupport(false)}
+      />
+      <form onSubmit={requestLaunch} className="space-y-6">
       {/* ── autofill ── */}
       <Card className="overflow-hidden">
         <div className="bg-gradient-to-br from-ember-500/8 to-moss-500/6 px-5 py-6 sm:px-6">
