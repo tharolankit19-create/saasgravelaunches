@@ -6,7 +6,20 @@ export const alt = "Product launch on Saasgrave Launches";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-/** The social card for a launch — the thing makers actually share. */
+/** An upvote caret drawn as SVG — a "▲" glyph needs a font Satori can't fetch. */
+function Caret({ color, size = 18 }: { color: string; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 12 12">
+      <polygon points="6,1 11,10 1,10" fill={color} />
+    </svg>
+  );
+}
+
+/**
+ * The social card for a launch — the thing makers actually share, so it has to
+ * earn the click in a crowded feed. Dark with an ember bloom, the product's own
+ * logo big and centre, and the vote count as the proof.
+ */
 export default async function ProductOgImage({ params }: { params: { slug: string } }) {
   const product = await getProductBySlug(params.slug).catch(() => null);
   const name = product?.name || "A new launch";
@@ -22,95 +35,133 @@ export default async function ProductOgImage({ params }: { params: { slug: strin
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          background: "#ffffff",
-          padding: 72,
+          background: "#0a0b10",
+          padding: "58px 66px",
           fontFamily: "sans-serif",
           position: "relative",
+          overflow: "hidden",
         }}
       >
-        {/* the ember spine — the brand's one rule */}
+        {/* ember bloom behind the product */}
+        <div
+          style={{
+            position: "absolute",
+            top: -240,
+            right: -160,
+            width: 860,
+            height: 700,
+            display: "flex",
+            background:
+              "radial-gradient(circle at 50% 45%, rgba(242,103,30,0.5), rgba(242,103,30,0) 62%)",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            bottom: -300,
+            left: -200,
+            width: 820,
+            height: 700,
+            display: "flex",
+            background:
+              "radial-gradient(circle at 50% 50%, rgba(64,110,255,0.28), rgba(64,110,255,0) 64%)",
+          }}
+        />
         <div
           style={{
             position: "absolute",
             top: 0,
             left: 0,
             right: 0,
-            height: 12,
+            height: 8,
+            display: "flex",
             background: "#f2671e",
           }}
         />
 
+        {/* ── header ── */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={logoMarkDataUri(48)} width={48} height={48} alt="" />
-            <span style={{ fontSize: 26, fontWeight: 700, color: "#12110f" }}>
+            <img src={logoMarkDataUri(44)} width={44} height={44} alt="" />
+            <span style={{ fontSize: 24, fontWeight: 700, color: "#ffffff" }}>
               Saasgrave Launches
             </span>
           </div>
           <span
             style={{
               display: "flex",
-              padding: "8px 20px",
+              padding: "10px 22px",
               borderRadius: 999,
-              border: "2px solid #f2671e",
-              color: "#c2410c",
-              fontSize: 22,
+              border: "1px solid rgba(242,103,30,0.6)",
+              background: "rgba(242,103,30,0.16)",
+              color: "#ffb37a",
+              fontSize: 19,
               fontWeight: 700,
-              letterSpacing: 1,
+              letterSpacing: 1.6,
             }}
           >
             LAUNCHING THIS WEEK
           </span>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 36 }}>
+        {/* ── the product ── */}
+        <div style={{ display: "flex", alignItems: "center", gap: 34 }}>
           {product?.logo_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={product.logo_url}
-              width={148}
-              height={148}
+              width={150}
+              height={150}
               alt=""
-              style={{ borderRadius: 28, border: "1px solid rgba(18,17,15,0.12)" }}
+              style={{
+                borderRadius: 30,
+                border: "1px solid rgba(255,255,255,0.16)",
+                background: "#ffffff",
+              }}
             />
           ) : null}
-          <div style={{ display: "flex", flexDirection: "column", maxWidth: 840 }}>
-            <span style={{ fontSize: 74, fontWeight: 800, color: "#12110f", lineHeight: 1.02 }}>
+          <div style={{ display: "flex", flexDirection: "column", maxWidth: 820 }}>
+            <span style={{ fontSize: 72, fontWeight: 800, color: "#ffffff", lineHeight: 1.02 }}>
               {name}
             </span>
-            <span style={{ marginTop: 16, fontSize: 34, color: "#3b372f", lineHeight: 1.28 }}>
+            <span style={{ marginTop: 16, fontSize: 33, color: "#a8adb8", lineHeight: 1.28 }}>
               {tagline}
             </span>
           </div>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 18, fontSize: 26 }}>
+        {/* ── proof ── */}
+        <div style={{ display: "flex", alignItems: "center", gap: 14, fontSize: 24 }}>
           <span
             style={{
               display: "flex",
-              padding: "12px 24px",
+              alignItems: "center",
+              gap: 10,
+              padding: "13px 26px",
               borderRadius: 999,
               background: "#f2671e",
-              color: "white",
-              fontWeight: 700,
+              color: "#ffffff",
+              fontWeight: 800,
             }}
           >
-            ▲ {upvotes} upvotes
+            <Caret color="#ffffff" size={18} />
+            {upvotes} upvotes
           </span>
           <span
             style={{
               display: "flex",
-              padding: "12px 24px",
+              padding: "13px 26px",
               borderRadius: 999,
-              background: "#f1f0ec",
-              color: "#3b372f",
+              border: "1px solid rgba(255,255,255,0.18)",
+              background: "rgba(255,255,255,0.05)",
+              color: "#e6e8ec",
               fontWeight: 600,
             }}
           >
             Permanent dofollow backlink
           </span>
-          <span style={{ marginLeft: "auto", color: "#6a655a", fontWeight: 600 }}>
+          <span style={{ marginLeft: "auto", color: "#7c828e", fontWeight: 600 }}>
             ls.saasgrave.org
           </span>
         </div>
