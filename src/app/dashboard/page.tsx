@@ -5,6 +5,7 @@ import { Eye, MousePointerClick, ArrowUp, MessageSquare, Plus, Sparkles } from "
 import { Card, Rubric, Empty, LinkButton, Stat, Badge } from "@/components/ui";
 import { ProductLogo } from "@/components/avatar";
 import { ProfileForm } from "@/components/profile-form";
+import { ProfileCompletion } from "@/components/profile-completion";
 import { ShareRow } from "@/components/share-row";
 import { createClient, currentUser } from "@/lib/supabase/server";
 import { getMakerProducts, getSupportCount, isSupportGateActive } from "@/lib/launches";
@@ -67,7 +68,20 @@ export default async function DashboardPage() {
         </LinkButton>
       </div>
 
-      <Card className="mt-7 grid grid-cols-2 gap-6 p-6 sm:grid-cols-5">
+      <div className="mt-7">
+        <ProfileCompletion
+          profile={{
+            avatar_url: profile?.avatar_url ?? null,
+            full_name: profile?.full_name ?? null,
+            maker_headline: (profile as any)?.maker_headline ?? null,
+            bio: profile?.bio ?? null,
+            x_handle: profile?.x_handle ?? null,
+            website_url: (profile as any)?.website_url ?? null,
+          }}
+        />
+      </div>
+
+      <Card className="grid grid-cols-2 gap-6 p-6 sm:grid-cols-5">
         <Stat value={totals.views} label="Page views" />
         <Stat value={totals.upvotes} label="Upvotes" />
         <Stat value={totals.comments} label="Comments" />
@@ -223,7 +237,7 @@ export default async function DashboardPage() {
       </section>
 
       {/* ── profile ── */}
-      <section className="mt-10">
+      <section id="profile" className="mt-10 scroll-mt-28">
         <Rubric className="mb-3">Maker profile</Rubric>
         <Card className="p-6">
           <p className="mb-5 text-[13px] text-ink-500">
