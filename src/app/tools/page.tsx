@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ListChecks, Link2, LayoutList, ArrowUpRight, Code2, Megaphone, GitCompare } from "lucide-react";
+import { ListChecks, Link2, LayoutList, ArrowUpRight, Code2, Megaphone, GitCompare, Bot, Braces } from "lucide-react";
 import { Rubric, Card } from "@/components/ui";
 import { ALL_DIRECTORIES } from "@/lib/directories";
 
@@ -46,6 +46,20 @@ const TOOLS = [
     icon: <Link2 className="h-5 w-5" />,
     title: "UTM Link Builder",
     body: "Tag your launch links so you know which channel sent the users. Build, copy, done.",
+  },
+  {
+    href: "/tools/llms-txt",
+    icon: <Bot className="h-5 w-5" />,
+    title: "llms.txt Generator",
+    body: "Tell ChatGPT, Claude and Perplexity what your site is and which pages to read. One file, five minutes.",
+    tag: "New",
+  },
+  {
+    href: "/tools/schema",
+    icon: <Braces className="h-5 w-5" />,
+    title: "Schema Markup Generator",
+    body: "JSON-LD for SoftwareApplication, Organization, FAQ and Article. Copy the script tag into your head.",
+    tag: "New",
   },
   {
     href: "/alternatives",

@@ -13,6 +13,7 @@ const NAV = [
   { href: "/planets", label: "Planets" },
   { href: "/products", label: "Directory" },
   { href: "/tools", label: "Free tools" },
+  { href: "/guides", label: "Guides" },
   { href: "/pricing", label: "Pricing" },
 ];
 

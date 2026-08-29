@@ -64,7 +64,11 @@ export async function generateMetadata({
     title,
     description,
     keywords: product.keywords || undefined,
-    alternates: { canonical: `${SITE}/products/${product.slug}` },
+    alternates: {
+      canonical: `${SITE}/products/${product.slug}`,
+      // Point assistants at the cheap-to-read markdown twin of this page.
+      types: { "text/markdown": `${SITE}/products/${product.slug}/md` },
+    },
     openGraph: {
       title,
       description,
