@@ -642,6 +642,16 @@ alter table public.launch_products add column if not exists badge_checked_at   t
 alter table public.launch_products add column if not exists x_url        text;
 alter table public.launch_products add column if not exists linkedin_url text;
 
+-- ============================================================
+--  SAASGRAVE MIRROR — one-way link back to the graveyard row.
+--  Saasgrave and Launches share this project, so a startup listed on
+--  Saasgrave can be mirrored onto the launch board. This column is how the
+--  mirror stays idempotent; `startups` itself is only ever read. Additive.
+-- ============================================================
+alter table public.launch_products add column if not exists source_startup_id uuid;
+create unique index if not exists launch_products_source_startup_uidx
+  on public.launch_products(source_startup_id) where source_startup_id is not null;
+
 -- ─────────────────────────────────────────────────────────────
 --  SUBSCRIPTIONS — the $29/month Premium tier.
 --  One active row per user. The webhook is the source of truth for
