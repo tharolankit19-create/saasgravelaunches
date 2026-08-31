@@ -8,7 +8,14 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 /**
- * Mirror new Saasgrave startups onto the launch board.
+ * Mirror Saasgrave startups onto the launch board.
+ *
+ * NOT on a schedule. Everything on Saasgrave is a shutdown or a pivot, and a
+ * board of dead products buries the makers who launch here for real — so this
+ * runs only when an operator asks for it. The endpoint is kept because the
+ * mapping is useful (e.g. staging a batch as drafts with ?status=draft), and
+ * because it stays idempotent: startups already mirrored are never re-created,
+ * including ones later set to `removed`.
  *
  * Runs on a Vercel cron every Monday morning, so anything listed on Saasgrave
  * during the previous week goes up with that week's board. One-way and
