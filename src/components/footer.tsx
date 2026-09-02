@@ -130,6 +130,20 @@ export function Footer() {
                       loading="lazy"
                     />
                   </a>
+                  <a
+                    href="https://nicklaunches.com/products/saasgrave-launches/?utm_source=ls.saasgrave.org&utm_medium=badge&utm_campaign=featured"
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src="https://nicklaunches.com/badges/featured.png"
+                      alt="Saasgrave Launches on Nick Launches"
+                      width="244"
+                      height="56"
+                      loading="lazy"
+                    />
+                  </a>
                 </div>
               ))}
             </div>
