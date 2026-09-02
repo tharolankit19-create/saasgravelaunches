@@ -1,10 +1,16 @@
 import { ImageResponse } from "next/og";
 import { logoMarkDataUri } from "@/components/logo";
 import { getProductBySlug } from "@/lib/launches";
+import { brandFonts } from "@/lib/og";
 
 export const alt = "Product launch on Saasgrave Launches";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
+
+const INK = "#16181d";
+const MUTE = "#5b616b";
+const EMBER = "#f2671e";
+const STOCK = "#fbfbfc";
 
 /** An upvote caret drawn as SVG — a "▲" glyph needs a font Satori can't fetch. */
 function Caret({ color, size = 18 }: { color: string; size?: number }) {
@@ -18,15 +24,19 @@ function Caret({ color, size = 18 }: { color: string; size?: number }) {
 /**
  * The social card for a launch — the thing makers actually share.
  *
- * Same light stock as the site card so the two read as one brand: the maker's
- * own logo carries the image, the tagline does the selling, and the vote count
- * is the proof.
+ * Same front-page language as the site card so the two read as one masthead:
+ * the maker's own logo carries the image, the name is set in Fraunces at poster
+ * scale, and the vote count is the proof. A share of this is free marketing for
+ * the board, so it's built to look like a headline, not a form receipt.
  */
 export default async function ProductOgImage({ params }: { params: { slug: string } }) {
   const product = await getProductBySlug(params.slug).catch(() => null);
   const name = product?.name || "A new launch";
   const tagline = product?.tagline || "Launched on Saasgrave Launches";
   const upvotes = product?.upvote_count ?? 0;
+  const fonts = await brandFonts();
+  const serif = "Fraunces";
+  const sans = "Instrument Sans";
 
   return new ImageResponse(
     (
@@ -37,9 +47,9 @@ export default async function ProductOgImage({ params }: { params: { slug: strin
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          background: "#fbfbfc",
-          padding: "56px 64px",
-          fontFamily: "sans-serif",
+          background: STOCK,
+          padding: "36px 60px 44px",
+          fontFamily: sans,
           position: "relative",
           overflow: "hidden",
         }}
@@ -47,57 +57,51 @@ export default async function ProductOgImage({ params }: { params: { slug: strin
         <div
           style={{
             position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            height: 10,
-            display: "flex",
-            background: "#f2671e",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            top: -200,
-            right: -140,
-            width: 760,
+            top: -220,
+            right: -150,
+            width: 780,
             height: 620,
             display: "flex",
             background:
-              "radial-gradient(circle at 50% 45%, rgba(242,103,30,0.14), rgba(242,103,30,0) 66%)",
+              "radial-gradient(circle at 55% 42%, rgba(242,103,30,0.13), rgba(242,103,30,0) 64%)",
           }}
         />
 
-        {/* ── header ── */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 13 }}>
+        {/* ── masthead ── */}
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <div style={{ display: "flex", alignItems: "center" }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={logoMarkDataUri(38)} width={38} height={38} alt="" />
+            <img src={logoMarkDataUri(30)} width={30} height={30} alt="" />
             <span
               style={{
                 display: "flex",
+                marginLeft: 12,
+                fontFamily: "monospace",
                 fontSize: 15,
-                fontWeight: 700,
-                letterSpacing: 3.2,
-                color: "#666b74",
+                letterSpacing: 3,
+                color: INK,
               }}
             >
               SAASGRAVE LAUNCHES
             </span>
+            <span
+              style={{
+                display: "flex",
+                marginLeft: "auto",
+                padding: "9px 18px",
+                borderRadius: 999,
+                background: EMBER,
+                color: "#ffffff",
+                fontFamily: "monospace",
+                fontSize: 14,
+                letterSpacing: 1.5,
+              }}
+            >
+              LAUNCHING THIS WEEK
+            </span>
           </div>
-          <span
-            style={{
-              display: "flex",
-              padding: "10px 22px",
-              borderRadius: 999,
-              background: "#f2671e",
-              color: "#ffffff",
-              fontSize: 19,
-              fontWeight: 700,
-            }}
-          >
-            Launching this week
-          </span>
+          <div style={{ display: "flex", marginTop: 14, height: 3, background: INK }} />
+          <div style={{ display: "flex", marginTop: 3, height: 1, background: INK }} />
         </div>
 
         {/* ── the product ── */}
@@ -106,8 +110,8 @@ export default async function ProductOgImage({ params }: { params: { slug: strin
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={product.logo_url}
-              width={156}
-              height={156}
+              width={150}
+              height={150}
               alt=""
               style={{
                 borderRadius: 30,
@@ -117,20 +121,37 @@ export default async function ProductOgImage({ params }: { params: { slug: strin
               }}
             />
           ) : null}
-          <div style={{ display: "flex", flexDirection: "column", maxWidth: 810 }}>
+          <div style={{ display: "flex", flexDirection: "column", maxWidth: 820 }}>
             <span
-              style={{ fontSize: 76, fontWeight: 800, color: "#16181d", lineHeight: 1.02, letterSpacing: -2 }}
+              style={{
+                display: "flex",
+                fontFamily: serif,
+                fontWeight: 900,
+                fontSize: 82,
+                color: INK,
+                lineHeight: 0.98,
+                letterSpacing: -2.2,
+              }}
             >
               {name}
             </span>
-            <span style={{ marginTop: 16, fontSize: 33, color: "#666b74", lineHeight: 1.28 }}>
+            <span
+              style={{
+                display: "flex",
+                marginTop: 16,
+                fontFamily: sans,
+                fontSize: 32,
+                color: MUTE,
+                lineHeight: 1.26,
+              }}
+            >
               {tagline}
             </span>
           </div>
         </div>
 
         {/* ── proof ── */}
-        <div style={{ display: "flex", alignItems: "center", gap: 14, fontSize: 24 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14, fontSize: 23 }}>
           <span
             style={{
               display: "flex",
@@ -138,9 +159,9 @@ export default async function ProductOgImage({ params }: { params: { slug: strin
               gap: 10,
               padding: "13px 26px",
               borderRadius: 999,
-              background: "#f2671e",
+              background: EMBER,
               color: "#ffffff",
-              fontWeight: 800,
+              fontWeight: 600,
             }}
           >
             <Caret color="#ffffff" size={18} />
@@ -159,12 +180,21 @@ export default async function ProductOgImage({ params }: { params: { slug: strin
           >
             Permanent dofollow backlink
           </span>
-          <span style={{ marginLeft: "auto", color: "#9aa0aa", fontWeight: 600 }}>
+          <span
+            style={{
+              display: "flex",
+              marginLeft: "auto",
+              fontFamily: "monospace",
+              fontSize: 18,
+              letterSpacing: 1,
+              color: "#9aa0aa",
+            }}
+          >
             ls.saasgrave.org
           </span>
         </div>
       </div>
     ),
-    { ...size }
+    { ...size, fonts: fonts.length ? fonts : undefined }
   );
 }
