@@ -54,6 +54,11 @@ export const metadata: Metadata = {
     description:
       "Launch free, get voted on by real makers, and keep the page and the backlink forever.",
   },
+  verification: {
+    other: {
+      "ory-verify": "orynth-4de28baeac254824a67ed176ca503cc7",
+    },
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
