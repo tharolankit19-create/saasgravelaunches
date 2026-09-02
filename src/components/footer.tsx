@@ -117,6 +117,19 @@ export function Footer() {
                       loading="lazy"
                     />
                   </a>
+                  {/* tinyshelf: their verifier reads the server HTML and rejects any
+                      rel="nofollow/sponsored/ugc". Keep this a plain server-rendered
+                      anchor with the ?ref= intact and no rel attribute. */}
+                  <a href="https://www.tinyshelf.co/?ref=ls.saasgrave.org" title="Featured on tinyshelf">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src="https://www.tinyshelf.co/badge/tinyshelf-badge-dark-f4d1216a.svg"
+                      alt="Featured on tinyshelf"
+                      width="216"
+                      height="64"
+                      loading="lazy"
+                    />
+                  </a>
                 </div>
               ))}
             </div>
