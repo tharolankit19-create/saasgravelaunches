@@ -14,6 +14,7 @@
 
 export type ProductKey =
   | "featured"
+  | "premiumLaunch"
   | "sidebar"
   | "feed"
   | "directory"
@@ -61,6 +62,28 @@ export const PRODUCTS: Record<ProductKey, ProductSpec> = {
       "Only 3 exist per week — genuinely scarce",
     ],
     envKey: "DODO_PRODUCT_ID_FEATURED_9",
+  },
+  // The paid way to launch. One payment, no badge on your own site, and the
+  // listing publishes the moment the payment clears — this is the option the
+  // configure step leads with, because it's the one that removes work.
+  premiumLaunch: {
+    key: "premiumLaunch",
+    name: "Premium Launch",
+    dollars: 29,
+    billing: "once",
+    unit: "one-off",
+    slots: null,
+    placement: null,
+    tagline: "Publishes instantly. No badge on your site, no verification step.",
+    perks: [
+      "Goes live the moment payment clears — no badge, no waiting",
+      "A permanent dofollow backlink from your product page",
+      "The Verified mark on your row and your page",
+      "Launches into any week — even one that's already full",
+      "Priority placement in the weekly digest email",
+      "Your page and its link stay live forever",
+    ],
+    envKey: "DODO_PRODUCT_ID_PREMIUM_LAUNCH_29",
   },
   sidebar: {
     key: "sidebar",
@@ -178,6 +201,7 @@ export const PRODUCTS: Record<ProductKey, ProductSpec> = {
 /** Display order on the pricing page: cheapest commitment first. */
 export const PRODUCT_ORDER: ProductKey[] = [
   "featured",
+  "premiumLaunch",
   "sidebar",
   "feed",
   "premium",
@@ -218,6 +242,9 @@ export function productEnvName(key: ProductKey): string {
 export function kindFor(key: ProductKey): string {
   if (key === "sidebar") return "ad_sidebar";
   if (key === "feed") return "ad_feed";
+  // One-off paid launch — distinct from the "premium" subscription, and it must
+  // never share that kind or a launch payment would grant a month of Premium.
+  if (key === "premiumLaunch") return "premium_launch";
   // All directory tiers are the same human-fulfilled service — they settle as
   // one kind, and the amount on the ledger tells the tiers apart.
   if (key === "directory" || key === "directoryPro" || key === "directoryMax") return "directory";

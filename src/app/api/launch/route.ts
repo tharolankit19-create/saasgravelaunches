@@ -123,7 +123,13 @@ export async function POST(request: Request) {
   // once the badge is verified. Premium skips this; BADGE_REQUIRED=false turns
   // it off entirely.
   const badgeRequired = process.env.BADGE_REQUIRED !== "false";
-  const gateBadge = badgeRequired && !premium;
+
+  // The maker chose how this launch publishes on the configure step. A paid
+  // launch is held as a draft here and published by fulfilment once the payment
+  // clears, so a listing is never live before it was either paid for or
+  // verified. Free is the fallback for anything we don't recognise.
+  const paidIntent = body.intent === "premium_launch";
+  const gateBadge = !paidIntent && badgeRequired && !premium;
 
   const { data: existing } = await supabase
     .from("launch_products")
@@ -134,12 +140,15 @@ export async function POST(request: Request) {
 
   if (existing) {
     // Already live → nothing to do. Still a draft from a prior attempt → send
-    // them straight back to the badge step for that draft.
+    // them back to whichever step finishes it: payment, or the badge.
     if (existing.status === "live") {
       return NextResponse.json(
         { error: "You've already launched that URL.", slug: existing.slug },
         { status: 409 }
       );
+    }
+    if (paidIntent) {
+      return NextResponse.json({ needsPayment: true, slug: existing.slug, resumed: true });
     }
     return NextResponse.json({ needsBadge: true, slug: existing.slug, resumed: true });
   }
@@ -233,10 +242,11 @@ export async function POST(request: Request) {
     linkedin_url: socialUrl(body.linkedin_url, "linkedin.com"),
     seo_title: `${name} — ${tagline}`.slice(0, 70),
     seo_description: text(body.description, 155) || `${name}: ${tagline}`.slice(0, 155),
-    // Gated launches start as a draft and go live on badge verification.
-    status: gateBadge ? "draft" : "live",
+    // A launch is live only once it's been earned: gated ones go live on badge
+    // verification, paid ones when fulfilment confirms the payment.
+    status: gateBadge || paidIntent ? "draft" : "live",
     launch_week: week,
-    launched_at: gateBadge ? null : new Date().toISOString(),
+    launched_at: gateBadge || paidIntent ? null : new Date().toISOString(),
   };
 
   const { data, error } = await supabase
@@ -253,6 +263,11 @@ export async function POST(request: Request) {
 
   // Gated: hold as a draft and send the maker to the badge step. The launch
   // goes live (and the "you're live" email fires) from the verify-badge route.
+  if (paidIntent) {
+    await track({ event: "publish_pending_payment", userId: user.id, productSlug: data.slug });
+    return NextResponse.json({ needsPayment: true, slug: data.slug });
+  }
+
   if (gateBadge) {
     await track({ event: "publish_pending_badge", userId: user.id, productSlug: data.slug });
     return NextResponse.json({ needsBadge: true, slug: data.slug });

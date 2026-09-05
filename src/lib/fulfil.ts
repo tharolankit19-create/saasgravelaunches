@@ -52,6 +52,41 @@ export async function fulfilPurchase({
         break;
       }
 
+      // ── $29 one-off · Premium Launch ──
+      // The paid alternative to the badge. The launch was held as a draft at
+      // submit time and publishes here, so a listing can never be live before
+      // its payment cleared — and never depends on the maker's own site.
+      case "premium_launch": {
+        const { data: product } = await admin
+          .from("launch_products")
+          .select("id, status, launch_week")
+          .eq("id", referenceId)
+          .maybeSingle();
+        if (!product) return { ok: false, note: "product not found" };
+
+        // Replayed webhook on an already-published launch: nothing to do.
+        if (product.status === "live") break;
+
+        const { error } = await admin
+          .from("launch_products")
+          .update({
+            status: "live",
+            launched_at: new Date().toISOString(),
+            // Paid launches carry the Verified mark and don't consume one of the
+            // week's free slots — that's what "launch into any week" means.
+            tier: "premium",
+            verified: true,
+            badge_verified: true,
+            badge_verified_at: new Date().toISOString(),
+          })
+          .eq("id", referenceId);
+        if (error) {
+          console.error("fulfil premium_launch:", error.message);
+          return { ok: false, note: "couldn't publish paid launch" };
+        }
+        break;
+      }
+
       // ── $19/month · sidebar slot ──
       // Both on-board ad placements activate the same way.
       case "ad_sidebar":
@@ -120,9 +155,34 @@ export async function fulfilPurchase({
         break;
       }
 
-      // ── $99 · directory blast. Fulfilled by a human; this records the order. ──
-      case "directory":
+      // ── directory blast. The submissions are fulfilled by a human; what
+      //    happens here is the part that's ours to do. Every directory tier
+      //    includes a launch on this board, so if the buyer bought it from the
+      //    configure step their listing is sitting as a draft — publish it, the
+      //    same way a Premium Launch publishes. When the purchase wasn't tied to
+      //    a draft (referenceId is the buyer, not a product) this is a no-op.
+      case "directory": {
+        const { data: product } = await admin
+          .from("launch_products")
+          .select("id, status")
+          .eq("id", referenceId)
+          .maybeSingle();
+        if (product && product.status !== "live") {
+          const { error } = await admin
+            .from("launch_products")
+            .update({
+              status: "live",
+              launched_at: new Date().toISOString(),
+              tier: "premium",
+              verified: true,
+              badge_verified: true,
+              badge_verified_at: new Date().toISOString(),
+            })
+            .eq("id", referenceId);
+          if (error) console.error("fulfil directory publish:", error.message);
+        }
         break;
+      }
 
       default:
         return { ok: false, note: `unknown kind: ${kind}` };

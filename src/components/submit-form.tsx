@@ -10,13 +10,14 @@ import { PhotoUpload } from "@/components/photo-upload";
 import { BadgeEmbed } from "@/components/badge-embed";
 import { CopilotPanel } from "@/components/copilot-panel";
 import { SupportPopup } from "@/components/support-popup";
-import { LaunchConfigurator } from "@/components/launch-configurator";
+import { LaunchConfigurator, type ConfigStep } from "@/components/launch-configurator";
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://ls.saasgrave.org";
 import { CATEGORIES, PRICING_MODELS } from "@/lib/categories";
 import { cn } from "@/lib/utils";
 import { trackEvent } from "@/lib/track-client";
 import { resolveSelection, type AddonKey, type TierKey } from "@/lib/launch-options";
+import { PRODUCTS } from "@/lib/pricing";
 
 type Draft = {
   name: string;
@@ -115,7 +116,10 @@ export function SubmitForm({
   // ── the configure step ── what the maker chose on the last screen. Free is
   // the default and stays one click away throughout.
   const [showConfig, setShowConfig] = useState(false);
-  const [tier, setTier] = useState<TierKey>("free");
+  const [configStep, setConfigStep] = useState<ConfigStep>("plan");
+  // Premium Launch leads: it's the option that removes work rather than adding
+  // it, and a maker who wants free is one click away on the same screen.
+  const [tier, setTier] = useState<TierKey>("premium");
   const [addon, setAddon] = useState<AddonKey>("none");
   // Phase 1 landed and the AI pass is still running — the form is usable, we
   // just say so rather than blocking it.
@@ -247,6 +251,7 @@ export function SubmitForm({
   function requestLaunch(e: React.FormEvent) {
     e.preventDefault();
     if (!canPublish) return;
+    setConfigStep("plan");
     setShowConfig(true);
   }
 
@@ -303,12 +308,21 @@ export function SubmitForm({
             .filter(Boolean),
           gallery_urls: draft.gallery_urls,
           launch_week: launchWeek,
+          intent: resolveSelection(tier, addon).intent,
           faq: aiFaq,
           alternatives: aiAlternatives,
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Couldn't publish that.");
+
+      // Held pending payment — the draft exists, now collect it. A failure here
+      // leaves the draft in their dashboard rather than a half-published launch.
+      if (data.needsPayment && data.slug) {
+        if (await startUpgrade(data.slug)) return;
+        setPublishing(false);
+        return;
+      }
 
       // Held for badge verification — show the badge step, don't redirect.
       if (data.needsBadge && data.slug) {
@@ -426,28 +440,50 @@ export function SubmitForm({
             </p>
           </div>
           <p className="mb-3 text-[13px] leading-relaxed text-ink-500">
-            Premium skips verification entirely and publishes right away — plus unlimited launches,
-            analytics and the Verified mark.
+            A Premium Launch skips verification entirely and publishes the moment it&apos;s paid — plus
+            the Verified mark and a place in any week, even a full one. Nothing to add to your site.
           </p>
-          <a
-            href="/pricing#plans"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-brass-500/50 px-4 py-2 text-[13px] font-medium text-brass-600 transition hover:bg-brass-500/10"
+          {/* Stays in the flow. Sending a maker who has already written their
+              listing off to /pricing is how a launch gets abandoned. */}
+          <button
+            type="button"
+            onClick={() => {
+              setBadgeSlug(null);
+              setTier("premium");
+              setAddon("none");
+              setConfigStep("review");
+              setShowConfig(true);
+            }}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-brass-500/50 px-4 py-2 text-[13px] font-semibold text-brass-600 transition hover:bg-brass-500/10"
           >
-            See Premium →
-          </a>
+            Publish it now for ${PRODUCTS.premiumLaunch.dollars} →
+          </button>
         </div>
 
         <div className="flex items-center justify-between gap-3 border-t border-ink-900/10 px-6 py-3">
           <p className="text-[12px] text-ink-400">
             Your draft is saved — you can finish this any time from your dashboard.
           </p>
-          <button
-            type="button"
-            onClick={() => setBadgeSlug(null)}
-            className="font-mono text-[11px] uppercase tracking-[0.1em] text-ink-400 hover:text-ink-700"
-          >
-            Later
-          </button>
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={() => {
+                setBadgeSlug(null);
+                setConfigStep("plan");
+                setShowConfig(true);
+              }}
+              className="font-mono text-[11px] uppercase tracking-[0.1em] text-ink-400 hover:text-ink-700"
+            >
+              ← Back to options
+            </button>
+            <button
+              type="button"
+              onClick={() => setBadgeSlug(null)}
+              className="font-mono text-[11px] uppercase tracking-[0.1em] text-ink-400 hover:text-ink-700"
+            >
+              Later
+            </button>
+          </div>
         </div>
       </Card>
     </div>
@@ -458,6 +494,7 @@ export function SubmitForm({
       {badgeModal}
       <LaunchConfigurator
         open={showConfig && !badgeSlug}
+        step={configStep}
         weekLabel={selectedWeek?.label || ""}
         weekRange={selectedWeek?.range || ""}
         productName={draft.name}
@@ -467,6 +504,7 @@ export function SubmitForm({
         addon={addon}
         onTier={setTier}
         onAddon={setAddon}
+        onStep={setConfigStep}
         onContinue={confirmConfig}
         onClose={() => setShowConfig(false)}
       />

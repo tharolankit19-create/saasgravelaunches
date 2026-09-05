@@ -4,6 +4,7 @@ import { normalizeUrl } from "@/lib/utils";
 import { sendEmail } from "@/lib/email";
 import { launchLiveEmail } from "@/lib/email-templates";
 import { track } from "@/lib/analytics";
+import { hasBadgeLink } from "@/lib/badge-check";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,6 +14,7 @@ const UA =
   "Mozilla/5.0 (compatible; SaasgraveLaunchesBot/1.0; +https://ls.saasgrave.org/about)";
 const TIMEOUT_MS = 9_000;
 const MAX_BYTES = 1_500_000;
+const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://ls.saasgrave.org";
 
 /**
  * Verify a maker's backlink — the "verified member" check.
@@ -54,10 +56,11 @@ export async function POST(request: Request) {
 
   // ── fetch the raw homepage ──
   let html = "";
+  let res: Response;
   try {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
-    const res = await fetch(site, {
+    res = await fetch(site, {
       headers: { "User-Agent": UA, Accept: "text/html,application/xhtml+xml" },
       redirect: "follow",
       signal: controller.signal,
@@ -85,13 +88,11 @@ export async function POST(request: Request) {
   }
 
   // ── does the page really link back? ──
-  const hay = html.toLowerCase();
-  const s = slug.toLowerCase();
-  const verified =
-    hay.includes(`/products/${s}`) ||
-    hay.includes(`slug=${s}`) ||
-    hay.includes(`/api/badge/${s}`) ||
-    hay.includes(`badge/${s}`);
+  // Parsed properly: a real href/src, resolved, pointing at OUR host and naming
+  // THIS launch. Substring matching was not enough — the slug comes from the
+  // product's own name, so a maker's own /products/<slug> page passed the check
+  // without the badge ever being added.
+  const verified = hasBadgeLink(html, res.url || site, SITE, slug);
 
   if (!verified) {
     // Record the attempt (best-effort), then tell them plainly.
@@ -106,7 +107,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       verified: false,
       error:
-        "We fetched your homepage but didn't find the badge yet. Make sure it's published and in the page HTML, then try again.",
+        "We fetched your homepage but couldn't find a link back to this launch. The badge has to be live in your page's HTML and link to your product page here — copy the snippet above exactly, publish, then try again.",
     });
   }
 

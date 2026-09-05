@@ -79,6 +79,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "That launch is already Featured." }, { status: 409 });
     }
     referenceId = target.id;
+  } else if (product === "premiumLaunch") {
+    // Buys publication of one specific draft, so it must name that launch.
+    const target = await ownProduct(admin, user.id, productSlug);
+    if (!target) {
+      return NextResponse.json(
+        { error: "Start your launch first — this publishes a listing you've drafted." },
+        { status: 400 }
+      );
+    }
+    if (target.status === "live") {
+      return NextResponse.json({ error: "That launch is already live." }, { status: 409 });
+    }
+    referenceId = target.id;
   } else if (product === "premium") {
     if (await isPremium(user.id)) {
       return NextResponse.json({ error: "You're already on Premium." }, { status: 409 });
@@ -141,7 +154,7 @@ async function ownProduct(
 ) {
   let query = admin
     .from("launch_products")
-    .select("id, slug, featured_until")
+    .select("id, slug, status, featured_until")
     .eq("maker_id", userId)
     .order("created_at", { ascending: false })
     .limit(1);
