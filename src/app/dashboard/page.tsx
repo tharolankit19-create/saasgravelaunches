@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Eye, MousePointerClick, ArrowUp, MessageSquare, Plus, Sparkles } from "lucide-react";
+import { Eye, MousePointerClick, ArrowUp, MessageSquare, Pencil, Plus, Sparkles } from "lucide-react";
 import { Card, Rubric, Empty, LinkButton, Stat, Badge } from "@/components/ui";
 import { ProductLogo } from "@/components/avatar";
 import { ProfileForm } from "@/components/profile-form";
@@ -132,8 +132,10 @@ export default async function DashboardPage() {
                   <ProductLogo src={p.logo_url} name={p.name} size={48} />
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
+                      {/* A draft has no public page yet, so its title opens the
+                          editor instead of a link that would 404. */}
                       <Link
-                        href={`/products/${p.slug}`}
+                        href={p.status === "live" ? `/products/${p.slug}` : `/launch?draft=${p.slug}`}
                         className="text-[15px] font-semibold text-ink-900 hover:text-ember-600"
                       >
                         {p.name}
@@ -171,6 +173,19 @@ export default async function DashboardPage() {
                     </div>
                   </div>
                 </div>
+
+                {/* A draft was a dead end before this: no page, no actions, no
+                    way back into it. Both routes out of one now sit here. */}
+                {p.status !== "live" && (
+                  <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-ink-900/8 pt-4">
+                    <LinkButton href={`/launch?draft=${p.slug}`} size="sm">
+                      <Pencil className="h-3.5 w-3.5" /> Edit draft
+                    </LinkButton>
+                    <span className="text-[12px] text-ink-500">
+                      Not public yet — finish it to go live.
+                    </span>
+                  </div>
+                )}
 
                 {p.status === "live" && (
                   <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-ink-900/8 pt-4">

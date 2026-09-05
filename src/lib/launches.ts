@@ -159,6 +159,32 @@ export async function getFeaturedOpenForWeeks(
   }
 }
 
+/**
+ * One of a maker's own drafts, for reopening in the launch form.
+ *
+ * Ownership is checked here rather than trusted from the URL, and a live
+ * listing is never returned — editing a published launch is a different job
+ * with different rules, and this route must not become a way to do it.
+ */
+export async function getOwnDraft(makerId: string, slug: string) {
+  try {
+    const admin = createAdminClient();
+    const { data } = await admin
+      .from("launch_products")
+      .select(
+        "slug, status, maker_id, launch_week, name, tagline, description, website_url, logo_url, gallery_urls, categories, pricing_model, who_for, problem, solution, unique_edge, keywords, maker_note, x_url, linkedin_url"
+      )
+      .eq("slug", slug)
+      .maybeSingle();
+
+    if (!data || data.maker_id !== makerId || data.status === "live") return null;
+    return data as any;
+  } catch (e: any) {
+    console.error("getOwnDraft:", e?.message || e);
+    return null;
+  }
+}
+
 export type WeekSlots = { week: WeekKey; used: number; cap: number; open: number };
 
 /**

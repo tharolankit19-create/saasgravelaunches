@@ -6,6 +6,7 @@ import { TrackOnMount } from "@/components/tracker";
 import { currentUser } from "@/lib/supabase/server";
 import {
   getFeaturedOpenForWeeks,
+  getOwnDraft,
   getSupportCount,
   getWeekSlots,
   isSupportGateActive,
@@ -22,16 +23,26 @@ export const metadata: Metadata = {
     "Paste your URL and AI writes the listing. Land on this week's board, keep a permanent product page and a dofollow backlink. Free, no card.",
 };
 
-export default async function LaunchPage({ searchParams }: { searchParams: { url?: string } }) {
+export default async function LaunchPage({
+  searchParams,
+}: {
+  searchParams: { url?: string; draft?: string };
+}) {
   const user = await currentUser();
   // Preserve the URL through sign-in, so a visitor from the hero lands back here
   // with autofill ready to fire rather than starting over.
   if (!user) {
-    const next = searchParams.url
-      ? `/launch?url=${encodeURIComponent(searchParams.url)}`
-      : "/launch";
+    const next = searchParams.draft
+      ? `/launch?draft=${encodeURIComponent(searchParams.draft)}`
+      : searchParams.url
+        ? `/launch?url=${encodeURIComponent(searchParams.url)}`
+        : "/launch";
     redirect(`/login?next=${encodeURIComponent(next)}`);
   }
+
+  // Reopening a saved draft. Read straight from the table (the maker owns it),
+  // and fall through to a blank form if the slug isn't theirs.
+  const editing = searchParams.draft ? await getOwnDraft(user.id, searchParams.draft) : null;
 
   const weekKeys = upcomingWeeks(6);
   const [supported, gateActive, premium, slots, featuredOpen] = await Promise.all([
@@ -59,10 +70,16 @@ export default async function LaunchPage({ searchParams }: { searchParams: { url
     <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
       <TrackOnMount event="submit_start" />
 
-      <Rubric className="mb-3">New launch · {weekLabel(currentWeekKey())}</Rubric>
-      <h1 className="font-serif text-masthead font-semibold text-ink-900">Launch your product</h1>
+      <Rubric className="mb-3">
+        {editing ? "Editing draft" : `New launch · ${weekLabel(currentWeekKey())}`}
+      </Rubric>
+      <h1 className="font-serif text-masthead font-semibold text-ink-900">
+        {editing ? editing.name || "Your draft" : "Launch your product"}
+      </h1>
       <p className="mt-2 text-[15px] text-ink-500">
-        Paste your URL, we write the listing. Five fields, about a minute.
+        {editing
+          ? "Pick up where you left off. Nothing here is public until you launch it."
+          : "Paste your URL, we write the listing. Five fields, about a minute."}
       </p>
 
       <div className="mt-8">
@@ -71,9 +88,10 @@ export default async function LaunchPage({ searchParams }: { searchParams: { url
           gateActive={gateActive}
           supported={Math.min(supported, SUPPORT_THRESHOLD)}
           threshold={SUPPORT_THRESHOLD}
-          initialUrl={searchParams.url}
+          initialUrl={editing ? undefined : searchParams.url}
           weekOptions={weekOptions}
           premium={premium}
+          initialDraft={editing}
         />
       </div>
     </div>

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Sparkles, Loader2, ChevronDown, Check, Calendar, Lock, ShieldCheck } from "lucide-react";
+import { Sparkles, Loader2, ChevronDown, Check, Calendar, Lock, Save, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Button, Field, inputClass, Card } from "@/components/ui";
 import { ImageUpload } from "@/components/image-upload";
@@ -57,6 +57,51 @@ const EMPTY: Draft = {
   linkedin_url: "",
 };
 
+/** A draft read back from the server, ready to reopen in the form. */
+export type LoadedDraft = {
+  slug: string;
+  launch_week: string | null;
+  name: string | null;
+  tagline: string | null;
+  website_url: string | null;
+  logo_url: string | null;
+  gallery_urls: string[] | null;
+  description: string | null;
+  categories: string[] | null;
+  pricing_model: string | null;
+  who_for: string | null;
+  problem: string | null;
+  solution: string | null;
+  unique_edge: string | null;
+  keywords: string[] | null;
+  maker_note: string | null;
+  x_url: string | null;
+  linkedin_url: string | null;
+};
+
+/** Turn a saved draft back into form state, leaving nothing undefined. */
+function draftFrom(d?: LoadedDraft | null): Draft {
+  if (!d) return EMPTY;
+  return {
+    name: d.name || "",
+    tagline: d.tagline || "",
+    website_url: d.website_url || "",
+    logo_url: d.logo_url || "",
+    gallery_urls: Array.isArray(d.gallery_urls) ? d.gallery_urls : [],
+    description: d.description || "",
+    categories: Array.isArray(d.categories) ? d.categories.filter((c) => c !== "Other") : [],
+    pricing_model: d.pricing_model || "",
+    who_for: d.who_for || "",
+    problem: d.problem || "",
+    solution: d.solution || "",
+    unique_edge: d.unique_edge || "",
+    keywords: Array.isArray(d.keywords) ? d.keywords.join(", ") : "",
+    maker_note: d.maker_note || "",
+    x_url: d.x_url || "",
+    linkedin_url: d.linkedin_url || "",
+  };
+}
+
 /**
  * The submit flow.
  *
@@ -83,6 +128,7 @@ export function SubmitForm({
   initialUrl,
   weekOptions,
   premium,
+  initialDraft,
 }: {
   canPublish: boolean;
   /** Whether the support-three gate is switched on yet (board has depth). */
@@ -95,14 +141,26 @@ export function SubmitForm({
   weekOptions: WeekOption[];
   /** Premium can launch into any week, full or not. */
   premium: boolean;
+  /** When set, the form is editing this existing draft rather than creating one. */
+  initialDraft?: LoadedDraft | null;
 }) {
   const router = useRouter();
-  const [draft, setDraft] = useState<Draft>(EMPTY);
+  const [draft, setDraft] = useState<Draft>(() => draftFrom(initialDraft));
+  // The slug of the draft being edited, if any — set once it exists server-side,
+  // so a second save updates that row instead of creating another.
+  const [draftSlug, setDraftSlug] = useState<string | null>(initialDraft?.slug || null);
+  const [savingDraft, setSavingDraft] = useState(false);
   const [sourceUrl, setSourceUrl] = useState(initialUrl || "");
   // Default to the first week a free maker can actually use (has open slots),
   // or just the first week for Premium.
   const [launchWeek, setLaunchWeek] = useState(
-    () => (premium ? weekOptions[0]?.week : weekOptions.find((w) => w.open > 0)?.week) || weekOptions[0]?.week || ""
+    () =>
+      (initialDraft?.launch_week &&
+        weekOptions.some((w) => w.week === initialDraft.launch_week) &&
+        initialDraft.launch_week) ||
+      (premium ? weekOptions[0]?.week : weekOptions.find((w) => w.open > 0)?.week) ||
+      weekOptions[0]?.week ||
+      ""
   );
   const [filling, setFilling] = useState(false);
   const [filled, setFilled] = useState(false);
@@ -245,6 +303,52 @@ export function SubmitForm({
     }));
   }
 
+  /** Everything the server needs, shaped once so save and publish agree. */
+  function payload() {
+    return {
+      ...draft,
+      keywords: draft.keywords
+        .split(",")
+        .map((k) => k.trim())
+        .filter(Boolean),
+      gallery_urls: draft.gallery_urls,
+      launch_week: launchWeek,
+      faq: aiFaq,
+      alternatives: aiAlternatives,
+    };
+  }
+
+  /**
+   * Park the listing without publishing it. Creates the draft the first time
+   * and updates it after that, so a founder can leave and come back without
+   * losing what they wrote — and without ending up with five half-drafts.
+   */
+  async function saveDraft() {
+    if (!draft.name.trim()) return toast.error("Give your draft a name first.");
+    setSavingDraft(true);
+    try {
+      const editing = Boolean(draftSlug);
+      const res = await fetch("/api/launch", {
+        method: editing ? "PATCH" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          editing
+            ? { ...payload(), slug: draftSlug, publish: false }
+            : { ...payload(), intent: "draft" }
+        ),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Couldn't save that draft.");
+      if (data.slug) setDraftSlug(data.slug);
+      trackEvent("draft_saved", { productSlug: data.slug });
+      toast.success("Draft saved. You can finish it any time from your dashboard.");
+    } catch (e: any) {
+      toast.error(e?.message || "Couldn't save that draft.");
+    } finally {
+      setSavingDraft(false);
+    }
+  }
+
   // Launch tap → the configure step (how it lands, plus the optional directory
   // package). Its Continue either goes straight to publish, or — when the
   // support-three gate is live — through the support popup first.
@@ -297,20 +401,16 @@ export function SubmitForm({
     setPublishing(true);
     trackEvent("publish_attempt");
     try {
+      // Editing a saved draft updates that row and publishes it; a fresh
+      // listing is created. Either way the maker's edits go with the publish.
+      const editing = Boolean(draftSlug);
       const res = await fetch("/api/launch", {
-        method: "POST",
+        method: editing ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...draft,
-          keywords: draft.keywords
-            .split(",")
-            .map((k) => k.trim())
-            .filter(Boolean),
-          gallery_urls: draft.gallery_urls,
-          launch_week: launchWeek,
+          ...payload(),
           intent: resolveSelection(tier, addon).intent,
-          faq: aiFaq,
-          alternatives: aiAlternatives,
+          ...(editing ? { slug: draftSlug, publish: true } : {}),
         }),
       });
       const data = await res.json();
@@ -319,6 +419,7 @@ export function SubmitForm({
       // Held pending payment — the draft exists, now collect it. A failure here
       // leaves the draft in their dashboard rather than a half-published launch.
       if (data.needsPayment && data.slug) {
+        setDraftSlug(data.slug);
         if (await startUpgrade(data.slug)) return;
         setPublishing(false);
         return;
@@ -326,6 +427,7 @@ export function SubmitForm({
 
       // Held for badge verification — show the badge step, don't redirect.
       if (data.needsBadge && data.slug) {
+        setDraftSlug(data.slug);
         setShowSupport(false);
         setShowConfig(false);
         setBadgeSlug(data.slug);
@@ -935,17 +1037,40 @@ export function SubmitForm({
         )}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-[13px] text-ink-500">
-            Free, forever. Your page and its backlink stay live after the week ends.
+            {draftSlug
+              ? "Editing a saved draft — nothing is public until you launch it."
+              : "Free, forever. Your page and its backlink stay live after the week ends."}
           </p>
-          <Button type="submit" size="lg" disabled={!canPublish || !ready || publishing}>
-            {publishing ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" /> Publishing…
-              </>
-            ) : (
-              "Launch it"
-            )}
-          </Button>
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Leaving mid-listing shouldn't cost the writing. Only a name is
+                needed — the rest can be finished later. */}
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              onClick={saveDraft}
+              disabled={!draft.name.trim() || savingDraft || publishing}
+            >
+              {savingDraft ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" /> Saving…
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4" /> Save draft
+                </>
+              )}
+            </Button>
+            <Button type="submit" size="lg" disabled={!canPublish || !ready || publishing}>
+              {publishing ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" /> Publishing…
+                </>
+              ) : (
+                "Launch it"
+              )}
+            </Button>
+          </div>
         </div>
       </div>
       </form>

@@ -4,7 +4,8 @@ import { getSupportCount, getWeekSlots, isSupportGateActive } from "@/lib/launch
 import { FREE_LAUNCHES_PER_WEEK, SUPPORT_THRESHOLD, WEEK_SLOT_CAP } from "@/lib/pricing";
 import { isPremium } from "@/lib/premium";
 import { CATEGORY_NAMES } from "@/lib/categories";
-import { normalizeUrl, slugify, truncate } from "@/lib/utils";
+import { normalizeUrl, slugify } from "@/lib/utils";
+import { shapeLaunch } from "@/lib/launch-shape";
 import { currentWeekKey, isPreLaunchWeek, parseWeekKey, weekLabel, weekStart } from "@/lib/week";
 import { track } from "@/lib/analytics";
 import { sendEmail } from "@/lib/email";
@@ -26,6 +27,12 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   if (!body) return NextResponse.json({ error: "Nothing to publish." }, { status: 400 });
 
+  // How the maker asked for this launch to be handled, read once up front
+  // because the capacity and support checks below all depend on it.
+  const paidIntent = body.intent === "premium_launch";
+  // "Save as draft" — the founder isn't finished and hasn't chosen anything yet.
+  const savingDraft = body.intent === "draft";
+
   // ── the one rule ──
   // The support gate only applies once the board has real depth — you can't
   // upvote three makers who aren't there yet. Checked here, not only in the UI,
@@ -34,7 +41,7 @@ export async function POST(request: Request) {
     isSupportGateActive(),
     getSupportCount(user.id),
   ]);
-  if (gateActive && supported < SUPPORT_THRESHOLD) {
+  if (gateActive && supported < SUPPORT_THRESHOLD && !savingDraft) {
     await track({
       event: "publish_blocked",
       userId: user.id,
@@ -55,10 +62,19 @@ export async function POST(request: Request) {
   const tagline = String(body.tagline || "").trim().slice(0, 80);
   const website = normalizeUrl(body.website_url);
 
-  if (!name) return NextResponse.json({ error: "Your product needs a name." }, { status: 400 });
-  if (!tagline) return NextResponse.json({ error: "Add a one-line tagline." }, { status: 400 });
-  if (!website) {
-    return NextResponse.json({ error: "That website URL doesn't look right." }, { status: 400 });
+  // A draft is allowed to be half-finished — that's what saving one is for.
+  // Publishing still requires all three.
+  if (!name) {
+    return NextResponse.json(
+      { error: savingDraft ? "Give your draft a name before saving it." : "Your product needs a name." },
+      { status: 400 }
+    );
+  }
+  if (!savingDraft) {
+    if (!tagline) return NextResponse.json({ error: "Add a one-line tagline." }, { status: 400 });
+    if (!website) {
+      return NextResponse.json({ error: "That website URL doesn't look right." }, { status: 400 });
+    }
   }
 
   // ── which week is this launch scheduled into? ──
@@ -78,7 +94,9 @@ export async function POST(request: Request) {
   const premium = await isPremium(user.id);
 
   // ── weekly capacity: 20 free slots a week; Premium ignores the cap ──
-  if (!premium) {
+  // Skipped while saving a draft: no slot is consumed until it publishes, and
+  // a full week is a reason to pick another one later, not to lose the writing.
+  if (!premium && !savingDraft) {
     const [slots] = await getWeekSlots([week]);
     if (slots && slots.open <= 0) {
       await track({
@@ -105,7 +123,7 @@ export async function POST(request: Request) {
     .eq("launch_week", week)
     .eq("status", "live");
 
-  if (!premium && (thisWeekCount || 0) >= FREE_LAUNCHES_PER_WEEK) {
+  if (!premium && !savingDraft && (thisWeekCount || 0) >= FREE_LAUNCHES_PER_WEEK) {
     await track({ event: "publish_blocked", userId: user.id, meta: { reason: "week_limit" } });
     return NextResponse.json(
       {
@@ -128,15 +146,18 @@ export async function POST(request: Request) {
   // launch is held as a draft here and published by fulfilment once the payment
   // clears, so a listing is never live before it was either paid for or
   // verified. Free is the fallback for anything we don't recognise.
-  const paidIntent = body.intent === "premium_launch";
-  const gateBadge = !paidIntent && badgeRequired && !premium;
+  const gateBadge = !paidIntent && !savingDraft && badgeRequired && !premium;
 
-  const { data: existing } = await supabase
-    .from("launch_products")
-    .select("slug, status")
-    .eq("maker_id", user.id)
-    .eq("website_url", website)
-    .maybeSingle();
+  // Have they already got this URL on the board? Only meaningful once a URL has
+  // actually been typed — several unfinished drafts can share an empty one.
+  const { data: existing } = website
+    ? await supabase
+        .from("launch_products")
+        .select("slug, status")
+        .eq("maker_id", user.id)
+        .eq("website_url", website)
+        .maybeSingle()
+    : { data: null };
 
   if (existing) {
     // Already live → nothing to do. Still a draft from a prior attempt → send
@@ -147,6 +168,9 @@ export async function POST(request: Request) {
         { status: 409 }
       );
     }
+    if (savingDraft) {
+      return NextResponse.json({ draft: true, slug: existing.slug, resumed: true });
+    }
     if (paidIntent) {
       return NextResponse.json({ needsPayment: true, slug: existing.slug, resumed: true });
     }
@@ -154,99 +178,24 @@ export async function POST(request: Request) {
   }
 
   // ── shape the row ──
-  const categories = Array.isArray(body.categories)
-    ? body.categories.filter((c: unknown) => typeof c === "string" && CATEGORY_NAMES.includes(c)).slice(0, 2)
-    : [];
-
-  const keywords = Array.isArray(body.keywords)
-    ? body.keywords.filter((k: unknown) => typeof k === "string").map((k: string) => k.trim().slice(0, 60)).slice(0, 8)
-    : [];
-
-  // Screenshots the maker uploaded (public Supabase storage URLs) plus any OG
-  // image autofill seeded. Keep only our own http(s) URLs, cap at five.
-  const gallery = Array.isArray(body.gallery_urls)
-    ? body.gallery_urls
-        .filter((u: unknown): u is string => typeof u === "string")
-        .map((u: string) => normalizeUrl(u))
-        .filter((u: string | null): u is string => Boolean(u))
-        .slice(0, 5)
-    : [];
-
-  const alternatives = Array.isArray(body.alternatives)
-    ? body.alternatives.filter((a: unknown) => typeof a === "string").map((a: string) => a.trim().slice(0, 40)).slice(0, 3)
-    : [];
-
-  // FAQ: keep only well-formed {q,a} pairs the autofill produced.
-  const faq = Array.isArray(body.faq)
-    ? body.faq
-        .map((it: unknown) => {
-          const o = it as Record<string, unknown>;
-          const q = typeof o?.q === "string" ? o.q.trim().slice(0, 160) : "";
-          const a = typeof o?.a === "string" ? o.a.trim().slice(0, 500) : "";
-          return q && a ? { q, a } : null;
-        })
-        .filter(Boolean)
-        .slice(0, 6)
-    : [];
-
-  const text = (v: unknown, max: number) =>
-    typeof v === "string" && v.trim() ? truncate(v.trim(), max) : null;
-
-  /**
-   * Accept a company social however the founder types it — a full URL, a bare
-   * domain path, or just the handle — and store one canonical URL. Anything
-   * that isn't on the expected host is dropped rather than linked blindly.
-   */
-  const socialUrl = (v: unknown, host: string): string | null => {
-    if (typeof v !== "string" || !v.trim()) return null;
-    let raw = v.trim();
-    if (raw.startsWith("@")) raw = raw.slice(1);
-    if (!/^https?:\/\//i.test(raw)) {
-      raw = raw.includes(".") ? `https://${raw}` : `https://${host}/${raw}`;
-    }
-    try {
-      const u = new URL(raw);
-      const h = u.hostname.replace(/^www\./, "").toLowerCase();
-      const ok = host === "x.com" ? h === "x.com" || h === "twitter.com" : h.endsWith(host);
-      if (!ok) return null;
-      return u.toString().slice(0, 250);
-    } catch {
-      return null;
-    }
-  };
+  const shaped = shapeLaunch(body, { requireEssentials: !savingDraft });
+  if ("error" in shaped) return NextResponse.json({ error: shaped.error }, { status: 400 });
 
   const slug = await uniqueSlug(name);
+
+  // A launch the maker is only parking for later never publishes, whatever
+  // else they picked — that's the entire point of "save as draft".
+  const held = gateBadge || paidIntent || savingDraft;
 
   const row = {
     maker_id: user.id,
     slug,
-    name,
-    tagline,
-    description: text(body.description, 700),
-    website_url: website,
-    logo_url: normalizeUrl(body.logo_url),
-    gallery_urls: gallery,
-    categories: categories.length ? categories : ["Other"],
-    pricing_model: text(body.pricing_model, 20),
-    who_for: text(body.who_for, 120),
-    problem: text(body.problem, 400),
-    solution: text(body.solution, 400),
-    unique_edge: text(body.unique_edge, 400),
-    keywords,
-    alternatives,
-    faq,
-    maker_note: text(body.maker_note, 800),
-    // Company socials — both optional, stored as full URLs so the product page
-    // can link straight out.
-    x_url: socialUrl(body.x_url, "x.com"),
-    linkedin_url: socialUrl(body.linkedin_url, "linkedin.com"),
-    seo_title: `${name} — ${tagline}`.slice(0, 70),
-    seo_description: text(body.description, 155) || `${name}: ${tagline}`.slice(0, 155),
+    ...shaped.fields,
     // A launch is live only once it's been earned: gated ones go live on badge
     // verification, paid ones when fulfilment confirms the payment.
-    status: gateBadge || paidIntent ? "draft" : "live",
+    status: held ? "draft" : "live",
     launch_week: week,
-    launched_at: gateBadge || paidIntent ? null : new Date().toISOString(),
+    launched_at: held ? null : new Date().toISOString(),
   };
 
   const { data, error } = await supabase
@@ -263,6 +212,11 @@ export async function POST(request: Request) {
 
   // Gated: hold as a draft and send the maker to the badge step. The launch
   // goes live (and the "you're live" email fires) from the verify-badge route.
+  if (savingDraft) {
+    await track({ event: "draft_saved", userId: user.id, productSlug: data.slug });
+    return NextResponse.json({ draft: true, slug: data.slug });
+  }
+
   if (paidIntent) {
     await track({ event: "publish_pending_payment", userId: user.id, productSlug: data.slug });
     return NextResponse.json({ needsPayment: true, slug: data.slug });
@@ -294,6 +248,165 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.json({ slug: data.slug });
+}
+
+/**
+ * Read one of the maker's own drafts back, so the launch form can be reopened
+ * with everything they'd written still in it. Owner-only, drafts only — a live
+ * listing is not edited through this route.
+ */
+export async function GET(request: Request) {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
+
+  const slug = new URL(request.url).searchParams.get("draft")?.slice(0, 80) || "";
+  if (!slug) return NextResponse.json({ error: "Which draft?" }, { status: 400 });
+
+  const { data: draft } = await supabase
+    .from("launch_products")
+    .select(
+      "slug, status, maker_id, name, tagline, description, website_url, logo_url, gallery_urls, categories, pricing_model, who_for, problem, solution, unique_edge, keywords, alternatives, faq, maker_note, x_url, linkedin_url, launch_week"
+    )
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (!draft) return NextResponse.json({ error: "Draft not found." }, { status: 404 });
+  if (draft.maker_id !== user.id) {
+    return NextResponse.json({ error: "That isn't your draft." }, { status: 403 });
+  }
+  if (draft.status === "live") {
+    return NextResponse.json({ error: "That launch is already live.", slug }, { status: 409 });
+  }
+
+  return NextResponse.json({ draft });
+}
+
+/**
+ * Update a draft the maker already started — the edit half of "save as draft".
+ *
+ * Only ever touches a draft they own, and it can publish that draft too: pass
+ * `publish: true` with the same intent the configure step resolved. The rules
+ * for whether it may actually go live are identical to POST's, because a draft
+ * must not become a back door around the badge or the payment.
+ */
+export async function PATCH(request: Request) {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
+
+  const body = await request.json().catch(() => null);
+  if (!body) return NextResponse.json({ error: "Nothing to save." }, { status: 400 });
+
+  const slug = typeof body.slug === "string" ? body.slug.slice(0, 80) : "";
+  if (!slug) return NextResponse.json({ error: "Which draft?" }, { status: 400 });
+
+  const publish = body.publish === true;
+  const paidIntent = body.intent === "premium_launch";
+
+  const { data: draft } = await supabase
+    .from("launch_products")
+    .select("id, slug, status, maker_id")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (!draft) return NextResponse.json({ error: "Draft not found." }, { status: 404 });
+  if (draft.maker_id !== user.id) {
+    return NextResponse.json({ error: "That isn't your draft." }, { status: 403 });
+  }
+  if (draft.status === "live") {
+    return NextResponse.json({ error: "That launch is already live.", slug }, { status: 409 });
+  }
+
+  const shaped = shapeLaunch(body, { requireEssentials: publish });
+  if ("error" in shaped) return NextResponse.json({ error: shaped.error }, { status: 400 });
+
+  // The week can be moved while it's still a draft.
+  const requestedWeek =
+    typeof body.launch_week === "string" && parseWeekKey(body.launch_week)
+      ? body.launch_week.trim()
+      : currentWeekKey();
+  const week =
+    !isPreLaunchWeek(requestedWeek) &&
+    weekStart(requestedWeek).getTime() >= weekStart(currentWeekKey()).getTime()
+      ? requestedWeek
+      : currentWeekKey();
+
+  const { error } = await supabase
+    .from("launch_products")
+    .update({ ...shaped.fields, launch_week: week })
+    .eq("id", draft.id)
+    .eq("maker_id", user.id);
+
+  if (error) {
+    console.error("launch patch:", error.message);
+    return NextResponse.json({ error: "Couldn't save those changes." }, { status: 500 });
+  }
+
+  if (!publish) {
+    await track({ event: "draft_saved", userId: user.id, productSlug: slug });
+    return NextResponse.json({ draft: true, slug });
+  }
+
+  // ── publishing an edited draft ── same gates as a fresh launch.
+  const [gateActive, supported] = await Promise.all([
+    isSupportGateActive(),
+    getSupportCount(user.id),
+  ]);
+  if (gateActive && supported < SUPPORT_THRESHOLD) {
+    return NextResponse.json(
+      {
+        error: `Upvote ${SUPPORT_THRESHOLD - supported} more launch${
+          SUPPORT_THRESHOLD - supported === 1 ? "" : "es"
+        } before publishing your own.`,
+      },
+      { status: 403 }
+    );
+  }
+
+  const premium = await isPremium(user.id);
+  if (!premium && !paidIntent) {
+    const [slots] = await getWeekSlots([week]);
+    if (slots && slots.open <= 0) {
+      return NextResponse.json(
+        {
+          error: `${weekLabel(week)} is full — all ${WEEK_SLOT_CAP} free slots are taken. Pick a later week, or publish it now with a Premium Launch.`,
+          upgrade: "premium",
+          weekFull: true,
+        },
+        { status: 409 }
+      );
+    }
+  }
+
+  // Paid launches wait for the payment; free ones wait for the badge. Either
+  // way the row stays a draft here — nothing publishes on this path alone.
+  if (paidIntent) {
+    await track({ event: "publish_pending_payment", userId: user.id, productSlug: slug });
+    return NextResponse.json({ needsPayment: true, slug });
+  }
+
+  const badgeRequired = process.env.BADGE_REQUIRED !== "false";
+  if (badgeRequired && !premium) {
+    await track({ event: "publish_pending_badge", userId: user.id, productSlug: slug });
+    return NextResponse.json({ needsBadge: true, slug });
+  }
+
+  const { error: pubErr } = await supabase
+    .from("launch_products")
+    .update({ status: "live", launched_at: new Date().toISOString() })
+    .eq("id", draft.id)
+    .eq("maker_id", user.id);
+  if (pubErr) {
+    return NextResponse.json({ error: "Couldn't publish that draft." }, { status: 500 });
+  }
+
+  await track({ event: "publish_success", userId: user.id, productSlug: slug });
+  return NextResponse.json({ slug });
 }
 
 /**
