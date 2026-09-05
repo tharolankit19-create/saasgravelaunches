@@ -4,7 +4,7 @@
 
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { currentWeekKey, shiftWeek, type WeekKey } from "@/lib/week";
-import { SUPPORT_GATE_MIN_PRODUCTS, WEEK_SLOT_CAP } from "@/lib/pricing";
+import { PRODUCTS, SUPPORT_GATE_MIN_PRODUCTS, WEEK_SLOT_CAP } from "@/lib/pricing";
 
 export type Maker = {
   id: string;
@@ -124,6 +124,39 @@ export async function getAllTimeTop(limit = 50): Promise<LaunchProduct[]> {
     .order("launched_at", { ascending: true })
     .limit(limit);
   return (data || []) as unknown as LaunchProduct[];
+}
+
+/**
+ * Featured placements still unsold in each of the given weeks.
+ *
+ * The configure-launch step shows this as "N of 3 left". It has to be a real
+ * count read from the table — invented scarcity is the fastest way to lose a
+ * founder's trust, and this one is checkable against the board itself.
+ */
+export async function getFeaturedOpenForWeeks(
+  weeks: WeekKey[]
+): Promise<Record<string, number>> {
+  const cap = PRODUCTS.featured.slots ?? 3;
+  const out: Record<string, number> = Object.fromEntries(weeks.map((w) => [w, cap]));
+  if (!weeks.length) return out;
+  try {
+    const admin = createAdminClient();
+    const { data } = await admin
+      .from("launch_products")
+      .select("featured_week")
+      .eq("status", "live")
+      .in("featured_week", weeks)
+      .gt("featured_until", new Date().toISOString());
+
+    for (const r of (data || []) as { featured_week: string | null }[]) {
+      if (!r.featured_week || !(r.featured_week in out)) continue;
+      out[r.featured_week] = Math.max(0, out[r.featured_week] - 1);
+    }
+    return out;
+  } catch (e: any) {
+    console.error("getFeaturedOpenForWeeks:", e?.message || e);
+    return out; // fail open — never block an upgrade on a count hiccup
+  }
 }
 
 export type WeekSlots = { week: WeekKey; used: number; cap: number; open: number };

@@ -4,7 +4,12 @@ import { Rubric } from "@/components/ui";
 import { SubmitForm } from "@/components/submit-form";
 import { TrackOnMount } from "@/components/tracker";
 import { currentUser } from "@/lib/supabase/server";
-import { getSupportCount, getWeekSlots, isSupportGateActive } from "@/lib/launches";
+import {
+  getFeaturedOpenForWeeks,
+  getSupportCount,
+  getWeekSlots,
+  isSupportGateActive,
+} from "@/lib/launches";
 import { isPremium } from "@/lib/premium";
 import { SUPPORT_THRESHOLD } from "@/lib/pricing";
 import { currentWeekKey, upcomingWeeks, weekLabel, weekRangeLabel } from "@/lib/week";
@@ -29,11 +34,12 @@ export default async function LaunchPage({ searchParams }: { searchParams: { url
   }
 
   const weekKeys = upcomingWeeks(6);
-  const [supported, gateActive, premium, slots] = await Promise.all([
+  const [supported, gateActive, premium, slots, featuredOpen] = await Promise.all([
     getSupportCount(user.id),
     isSupportGateActive(),
     isPremium(user.id),
     getWeekSlots(weekKeys),
+    getFeaturedOpenForWeeks(weekKeys),
   ]);
   // The support gate only applies once the board has real depth. Until then,
   // anyone can publish freely — you can't upvote three makers who don't exist.
@@ -46,10 +52,11 @@ export default async function LaunchPage({ searchParams }: { searchParams: { url
     range: weekRangeLabel(s.week),
     open: s.open,
     cap: s.cap,
+    featuredOpen: featuredOpen[s.week] ?? 3,
   }));
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+    <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
       <TrackOnMount event="submit_start" />
 
       <Rubric className="mb-3">New launch · {weekLabel(currentWeekKey())}</Rubric>

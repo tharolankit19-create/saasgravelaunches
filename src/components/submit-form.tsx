@@ -10,11 +10,13 @@ import { PhotoUpload } from "@/components/photo-upload";
 import { BadgeEmbed } from "@/components/badge-embed";
 import { CopilotPanel } from "@/components/copilot-panel";
 import { SupportPopup } from "@/components/support-popup";
+import { LaunchConfigurator } from "@/components/launch-configurator";
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://ls.saasgrave.org";
 import { CATEGORIES, PRICING_MODELS } from "@/lib/categories";
 import { cn } from "@/lib/utils";
 import { trackEvent } from "@/lib/track-client";
+import { resolveSelection, type AddonKey, type TierKey } from "@/lib/launch-options";
 
 type Draft = {
   name: string;
@@ -62,7 +64,15 @@ const EMPTY: Draft = {
  * and puts everything else behind a disclosure that says plainly it's
  * optional. Nothing below "The essentials" blocks publishing.
  */
-type WeekOption = { week: string; label: string; range: string; open: number; cap: number };
+type WeekOption = {
+  week: string;
+  label: string;
+  range: string;
+  open: number;
+  cap: number;
+  /** Featured placements still unsold in this week. */
+  featuredOpen: number;
+};
 
 export function SubmitForm({
   canPublish,
@@ -102,6 +112,11 @@ export function SubmitForm({
   const [badgeSlug, setBadgeSlug] = useState<string | null>(null);
   const [verifying, setVerifying] = useState(false);
   const [showSupport, setShowSupport] = useState(false);
+  // ── the configure step ── what the maker chose on the last screen. Free is
+  // the default and stays one click away throughout.
+  const [showConfig, setShowConfig] = useState(false);
+  const [tier, setTier] = useState<TierKey>("free");
+  const [addon, setAddon] = useState<AddonKey>("none");
   // Phase 1 landed and the AI pass is still running — the form is usable, we
   // just say so rather than blocking it.
   const [polishing, setPolishing] = useState(false);
@@ -226,12 +241,49 @@ export function SubmitForm({
     }));
   }
 
-  // Launch tap → show the optional "support 3 makers" popup first. The popup's
-  // Continue button runs the real publish.
+  // Launch tap → the configure step (how it lands, plus the optional directory
+  // package). Its Continue either goes straight to publish, or — when the
+  // support-three gate is live — through the support popup first.
   function requestLaunch(e: React.FormEvent) {
     e.preventDefault();
     if (!canPublish) return;
-    setShowSupport(true);
+    setShowConfig(true);
+  }
+
+  function confirmConfig() {
+    if (gateActive) {
+      setShowConfig(false);
+      setShowSupport(true);
+      return;
+    }
+    doPublish();
+  }
+
+  /**
+   * Send the maker to checkout for whatever they picked. The launch is already
+   * live at this point — payment buys the upgrade, it never gates the launch —
+   * so any failure here just lands them on their product page instead.
+   */
+  async function startUpgrade(slug: string): Promise<boolean> {
+    const { product } = resolveSelection(tier, addon);
+    if (!product) return false;
+    try {
+      trackEvent("checkout_start", { meta: { product, from: "configure" } });
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ product, productSlug: slug }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data?.url) throw new Error(data?.error || "Checkout couldn't start.");
+      window.location.href = data.url;
+      return true;
+    } catch (e: any) {
+      toast.error(
+        `${e?.message || "Checkout couldn't start."} Your launch is live — you can upgrade from your dashboard.`
+      );
+      return false;
+    }
   }
 
   async function doPublish() {
@@ -261,6 +313,7 @@ export function SubmitForm({
       // Held for badge verification — show the badge step, don't redirect.
       if (data.needsBadge && data.slug) {
         setShowSupport(false);
+        setShowConfig(false);
         setBadgeSlug(data.slug);
         setPublishing(false);
         toast.message("Almost there — add the badge to your site to go live.");
@@ -269,6 +322,11 @@ export function SubmitForm({
       }
 
       trackEvent("publish_success", { productSlug: data.slug });
+
+      // Anything paid was chosen on the configure step: the launch is up, now
+      // hand off to checkout. On failure we fall through to the product page.
+      if (await startUpgrade(data.slug)) return;
+
       router.push(`/products/${data.slug}?launched=1`);
     } catch (e: any) {
       trackEvent("publish_error", { meta: { message: String(e?.message).slice(0, 120) } });
@@ -291,6 +349,7 @@ export function SubmitForm({
 
       if (data.verified) {
         trackEvent("publish_success", { productSlug: badgeSlug });
+        if (await startUpgrade(badgeSlug)) return;
         router.push(`/products/${badgeSlug}?launched=1`);
       } else {
         toast.error(data.error || "We didn't find the badge on your site yet.");
@@ -303,6 +362,7 @@ export function SubmitForm({
   }
 
   const ready = draft.name.trim() && draft.tagline.trim() && draft.website_url.trim();
+  const selectedWeek = weekOptions.find((w) => w.week === launchWeek) || null;
 
   // ── badge step ── shown as an unmissable modal the moment the draft is saved.
   // Two clear paths: add the badge and go live free, or go Premium and skip it.
@@ -396,6 +456,20 @@ export function SubmitForm({
   return (
     <>
       {badgeModal}
+      <LaunchConfigurator
+        open={showConfig && !badgeSlug}
+        weekLabel={selectedWeek?.label || ""}
+        weekRange={selectedWeek?.range || ""}
+        productName={draft.name}
+        featuredOpen={selectedWeek ? selectedWeek.featuredOpen : null}
+        publishing={publishing}
+        tier={tier}
+        addon={addon}
+        onTier={setTier}
+        onAddon={setAddon}
+        onContinue={confirmConfig}
+        onClose={() => setShowConfig(false)}
+      />
       <SupportPopup
         open={showSupport}
         publishing={publishing}
@@ -602,7 +676,9 @@ export function SubmitForm({
             )}
           </p>
 
-          <div className="mt-4 grid gap-2 sm:grid-cols-2">
+          {/* A date grid, not a list — availability is the thing a founder is
+              actually choosing on, so each week states it in plain words. */}
+          <div className="mt-4 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
             {weekOptions.map((w) => {
               const full = w.open <= 0;
               const locked = full && !premium;
@@ -614,34 +690,37 @@ export function SubmitForm({
                   disabled={locked}
                   onClick={() => setLaunchWeek(w.week)}
                   className={cn(
-                    "flex items-center justify-between rounded-lg border px-4 py-3 text-left transition",
+                    "rounded-2xl border p-4 text-left transition",
                     active
-                      ? "border-ember-500/60 bg-ember-500/[0.06] ring-1 ring-ember-500/30"
+                      ? "border-ember-500/60 bg-ember-500/[0.05] ring-2 ring-ember-500/25"
                       : locked
                         ? "cursor-not-allowed border-ink-900/10 bg-paper-200/40 opacity-60"
-                        : "border-ink-900/15 bg-paper-100 hover:border-ember-500/40"
+                        : "border-ink-900/12 bg-paper-100 hover:border-ember-500/40 hover:shadow-card"
                   )}
                 >
-                  <span>
-                    <span className="block text-[14px] font-semibold text-ink-900">{w.label}</span>
-                    <span className="block text-[12px] text-ink-400">{w.range}</span>
+                  <span className="block text-[15px] font-bold text-ink-900">{w.label}</span>
+                  <span className="mt-0.5 block text-[12px] text-ink-400">{w.range}</span>
+
+                  <span className="mt-3 block space-y-1.5">
+                    <Availability
+                      ok={!full}
+                      label={full ? "Free full" : `Free available · ${w.open}/${w.cap}`}
+                    />
+                    <Availability
+                      ok={w.featuredOpen > 0}
+                      label={
+                        w.featuredOpen > 0
+                          ? `Featured available · ${w.featuredOpen}/3`
+                          : "Featured taken"
+                      }
+                    />
                   </span>
-                  <span
-                    className={cn(
-                      "shrink-0 font-mono text-[10px] uppercase tracking-[0.08em]",
-                      full ? "text-ink-400" : "text-moss-600"
-                    )}
-                  >
-                    {locked ? (
-                      <span className="inline-flex items-center gap-1 text-brass-600">
-                        <Lock className="h-3 w-3" /> Premium
-                      </span>
-                    ) : full ? (
-                      "Full · Premium"
-                    ) : (
-                      `${w.open}/${w.cap} open`
-                    )}
-                  </span>
+
+                  {locked && (
+                    <span className="mt-2.5 inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.08em] text-brass-600">
+                      <Lock className="h-3 w-3" /> Premium launches into any week
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -833,5 +912,17 @@ export function SubmitForm({
       </div>
       </form>
     </>
+  );
+}
+
+/** One availability line inside a week card — a dot and the plain state. */
+function Availability({ ok, label }: { ok: boolean; label: string }) {
+  return (
+    <span className="flex items-center gap-1.5 text-[12px] text-ink-500">
+      <span
+        className={cn("h-1.5 w-1.5 shrink-0 rounded-full", ok ? "bg-moss-500" : "bg-ink-400/60")}
+      />
+      {label}
+    </span>
   );
 }
