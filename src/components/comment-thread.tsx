@@ -96,7 +96,7 @@ export function CommentThread({
           </div>
         </form>
       ) : (
-        <div className="mb-6 rounded-xl border border-dashed border-ink-900/12 bg-paper-200/50 px-4 py-4 text-sm text-ink-500">
+        <div className="mb-6 rounded-2xl border border-dashed border-ink-900/12 bg-paper-200/50 px-4 py-4 text-sm text-ink-500">
           <Link
             href={`/login?next=${encodeURIComponent(`/products/${slug}`)}`}
             className="font-medium text-ember-600 hover:underline"

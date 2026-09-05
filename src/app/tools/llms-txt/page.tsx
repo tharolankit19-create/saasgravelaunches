@@ -65,7 +65,7 @@ export default function LlmsTxtToolPage() {
         <h2 className="font-serif text-section font-semibold text-ink-900">Common questions</h2>
         <div className="mt-5 space-y-4">
           {FAQ.map((f) => (
-            <div key={f.q} className="rounded-xl border border-ink-900/10 bg-paper-100 p-5">
+            <div key={f.q} className="rounded-2xl border border-ink-900/10 bg-paper-100 p-5">
               <p className="text-[14px] font-semibold text-ink-900">{f.q}</p>
               <p className="mt-1.5 text-[13.5px] leading-relaxed text-ink-600">{f.a}</p>
             </div>

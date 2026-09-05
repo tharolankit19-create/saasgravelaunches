@@ -121,20 +121,20 @@ export function SupportPopup({
               <Loader2 className="h-5 w-5 animate-spin" />
             </div>
           ) : picks.length === 0 ? (
-            <p className="rounded-xl border border-dashed border-ink-900/20 bg-paper-50 px-4 py-6 text-center text-[13px] text-ink-500">
+            <p className="rounded-2xl border border-dashed border-ink-900/20 bg-paper-50 px-4 py-6 text-center text-[13px] text-ink-500">
               No one else to support yet — you might be the first. Launch away!
             </p>
           ) : (
             picks.map((p) => (
               <div
                 key={p.id}
-                className="flex items-center gap-3 rounded-xl border border-ink-900/10 bg-paper-50 p-3"
+                className="flex items-center gap-3 rounded-2xl border border-ink-900/10 bg-paper-50 p-3"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={p.logo_url || ""}
                   alt=""
-                  className="h-10 w-10 shrink-0 rounded-lg border border-ink-900/10 bg-paper-200 object-contain"
+                  className="h-10 w-10 shrink-0 rounded-xl border border-ink-900/10 bg-paper-200 object-contain"
                 />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-[14px] font-semibold text-ink-900">{p.name}</p>

@@ -94,7 +94,7 @@ export default async function PlanetsPage({ searchParams }: { searchParams: { cl
         <div className="mt-10 grid gap-4 sm:grid-cols-3">
           {STEPS.map((s, i) => (
             <div key={i} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-ember-500/15 text-ember-400">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-ember-500/15 text-ember-400">
                 {s.icon}
               </span>
               <p className="mt-3 font-serif text-lg font-semibold">{s.title}</p>

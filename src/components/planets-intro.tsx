@@ -87,8 +87,8 @@ export function PlanetsIntro() {
 
             <div className="mt-5 space-y-3">
               {STEPS.map((s) => (
-                <div key={s.title} className="flex gap-3.5 rounded-xl border border-white/8 bg-white/[0.03] p-3.5">
-                  <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-ember-500/15 text-ember-400">
+                <div key={s.title} className="flex gap-3.5 rounded-2xl border border-white/8 bg-white/[0.03] p-3.5">
+                  <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-ember-500/15 text-ember-400">
                     {s.icon}
                   </span>
                   <div>
@@ -101,7 +101,7 @@ export function PlanetsIntro() {
 
             <button
               onClick={dismiss}
-              className="mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-ember-500 text-[15px] font-semibold text-white transition hover:bg-ember-600"
+              className="mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-ember-500 text-[15px] font-semibold text-white transition hover:bg-ember-600"
             >
               <MousePointerClick className="h-4 w-4" /> Got it — let me pick a planet
             </button>

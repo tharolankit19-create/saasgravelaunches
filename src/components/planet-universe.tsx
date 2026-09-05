@@ -92,7 +92,7 @@ export function PlanetUniverse({ owners }: { owners: Record<string, Owner> }) {
                 <li key={o.planet_id}>
                   <button
                     onClick={() => setSelected(o.planet_id)}
-                    className="flex w-full items-center gap-2 rounded-lg px-1.5 py-1 text-left transition hover:bg-white/5"
+                    className="flex w-full items-center gap-2 rounded-xl px-1.5 py-1 text-left transition hover:bg-white/5"
                   >
                     <span className="w-4 shrink-0 font-mono text-[11px] text-white/40">{i + 1}</span>
                     <span

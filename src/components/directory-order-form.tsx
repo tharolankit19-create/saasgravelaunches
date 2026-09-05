@@ -173,7 +173,7 @@ export function DirectoryOrderForm({ initialTier }: { initialTier?: OrderTierKey
                   type="button"
                   onClick={() => setTier(k)}
                   className={cn(
-                    "flex w-full items-center justify-between gap-2 rounded-lg border px-3.5 py-3 text-left transition",
+                    "flex w-full items-center justify-between gap-2 rounded-xl border px-3.5 py-3 text-left transition",
                     active
                       ? "border-ember-500/60 bg-ember-500/[0.04]"
                       : "border-ink-900/15 hover:border-ink-900/35"
@@ -211,7 +211,7 @@ export function DirectoryOrderForm({ initialTier }: { initialTier?: OrderTierKey
           </div>
 
           {error && (
-            <p className="mt-4 rounded-lg border border-red-500/30 bg-red-500/5 px-3 py-2 text-[12px] text-red-700">
+            <p className="mt-4 rounded-xl border border-red-500/30 bg-red-500/5 px-3 py-2 text-[12px] text-red-700">
               {error}
             </p>
           )}

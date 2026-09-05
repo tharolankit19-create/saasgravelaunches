@@ -74,7 +74,7 @@ export function ClaimPanel({
       <p className="mt-1.5 text-[13px] leading-relaxed text-white/60">{body.blurb}</p>
 
       {owner ? (
-        <div className="mt-3 flex items-center gap-2 rounded-lg border border-[#7dd3a0]/25 bg-[#7dd3a0]/10 px-3 py-2 text-[12px]">
+        <div className="mt-3 flex items-center gap-2 rounded-xl border border-[#7dd3a0]/25 bg-[#7dd3a0]/10 px-3 py-2 text-[12px]">
           {owner.logo_url && (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={owner.logo_url} alt="" className="h-4 w-4 rounded-sm" />
@@ -85,7 +85,7 @@ export function ClaimPanel({
           </span>
         </div>
       ) : (
-        <p className="mt-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-[12px] text-white/70">
+        <p className="mt-3 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[12px] text-white/70">
           Unclaimed · floor <span className="font-semibold text-white">${body.minDollars}</span>
         </p>
       )}
@@ -97,7 +97,7 @@ export function ClaimPanel({
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="yourproduct.com"
-            className="h-11 w-full rounded-lg border border-white/15 bg-white/5 pl-10 pr-3 text-sm text-white outline-none placeholder:text-white/35 focus:border-ember-500/70"
+            className="h-11 w-full rounded-xl border border-white/15 bg-white/5 pl-10 pr-3 text-sm text-white outline-none placeholder:text-white/35 focus:border-ember-500/70"
           />
         </div>
         <input
@@ -105,10 +105,10 @@ export function ClaimPanel({
           onChange={(e) => setName(e.target.value)}
           maxLength={80}
           placeholder="Product name (optional)"
-          className="h-11 w-full rounded-lg border border-white/15 bg-white/5 px-3 text-sm text-white outline-none placeholder:text-white/35 focus:border-ember-500/70"
+          className="h-11 w-full rounded-xl border border-white/15 bg-white/5 px-3 text-sm text-white outline-none placeholder:text-white/35 focus:border-ember-500/70"
         />
 
-        <div className="flex items-center justify-between rounded-lg border border-white/15 bg-white/5 px-3 py-2">
+        <div className="flex items-center justify-between rounded-xl border border-white/15 bg-white/5 px-3 py-2">
           <span className="text-[12px] text-white/60">Your bid</span>
           <div className="flex items-center gap-3">
             <button
@@ -139,7 +139,7 @@ export function ClaimPanel({
         <button
           type="submit"
           disabled={busy}
-          className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-ember-500 text-[15px] font-semibold text-white transition hover:bg-ember-600 disabled:opacity-50"
+          className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-ember-500 text-[15px] font-semibold text-white transition hover:bg-ember-600 disabled:opacity-50"
         >
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
           {owner ? "Seize" : "Claim"} {body.name} · ${amount}

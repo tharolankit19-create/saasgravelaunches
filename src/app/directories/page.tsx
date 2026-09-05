@@ -94,7 +94,7 @@ export default function DirectoriesPage() {
               <Link
                 href={`/directories/order?plan=${ORDER_PLAN[key]}`}
                 className={cn(
-                  "mt-6 inline-flex h-11 w-full items-center justify-center rounded-lg text-[14px] font-medium transition",
+                  "mt-6 inline-flex h-11 w-full items-center justify-center rounded-xl text-[14px] font-medium transition",
                   popular
                     ? "bg-ember-500 text-paper-100 hover:bg-ember-600"
                     : "bg-ink-900 text-paper-100 hover:bg-ember-500"
@@ -153,7 +153,7 @@ export default function DirectoriesPage() {
         <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
           <a
             href="#tiers"
-            className="inline-flex items-center rounded-lg bg-ink-900 px-6 py-3 text-[15px] font-medium text-paper-100 transition hover:bg-ember-500"
+            className="inline-flex items-center rounded-xl bg-ink-900 px-6 py-3 text-[15px] font-medium text-paper-100 transition hover:bg-ember-500"
           >
             See the plans
           </a>

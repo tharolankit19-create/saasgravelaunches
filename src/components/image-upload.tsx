@@ -121,7 +121,7 @@ export function ImageUpload({
               onDragStart={() => (dragIndex.current = i)}
               onDragOver={(e) => e.preventDefault()}
               onDrop={() => onDrop(i)}
-              className="group relative aspect-video overflow-hidden rounded-lg border border-ink-900/10 bg-paper-100"
+              className="group relative aspect-video overflow-hidden rounded-xl border border-ink-900/10 bg-paper-100"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={src} alt={`Screenshot ${i + 1}`} className="h-full w-full object-cover" />
@@ -167,7 +167,7 @@ export function ImageUpload({
           }}
           disabled={busy}
           className={cn(
-            "flex w-full flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed px-4 py-6 text-center transition",
+            "flex w-full flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed px-4 py-6 text-center transition",
             dragOver
               ? "border-ember-500/60 bg-ember-500/[0.05]"
               : "border-ink-900/20 bg-paper-100 hover:border-ember-500/40 hover:bg-paper-200/50"

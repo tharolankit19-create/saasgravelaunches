@@ -49,7 +49,7 @@ export function BadgeVerify({
 
   if (verified) {
     return (
-      <div className="flex items-center gap-2 rounded-lg border border-moss-500/30 bg-moss-500/[0.07] px-4 py-3">
+      <div className="flex items-center gap-2 rounded-xl border border-moss-500/30 bg-moss-500/[0.07] px-4 py-3">
         <ShieldCheck className="h-4 w-4 text-moss-600" />
         <span className="text-[13px] font-medium text-ink-900">
           Backlink verified — your launch is a Verified member.
@@ -59,7 +59,7 @@ export function BadgeVerify({
   }
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-ink-900/15 bg-paper-200/40 px-4 py-3">
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-ink-900/15 bg-paper-200/40 px-4 py-3">
       <p className="text-[13px] text-ink-500">
         Added the badge to your site?{" "}
         <span className="font-medium text-ink-900">Verify it</span> to earn the Verified mark.
@@ -68,7 +68,7 @@ export function BadgeVerify({
         type="button"
         onClick={verify}
         disabled={busy}
-        className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-ink-900 px-4 py-2 text-[13px] font-medium text-paper-100 transition hover:bg-ember-500 disabled:opacity-60"
+        className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-ink-900 px-4 py-2 text-[13px] font-medium text-paper-100 transition hover:bg-ember-500 disabled:opacity-60"
       >
         {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
         {busy ? "Checking…" : "Verify my backlink"}

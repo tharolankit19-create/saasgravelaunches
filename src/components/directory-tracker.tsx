@@ -91,7 +91,7 @@ export function DirectoryTracker({ directories }: { directories: Directory[] }) 
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
       <div className="min-w-0">
         {/* progress */}
-        <div className="rounded-xl border border-ink-900/20 bg-paper-100 p-5 shadow-card">
+        <div className="rounded-2xl border border-ink-900/20 bg-paper-100 p-5 shadow-card">
           <div className="flex items-baseline justify-between">
             <p className="text-[14px] font-semibold text-ink-900">
               You&apos;ve done <span className="figure text-ember-600">{doneCount}</span> of {total}
@@ -122,7 +122,7 @@ export function DirectoryTracker({ directories }: { directories: Directory[] }) 
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search 120 directories…"
-              className="w-full rounded-lg border border-ink-900/20 bg-paper-100 py-2.5 pl-10 pr-3 text-sm text-ink-900 outline-none focus:border-ember-500/60"
+              className="w-full rounded-xl border border-ink-900/20 bg-paper-100 py-2.5 pl-10 pr-3 text-sm text-ink-900 outline-none focus:border-ember-500/60"
             />
           </div>
           <div className="flex flex-wrap gap-2">
@@ -145,7 +145,7 @@ export function DirectoryTracker({ directories }: { directories: Directory[] }) 
         </div>
 
         {/* list */}
-        <div className="mt-5 overflow-hidden rounded-xl border border-ink-900/20 bg-paper-100 shadow-card">
+        <div className="mt-5 overflow-hidden rounded-2xl border border-ink-900/20 bg-paper-100 shadow-card">
           {filtered.map((d, i) => {
             const s = status[d.url];
             return (
@@ -205,7 +205,7 @@ export function DirectoryTracker({ directories }: { directories: Directory[] }) 
                   {d.featured ? (
                     <Link
                       href="/launch"
-                      className="rounded-lg bg-ink-900 px-3 py-1.5 text-[12px] font-medium text-paper-100 transition hover:bg-ember-500"
+                      className="rounded-xl bg-ink-900 px-3 py-1.5 text-[12px] font-medium text-paper-100 transition hover:bg-ember-500"
                     >
                       Launch
                     </Link>
@@ -216,7 +216,7 @@ export function DirectoryTracker({ directories }: { directories: Directory[] }) 
                         title="Mark done"
                         onClick={() => setOne(d.url, "done")}
                         className={cn(
-                          "grid h-8 w-8 place-items-center rounded-lg border transition",
+                          "grid h-8 w-8 place-items-center rounded-xl border transition",
                           s === "done"
                             ? "border-moss-500/50 bg-moss-500/15 text-moss-600"
                             : "border-ink-900/15 text-ink-400 hover:border-moss-500/40 hover:text-moss-600"
@@ -229,7 +229,7 @@ export function DirectoryTracker({ directories }: { directories: Directory[] }) 
                         title="Skip"
                         onClick={() => setOne(d.url, "skip")}
                         className={cn(
-                          "grid h-8 w-8 place-items-center rounded-lg border transition",
+                          "grid h-8 w-8 place-items-center rounded-xl border transition",
                           s === "skip"
                             ? "border-ink-900/30 bg-paper-300 text-ink-700"
                             : "border-ink-900/15 text-ink-400 hover:border-ink-900/30 hover:text-ink-700"
@@ -241,7 +241,7 @@ export function DirectoryTracker({ directories }: { directories: Directory[] }) 
                         type="button"
                         title="Visit & submit"
                         onClick={() => onVisit(d)}
-                        className="inline-flex h-8 items-center gap-1 rounded-lg border border-ink-900/15 px-2.5 text-[12px] font-medium text-ink-700 transition hover:border-ember-500/50 hover:text-ember-600"
+                        className="inline-flex h-8 items-center gap-1 rounded-xl border border-ink-900/15 px-2.5 text-[12px] font-medium text-ink-700 transition hover:border-ember-500/50 hover:text-ember-600"
                       >
                         Visit <ExternalLink className="h-3.5 w-3.5" />
                       </button>
@@ -261,7 +261,7 @@ export function DirectoryTracker({ directories }: { directories: Directory[] }) 
 
       {/* side CTA — always visible so they notice the shortcut */}
       <aside className="lg:sticky lg:top-24 lg:self-start">
-        <div className="rounded-xl border border-ember-500/40 bg-ember-500/[0.04] p-6 shadow-lift">
+        <div className="rounded-2xl border border-ember-500/40 bg-ember-500/[0.04] p-6 shadow-lift">
           <Clock className="h-5 w-5 text-ember-600" />
           <h3 className="mt-3 font-serif text-lg font-semibold text-ink-900">
             Don&apos;t have 70 hours?
@@ -277,7 +277,7 @@ export function DirectoryTracker({ directories }: { directories: Directory[] }) 
           </ul>
           <Link
             href="/directories"
-            className="mt-4 inline-flex w-full items-center justify-center rounded-lg bg-ink-900 px-4 py-2.5 text-[14px] font-medium text-paper-100 transition hover:bg-ember-500"
+            className="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-ink-900 px-4 py-2.5 text-[14px] font-medium text-paper-100 transition hover:bg-ember-500"
           >
             Do it for me →
           </Link>
@@ -293,7 +293,7 @@ export function DirectoryTracker({ directories }: { directories: Directory[] }) 
               <button
                 type="button"
                 onClick={() => setUpsell(false)}
-                className="grid h-8 w-8 place-items-center rounded-lg text-ink-400 hover:bg-paper-200 hover:text-ink-900"
+                className="grid h-8 w-8 place-items-center rounded-xl text-ink-400 hover:bg-paper-200 hover:text-ink-900"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -311,7 +311,7 @@ export function DirectoryTracker({ directories }: { directories: Directory[] }) 
                 ["$99", "70 dirs"],
                 ["$149", "100+"],
               ].map(([p, l]) => (
-                <div key={l} className="rounded-lg border border-ink-900/12 bg-paper-50 py-3">
+                <div key={l} className="rounded-xl border border-ink-900/12 bg-paper-50 py-3">
                   <div className="figure text-lg font-semibold text-ink-900">{p}</div>
                   <div className="font-mono text-[9px] uppercase tracking-[0.08em] text-ink-400">
                     {l}
@@ -322,14 +322,14 @@ export function DirectoryTracker({ directories }: { directories: Directory[] }) 
             <div className="mt-5 flex items-center gap-3">
               <Link
                 href="/directories"
-                className="flex-1 rounded-lg bg-ember-500 px-4 py-2.5 text-center text-[14px] font-semibold text-paper-50 transition hover:bg-ember-600"
+                className="flex-1 rounded-xl bg-ember-500 px-4 py-2.5 text-center text-[14px] font-semibold text-paper-50 transition hover:bg-ember-600"
               >
                 Do it for me
               </Link>
               <button
                 type="button"
                 onClick={() => setUpsell(false)}
-                className="rounded-lg px-4 py-2.5 text-[13px] font-medium text-ink-500 hover:text-ink-900"
+                className="rounded-xl px-4 py-2.5 text-[13px] font-medium text-ink-500 hover:text-ink-900"
               >
                 I&apos;ll grind
               </button>

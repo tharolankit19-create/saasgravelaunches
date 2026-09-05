@@ -35,13 +35,13 @@ export default async function AdminPage({ searchParams }: { searchParams: { days
         <div className="flex items-center gap-3">
           <a
             href="/admin/orders"
-            className="rounded-lg border border-ink-900/15 px-3 py-1.5 text-[13px] font-medium text-ink-700 transition hover:border-ink-900/40 hover:bg-paper-200"
+            className="rounded-xl border border-ink-900/15 px-3 py-1.5 text-[13px] font-medium text-ink-700 transition hover:border-ink-900/40 hover:bg-paper-200"
           >
             Directory orders →
           </a>
           <a
             href="/admin/articles"
-            className="rounded-lg border border-ink-900/15 px-3 py-1.5 text-[13px] font-medium text-ink-700 transition hover:border-ink-900/40 hover:bg-paper-200"
+            className="rounded-xl border border-ink-900/15 px-3 py-1.5 text-[13px] font-medium text-ink-700 transition hover:border-ink-900/40 hover:bg-paper-200"
           >
             Articles →
           </a>
@@ -51,7 +51,7 @@ export default async function AdminPage({ searchParams }: { searchParams: { days
                 key={d}
                 href={`/admin?days=${d}`}
                 className={cn(
-                  "rounded-lg px-3 py-1.5 text-[13px] font-medium transition",
+                  "rounded-xl px-3 py-1.5 text-[13px] font-medium transition",
                   d === days ? "bg-ink-900 text-white" : "text-ink-500 hover:bg-paper-200"
                 )}
               >

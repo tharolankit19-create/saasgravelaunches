@@ -74,7 +74,7 @@ export function LaunchChecklist() {
 
   return (
     <div>
-      <div className="mb-6 rounded-xl border border-ink-900/20 bg-paper-100 p-5 shadow-card">
+      <div className="mb-6 rounded-2xl border border-ink-900/20 bg-paper-100 p-5 shadow-card">
         <div className="flex items-baseline justify-between">
           <p className="text-[14px] font-semibold text-ink-900">
             <span className="figure text-ember-600">{count}</span> of {ALL.length} done
@@ -90,7 +90,7 @@ export function LaunchChecklist() {
         {SECTIONS.map((s) => (
           <div key={s.title}>
             <h2 className="mb-3 font-serif text-lg font-semibold text-ink-900">{s.title}</h2>
-            <ul className="overflow-hidden rounded-xl border border-ink-900/20 bg-paper-100 shadow-card">
+            <ul className="overflow-hidden rounded-2xl border border-ink-900/20 bg-paper-100 shadow-card">
               {s.items.map((it) => {
                 const on = done[it.t];
                 return (

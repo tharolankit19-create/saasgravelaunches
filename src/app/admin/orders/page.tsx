@@ -79,7 +79,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
             key={fl.key}
             href={`/admin/orders?filter=${fl.key}`}
             className={
-              "rounded-lg px-3 py-1.5 text-[13px] font-medium transition " +
+              "rounded-xl px-3 py-1.5 text-[13px] font-medium transition " +
               (fl.key === filter ? "bg-ink-900 text-white" : "text-ink-500 hover:bg-paper-200")
             }
           >

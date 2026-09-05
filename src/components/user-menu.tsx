@@ -50,7 +50,7 @@ export function UserMenu({
       {open && (
         <div
           role="menu"
-          className="absolute right-0 z-50 mt-2 w-52 overflow-hidden rounded-xl border border-ink-900/10 bg-paper-100 py-1 shadow-lift"
+          className="absolute right-0 z-50 mt-2 w-52 overflow-hidden rounded-2xl border border-ink-900/10 bg-paper-100 py-1 shadow-lift"
         >
           <div className="border-b border-ink-900/8 px-3 py-2">
             <p className="truncate text-[13px] font-medium text-ink-900">{name || "Maker"}</p>

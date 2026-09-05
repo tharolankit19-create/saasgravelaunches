@@ -106,7 +106,7 @@ export function PhotoUpload({
         onClick={() => inputRef.current?.click()}
         disabled={busy}
         className={cn(
-          "inline-flex items-center gap-1.5 rounded-lg border border-ink-900/16 bg-paper-100 px-3.5 py-2 text-[13px] font-medium text-ink-700 transition hover:border-ember-500/50 hover:text-ember-600"
+          "inline-flex items-center gap-1.5 rounded-xl border border-ink-900/16 bg-paper-100 px-3.5 py-2 text-[13px] font-medium text-ink-700 transition hover:border-ember-500/50 hover:text-ember-600"
         )}
       >
         {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}

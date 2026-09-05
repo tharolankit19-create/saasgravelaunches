@@ -395,7 +395,7 @@ export default async function ProductPage({
                       key={src}
                       src={src}
                       alt={`${product.name} screenshot`}
-                      className="h-56 w-auto shrink-0 snap-start rounded-xl border border-ink-900/8 object-cover shadow-card sm:h-72"
+                      className="h-56 w-auto shrink-0 snap-start rounded-2xl border border-ink-900/8 object-cover shadow-card sm:h-72"
                       loading="lazy"
                     />
                   ))}
@@ -422,7 +422,7 @@ export default async function ProductPage({
                 <Card className="divide-y divide-ink-900/8">
                   {overview.map((o) => (
                     <div key={o.label} className="flex gap-4 p-5">
-                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-ember-500/8 text-ember-600">
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-ember-500/8 text-ember-600">
                         {o.icon}
                       </span>
                       <div>
@@ -457,7 +457,7 @@ export default async function ProductPage({
               <Rubric className="mb-3">Discussion · {product.comment_count}</Rubric>
               <Card className="p-6">
                 {product.maker_note && (
-                  <div className="mb-6 rounded-xl border border-ember-500/20 bg-ember-500/6 p-4">
+                  <div className="mb-6 rounded-2xl border border-ember-500/20 bg-ember-500/6 p-4">
                     <div className="flex items-center gap-2">
                       <Avatar src={maker?.avatar_url} name={maker?.full_name} size={26} />
                       <span className="text-[13px] font-semibold text-ink-900">

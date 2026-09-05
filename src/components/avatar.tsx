@@ -74,7 +74,7 @@ export function ProductLogo({
         alt={`${name || "Product"} logo`}
         style={dim}
         onError={() => setFailed(true)}
-        className={cn("shrink-0 rounded-xl border border-ink-900/8 bg-paper-100 object-cover", className)}
+        className={cn("shrink-0 rounded-2xl border border-ink-900/8 bg-paper-100 object-cover", className)}
         loading="lazy"
       />
     );
@@ -84,7 +84,7 @@ export function ProductLogo({
     <span
       style={{ ...dim, fontSize: Math.round(size * 0.36) }}
       className={cn(
-        "inline-flex shrink-0 items-center justify-center rounded-xl border border-ink-900/8 bg-gradient-to-br from-ember-400/25 to-brass-500/20 font-semibold text-ink-700",
+        "inline-flex shrink-0 items-center justify-center rounded-2xl border border-ink-900/8 bg-gradient-to-br from-ember-400/25 to-brass-500/20 font-semibold text-ink-700",
         className
       )}
     >

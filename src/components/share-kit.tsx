@@ -86,7 +86,7 @@ export function ShareKit({
 
       <ul className="mt-4 space-y-3">
         {posts.map((p, i) => (
-          <li key={p.label} className="rounded-xl border border-ink-900/10 bg-paper-200/40 p-4">
+          <li key={p.label} className="rounded-2xl border border-ink-900/10 bg-paper-200/40 p-4">
             <p className="font-mono text-[11px] uppercase tracking-wider text-ink-400">{p.label}</p>
             <p className="mt-2 whitespace-pre-wrap text-[13px] leading-relaxed text-ink-700">
               {p.text}
@@ -97,14 +97,14 @@ export function ShareKit({
               <button
                 type="button"
                 onClick={() => postToX(p.text, i)}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-ink-900 px-3 py-1.5 text-[13px] font-medium text-white transition hover:bg-ember-500"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-ink-900 px-3 py-1.5 text-[13px] font-medium text-white transition hover:bg-ember-500"
               >
                 <XIcon /> Post on X
               </button>
               <button
                 type="button"
                 onClick={() => copy(p.text, i)}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-ink-900/10 bg-paper-100 px-3 py-1.5 text-[13px] font-medium text-ink-700 transition hover:border-ember-500/40 hover:text-ember-600"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-ink-900/10 bg-paper-100 px-3 py-1.5 text-[13px] font-medium text-ink-700 transition hover:border-ember-500/40 hover:text-ember-600"
               >
                 {copied === i ? (
                   <Check className="h-3.5 w-3.5 text-moss-500" />
@@ -121,7 +121,7 @@ export function ShareKit({
                   onClick={() =>
                     trackEvent("share", { productSlug: slug, meta: { channel: "linkedin" } })
                   }
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-ink-900/10 bg-paper-100 px-3 py-1.5 text-[13px] font-medium text-ink-700 transition hover:border-ember-500/40 hover:text-ember-600"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-ink-900/10 bg-paper-100 px-3 py-1.5 text-[13px] font-medium text-ink-700 transition hover:border-ember-500/40 hover:text-ember-600"
                 >
                   <Linkedin className="h-3.5 w-3.5" /> LinkedIn
                 </a>

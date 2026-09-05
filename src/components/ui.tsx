@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 // Nothing here floats or glows — this is meant to read as printed matter.
 
 const base =
-  "inline-flex items-center justify-center gap-2 rounded-full font-medium transition-all duration-150 active:translate-y-px disabled:opacity-40 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ember-500/35 focus-visible:ring-offset-2 focus-visible:ring-offset-paper-50";
+  "inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-all duration-150 active:translate-y-px disabled:opacity-40 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ember-500/35 focus-visible:ring-offset-2 focus-visible:ring-offset-paper-50";
 
 const variants = {
   primary: "bg-ember-500 text-paper-100 hover:bg-ember-600 shadow-page",
@@ -109,7 +109,7 @@ export function Card({
   as?: any;
 }) {
   return (
-    <As className={cn("rounded-2xl border border-ink-900/10 bg-paper-100 shadow-card", className)}>
+    <As className={cn("rounded-3xl border border-ink-900/10 bg-paper-100 shadow-card", className)}>
       {children}
     </As>
   );
@@ -204,7 +204,7 @@ export function Field({
  * focus. That contrast is what makes a form legible at a glance.
  */
 export const inputClass =
-  "w-full rounded-xl border border-ink-900/15 bg-paper-200/60 px-4 py-3 text-[15px] text-ink-900 outline-none transition placeholder:text-ink-400 hover:border-ink-900/25 focus:border-ember-500/70 focus:bg-paper-100 focus:ring-4 focus:ring-ember-500/10";
+  "w-full rounded-2xl border border-ink-900/15 bg-paper-200/60 px-4 py-3 text-[15px] text-ink-900 outline-none transition placeholder:text-ink-400 hover:border-ink-900/25 focus:border-ember-500/70 focus:bg-paper-100 focus:ring-4 focus:ring-ember-500/10";
 
 export function Empty({
   title,
@@ -216,7 +216,7 @@ export function Empty({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-dashed border-ink-900/25 bg-paper-100/50 px-6 py-16 text-center">
+    <div className="rounded-2xl border border-dashed border-ink-900/25 bg-paper-100/50 px-6 py-16 text-center">
       <p className="font-serif text-lg font-semibold text-ink-900">{title}</p>
       {sub && <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-ink-500">{sub}</p>}
       {action && <div className="mt-6 flex justify-center">{action}</div>}

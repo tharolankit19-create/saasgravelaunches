@@ -121,7 +121,7 @@ export function SchemaGenerator() {
                 type="button"
                 onClick={() => setKind(k.key)}
                 className={cn(
-                  "rounded-xl border p-3 text-left transition",
+                  "rounded-2xl border p-3 text-left transition",
                   kind === k.key
                     ? "border-ember-500/60 bg-ember-500/[0.04]"
                     : "border-ink-900/12 hover:border-ink-900/30"
@@ -206,7 +206,7 @@ export function SchemaGenerator() {
       </div>
 
       <div>
-        <div className="relative rounded-xl border border-ink-900/10 bg-ink-900 p-4">
+        <div className="relative rounded-2xl border border-ink-900/10 bg-ink-900 p-4">
           <button
             onClick={copy}
             className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-medium text-white transition hover:bg-white/20"

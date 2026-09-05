@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Clock, Link2, Sparkles, Trophy, Users, TrendingUp, Check, X } from "lucide-react";
+import { ArrowRight, Clock, Link2, Plus, Sparkles, Trophy, Users, TrendingUp, Check, X } from "lucide-react";
 import { Card, Rubric, LinkButton, Empty } from "@/components/ui";
 import { ProductRow } from "@/components/product-row";
 import { WeekTabs } from "@/components/week-tabs";
@@ -27,6 +27,8 @@ import {
   weekRangeLabel,
 } from "@/lib/week";
 import { PRODUCTS } from "@/lib/pricing";
+import { CATEGORIES } from "@/lib/categories";
+import { LANDING_FAQ } from "@/lib/faq";
 
 export const dynamic = "force-dynamic";
 
@@ -291,7 +293,7 @@ export default async function HomePage({ searchParams }: { searchParams: { w?: s
             ].map((c, i) => (
               <Reveal key={c.title} delay={i * 110}>
                 <Card className="flex h-full flex-col p-6 transition hover:shadow-lift">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-ember-500/10 text-ember-600">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-ember-500/10 text-ember-600">
                     {c.icon}
                   </span>
                   <h3 className="mt-4 font-serif text-lg font-semibold text-ink-900">{c.title}</h3>
@@ -393,6 +395,142 @@ export default async function HomePage({ searchParams }: { searchParams: { w?: s
               Launch for free <ArrowRight className="h-4 w-4" />
             </LinkButton>
           </div>
+        </div>
+      </section>
+
+      {/* ═══ BROWSE — every category is a real indexed page ═══ */}
+      <section className="border-b border-ink-900/12">
+        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+          <Reveal>
+            <Rubric className="mb-3">Browse the register</Rubric>
+            <h2 className="max-w-2xl font-serif text-section font-semibold text-ink-900">
+              Every launch, filed by what it actually does.
+            </h2>
+            <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-ink-500">
+              Each category is its own page — a permanent, indexed directory of the products
+              filed there.
+            </p>
+          </Reveal>
+
+          <Reveal delay={90}>
+            <div className="mt-7 flex flex-wrap gap-2.5">
+              {CATEGORIES.map((c) => (
+                <Link
+                  key={c.slug}
+                  href={`/categories/${c.slug}`}
+                  className="rounded-full border border-ink-900/12 bg-paper-100 px-4 py-2 text-[13.5px] font-semibold text-ink-700 shadow-page transition hover:border-ember-500/50 hover:text-ember-600 hover:shadow-card"
+                >
+                  {c.name}
+                </Link>
+              ))}
+              <Link
+                href="/products"
+                className="rounded-full border border-ink-900/25 bg-ink-900 px-4 py-2 text-[13.5px] font-semibold text-paper-100 transition hover:bg-ink-700"
+              >
+                All products →
+              </Link>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ═══ FREE STUFF — tools and guides, all internal links ═ */}
+      <section className="border-b border-ink-900/12 bg-paper-100">
+        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+          <Reveal>
+            <Rubric className="mb-3">Free, no account</Rubric>
+            <h2 className="max-w-2xl font-serif text-section font-semibold text-ink-900">
+              Tools and guides we built because we needed them.
+            </h2>
+          </Reveal>
+
+          <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {[
+              {
+                href: "/free-directories",
+                title: "120 directories, free list",
+                body: "Every directory worth submitting to, with its Domain Rating and whether the link is dofollow. No email required.",
+              },
+              {
+                href: "/tools",
+                title: "Free maker tools",
+                body: "An llms.txt generator, schema markup builder, meta-tag previewer, UTM builder and a launch checklist.",
+              },
+              {
+                href: "/guides/how-to-launch-a-saas-product",
+                title: "How to launch a SaaS product",
+                body: "The full playbook: what to prepare, where to post, and what actually moves the needle in week one.",
+              },
+              {
+                href: "/guides/dofollow-vs-nofollow-backlinks",
+                title: "Dofollow vs nofollow links",
+                body: "Why most directory backlinks are worthless, and how to tell the difference before you spend a weekend.",
+              },
+              {
+                href: "/guides/first-100-users-solo-founder",
+                title: "Your first 100 users",
+                body: "What works when you have no audience, no budget and no launch-day army.",
+              },
+              {
+                href: "/alternatives",
+                title: "Where to launch — compared",
+                body: "An honest comparison of the launch platforms, including the ones that beat us at things.",
+              },
+            ].map((t, i) => (
+              <Reveal key={t.href} delay={i * 70}>
+                <Link href={t.href} className="group block h-full">
+                  <Card className="h-full p-5 transition group-hover:-translate-y-0.5 group-hover:shadow-lift">
+                    <p className="flex items-start justify-between gap-3 font-serif text-[17px] font-semibold text-ink-900">
+                      {t.title}
+                      <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-ink-400 transition group-hover:translate-x-0.5 group-hover:text-ember-500" />
+                    </p>
+                    <p className="mt-2 text-[13.5px] leading-relaxed text-ink-500">{t.body}</p>
+                  </Card>
+                </Link>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ FAQ — rendered, and mirrored as FAQPage schema ═══ */}
+      <section id="faq" className="scroll-mt-28 border-b border-ink-900/12">
+        <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 sm:py-20">
+          <Reveal>
+            <Rubric className="mb-3">Questions</Rubric>
+            <h2 className="font-serif text-masthead font-semibold text-ink-900">
+              Everything founders ask before launching.
+            </h2>
+          </Reveal>
+
+          <div className="mt-8 divide-y divide-ink-900/10 border-y border-ink-900/10">
+            {LANDING_FAQ.map((f, i) => (
+              <details key={f.q} className="group py-4" open={i === 0}>
+                <summary className="flex cursor-pointer list-none items-start justify-between gap-4 text-[16px] font-semibold text-ink-900 marker:hidden">
+                  {f.q}
+                  <span className="mt-1 shrink-0 text-ink-400 transition group-open:rotate-45">
+                    <Plus className="h-4 w-4" />
+                  </span>
+                </summary>
+                <p className="mt-2.5 pr-8 text-[14.5px] leading-relaxed text-ink-500">{f.a}</p>
+              </details>
+            ))}
+          </div>
+
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "FAQPage",
+                mainEntity: LANDING_FAQ.map((f) => ({
+                  "@type": "Question",
+                  name: f.q,
+                  acceptedAnswer: { "@type": "Answer", text: f.a },
+                })),
+              }),
+            }}
+          />
         </div>
       </section>
 

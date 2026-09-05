@@ -114,7 +114,7 @@ export function LlmsTxtGenerator() {
                   type="button"
                   onClick={() => setRows((rs) => rs.filter((_, idx) => idx !== i))}
                   aria-label="Remove row"
-                  className="shrink-0 rounded-lg px-2 text-ink-400 transition hover:text-red-600"
+                  className="shrink-0 rounded-xl px-2 text-ink-400 transition hover:text-red-600"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
@@ -132,7 +132,7 @@ export function LlmsTxtGenerator() {
       </div>
 
       <div>
-        <div className="relative rounded-xl border border-ink-900/10 bg-ink-900 p-4">
+        <div className="relative rounded-2xl border border-ink-900/10 bg-ink-900 p-4">
           <button
             onClick={copy}
             className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-medium text-white transition hover:bg-white/20"

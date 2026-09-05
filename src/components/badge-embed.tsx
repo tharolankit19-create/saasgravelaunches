@@ -51,7 +51,7 @@ export function BadgeEmbed({
     <div className={cn("", className)}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-[13px] font-semibold text-ink-900">Put the badge on your site</p>
-        <div className="flex gap-1 rounded-lg border border-ink-900/10 bg-paper-100 p-0.5">
+        <div className="flex gap-1 rounded-xl border border-ink-900/10 bg-paper-100 p-0.5">
           {(["light", "dark"] as const).map((t) => (
             <button
               key={t}
@@ -75,7 +75,7 @@ export function BadgeEmbed({
 
       <div
         className={cn(
-          "mt-4 flex justify-center rounded-xl border border-ink-900/8 p-6",
+          "mt-4 flex justify-center rounded-2xl border border-ink-900/8 p-6",
           theme === "dark" ? "bg-ink-900" : "bg-paper-200/60"
         )}
       >
@@ -108,7 +108,7 @@ function Snippet({
   onCopy: () => void;
 }) {
   return (
-    <div className="rounded-xl border border-ink-900/10 bg-paper-200/50">
+    <div className="rounded-2xl border border-ink-900/10 bg-paper-200/50">
       <div className="flex items-center justify-between border-b border-ink-900/8 px-3 py-1.5">
         <span className="font-mono text-[11px] uppercase tracking-wider text-ink-400">{label}</span>
         <button

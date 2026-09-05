@@ -19,10 +19,19 @@ html {
 }
 
 body {
-  background-color: #fbfbfc;
+  background-color: #fdfdfe;
   color: #16181d;
+  /* Instrument Sans is variable, so a touch above 400 gives body copy a little
+     more presence on white without tipping into a bold-everything look. */
+  font-weight: 420;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+/* Headlines carry the page, so every serif heading sits a step heavier than
+   the utility class asks for. One rule here beats editing 40-odd files. */
+.font-serif.font-semibold {
+  font-weight: 700;
 }
 
 /* Fraunces is variable — dial in a warmer, higher-contrast cut for display
@@ -125,8 +134,8 @@ body {
   font-size: 3.4em;
   line-height: 0.78;
   padding: 0.06em 0.09em 0 0;
-  color: #f2671e;
-  font-weight: 600;
+  color: #f9793a;
+  font-weight: 700;
 }
 
 /* ── Board rows ─────────────────────────────────────────────── */

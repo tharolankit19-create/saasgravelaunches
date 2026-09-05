@@ -431,7 +431,7 @@ export function SubmitForm({
           </p>
           <a
             href="/pricing#plans"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-brass-500/50 px-4 py-2 text-[13px] font-medium text-brass-600 transition hover:bg-brass-500/10"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-brass-500/50 px-4 py-2 text-[13px] font-medium text-brass-600 transition hover:bg-brass-500/10"
           >
             See Premium →
           </a>
@@ -876,7 +876,7 @@ export function SubmitForm({
       {/* ── publish ── */}
       <div className="sticky bottom-0 z-10 -mx-1 border-t border-ink-900/8 bg-paper-50/90 px-1 py-4 backdrop-blur">
         {gateActive && !canPublish && (
-          <p className="mb-3 rounded-xl border border-brass-500/25 bg-brass-500/8 px-4 py-3 text-[13px] text-ink-700">
+          <p className="mb-3 rounded-2xl border border-brass-500/25 bg-brass-500/8 px-4 py-3 text-[13px] text-ink-700">
             Support <strong>{threshold - supported}</strong> more launch
             {threshold - supported === 1 ? "" : "es"} before you publish your own. You&apos;ve
             upvoted {supported} of {threshold}.{" "}
@@ -886,7 +886,7 @@ export function SubmitForm({
           </p>
         )}
         {!premium && (
-          <p className="mb-3 rounded-lg border border-ink-900/12 bg-paper-200/50 px-4 py-2.5 text-[13px] leading-relaxed text-ink-600">
+          <p className="mb-3 rounded-xl border border-ink-900/12 bg-paper-200/50 px-4 py-2.5 text-[13px] leading-relaxed text-ink-600">
             <strong className="text-ink-900">One thing after this:</strong> free launches add our
             badge to your site and verify it (we&apos;ll show you how in a sec). Prefer to skip it?{" "}
             <a href="/pricing#plans" className="font-medium text-ember-600 hover:underline">

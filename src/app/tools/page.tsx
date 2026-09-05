@@ -84,7 +84,7 @@ export default function ToolsPage() {
           <Link key={t.href} href={t.href} className="group">
             <Card className="flex h-full flex-col p-6 transition hover:shadow-lift">
               <div className="flex items-center justify-between">
-                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-ember-500/10 text-ember-600">
+                <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-ember-500/10 text-ember-600">
                   {t.icon}
                 </span>
                 {t.tag && (
@@ -105,7 +105,7 @@ export default function ToolsPage() {
         ))}
       </div>
 
-      <div className="mt-12 rounded-xl border border-ink-900/12 bg-paper-100 p-6 text-center">
+      <div className="mt-12 rounded-2xl border border-ink-900/12 bg-paper-100 p-6 text-center">
         <p className="text-[15px] text-ink-700">
           Ready to launch?{" "}
           <Link href="/launch" className="font-semibold text-ember-600 hover:underline">

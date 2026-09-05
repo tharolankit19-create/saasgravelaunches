@@ -14,12 +14,12 @@ const config: Config = {
         // monospaced figures — carrying Saasgrave's confident orange as the one
         // ink, so the two products read as family. Authority, but not cold.
         paper: {
-          50: "#fbfbfc", // the page — clean, cool, essentially white
+          50: "#fdfdfe", // the page — very nearly white
           100: "#ffffff", // cards — pure white
-          200: "#f4f5f7", // wells / hover
-          300: "#e8eaee", // rules with weight
-          400: "#dbdee4", // dividers
-          500: "#c2c6ce", // muted edges
+          200: "#f7f8fa", // wells / hover
+          300: "#edeff3", // rules with weight
+          400: "#e2e5ea", // dividers
+          500: "#c8ccd4", // muted edges
         },
         ink: {
           900: "#16181d", // headlines — cool near-black
@@ -29,10 +29,10 @@ const config: Config = {
         },
         // The one ink — Saasgrave's orange. Scarce on purpose.
         ember: {
-          400: "#fb8b3d", // light / soft fills / gradient top
-          500: "#f2671e", // primary — buttons, marks, links
+          400: "#ffb184", // light / soft fills / gradient top
+          500: "#f9793a", // primary — buttons, marks, links (lightened)
           600: "#c2410c", // accessible orange text on paper
-          700: "#9a3412", // deep, for pressed / rules
+          700: "#a83c0a", // deep, for pressed / rules
         },
         // Functional only. Never decoration.
         brass: {
@@ -59,11 +59,11 @@ const config: Config = {
         // Warm, layered elevation — soft ambient + a tight contact shadow, tuned
         // brown rather than grey so cards sit on paper instead of floating on a
         // screen. This is the difference between "designed" and "flat".
-        page: "0 1px 0 rgba(17,18,22,0.03)",
-        card: "0 1px 2px rgba(18,20,26,0.04), 0 8px 24px -12px rgba(18,20,26,0.10)",
-        lift: "0 4px 12px rgba(18,20,26,0.06), 0 20px 40px -16px rgba(18,20,26,0.14)",
+        page: "0 1px 0 rgba(17,18,22,0.025)",
+        card: "0 1px 2px rgba(18,20,26,0.03), 0 4px 10px -4px rgba(18,20,26,0.045), 0 16px 34px -18px rgba(18,20,26,0.10)",
+        lift: "0 2px 6px rgba(18,20,26,0.045), 0 10px 22px -8px rgba(18,20,26,0.07), 0 34px 64px -26px rgba(18,20,26,0.16)",
         // Orange CTA glow — used only on the primary launch action.
-        glow: "0 1px 2px rgba(154,52,18,0.2), 0 10px 24px -8px rgba(242,103,30,0.42)",
+        glow: "0 1px 2px rgba(168,60,10,0.16), 0 8px 20px -6px rgba(249,121,58,0.36)",
         inset: "inset 0 1px 0 rgba(255,255,255,0.6)",
       },
       keyframes: {

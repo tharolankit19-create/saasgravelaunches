@@ -77,7 +77,7 @@ export function UpvoteButton({
       aria-pressed={state.upvoted}
       aria-label={state.upvoted ? "Remove upvote" : "Upvote"}
       className={cn(
-        "group flex shrink-0 flex-col items-center justify-center rounded-lg border transition-all active:translate-y-px",
+        "group flex shrink-0 flex-col items-center justify-center rounded-xl border transition-all active:translate-y-px",
         dims,
         state.upvoted
           ? "border-ember-500/50 bg-ember-500/12 text-ember-600 shadow-[0_1px_0_rgba(242,103,30,0.15)]"

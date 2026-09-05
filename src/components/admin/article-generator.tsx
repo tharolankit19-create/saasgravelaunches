@@ -67,7 +67,7 @@ export function ArticleGenerator() {
             href={result}
             target="_blank"
             rel="noopener"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-moss-500/40 bg-moss-500/5 px-3 py-2 text-[13px] font-medium text-moss-600"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-moss-500/40 bg-moss-500/5 px-3 py-2 text-[13px] font-medium text-moss-600"
           >
             Published → {result} <ExternalLink className="h-3.5 w-3.5" />
           </a>

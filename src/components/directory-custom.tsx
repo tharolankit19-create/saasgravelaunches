@@ -40,7 +40,7 @@ export function DirectoryCustom() {
   }
 
   return (
-    <div className="rounded-xl border border-ink-900/20 bg-paper-100 p-6 shadow-card sm:p-8">
+    <div className="rounded-2xl border border-ink-900/20 bg-paper-100 p-6 shadow-card sm:p-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <Sliders className="h-4 w-4 text-ember-500" />
@@ -84,7 +84,7 @@ export function DirectoryCustom() {
         <button
           type="button"
           onClick={copyAndDM}
-          className="inline-flex items-center gap-2 rounded-lg bg-ink-900 px-5 py-2.5 text-[14px] font-medium text-paper-100 transition hover:bg-ember-500"
+          className="inline-flex items-center gap-2 rounded-xl bg-ink-900 px-5 py-2.5 text-[14px] font-medium text-paper-100 transition hover:bg-ember-500"
         >
           {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
           Copy order &amp; DM on X

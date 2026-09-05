@@ -115,7 +115,7 @@ export function OrderEditor({ order, siteUrl }: { order: Order; siteUrl: string 
       </div>
 
       {/* buyer-supplied facts */}
-      <div className="mt-4 grid gap-1.5 rounded-lg bg-paper-200/60 p-3.5 text-[12px] text-ink-600 sm:grid-cols-2">
+      <div className="mt-4 grid gap-1.5 rounded-xl bg-paper-200/60 p-3.5 text-[12px] text-ink-600 sm:grid-cols-2">
         {order.website_url && <Fact label="Website" value={order.website_url} link />}
         {order.contact_email && <Fact label="Email" value={order.contact_email} />}
         {order.x_handle && <Fact label="X" value={order.x_handle} />}
@@ -217,7 +217,7 @@ export function OrderEditor({ order, siteUrl }: { order: Order; siteUrl: string 
             type="button"
             onClick={save}
             disabled={busy}
-            className="inline-flex h-10 items-center gap-2 rounded-lg bg-ink-900 px-5 text-[13px] font-medium text-paper-100 transition hover:bg-ember-500 disabled:opacity-50"
+            className="inline-flex h-10 items-center gap-2 rounded-xl bg-ink-900 px-5 text-[13px] font-medium text-paper-100 transition hover:bg-ember-500 disabled:opacity-50"
           >
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : saved ? <Check className="h-4 w-4" /> : null}
             {saved ? "Saved" : "Save"}

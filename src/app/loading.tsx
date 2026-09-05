@@ -18,21 +18,21 @@ export default function Loading() {
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
-              className="flex items-center gap-4 rounded-xl border border-ink-900/8 bg-paper-100 p-4"
+              className="flex items-center gap-4 rounded-2xl border border-ink-900/8 bg-paper-100 p-4"
             >
-              <div className="h-12 w-12 shrink-0 rounded-xl bg-ink-900/10" />
+              <div className="h-12 w-12 shrink-0 rounded-2xl bg-ink-900/10" />
               <div className="min-w-0 flex-1 space-y-2">
                 <div className="h-4 w-1/3 rounded bg-ink-900/10" />
                 <div className="h-3 w-2/3 rounded bg-ink-900/[0.07]" />
               </div>
-              <div className="h-9 w-11 shrink-0 rounded-lg bg-ink-900/[0.07]" />
+              <div className="h-9 w-11 shrink-0 rounded-xl bg-ink-900/[0.07]" />
             </div>
           ))}
         </div>
         <div className="hidden space-y-3 lg:block">
           <div className="h-3 w-20 rounded bg-ink-900/10" />
-          <div className="h-28 rounded-xl border border-ink-900/8 bg-paper-100" />
-          <div className="h-28 rounded-xl border border-ink-900/8 bg-paper-100" />
+          <div className="h-28 rounded-2xl border border-ink-900/8 bg-paper-100" />
+          <div className="h-28 rounded-2xl border border-ink-900/8 bg-paper-100" />
         </div>
       </div>
     </div>

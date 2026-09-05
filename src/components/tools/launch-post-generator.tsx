@@ -94,7 +94,7 @@ function PostCard({ label, text }: { label: string; text: string }) {
     }
   }
   return (
-    <div className="rounded-xl border border-ink-900/10 bg-paper-100 p-4">
+    <div className="rounded-2xl border border-ink-900/10 bg-paper-100 p-4">
       <div className="mb-2 flex items-center justify-between">
         <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-ink-400">{label}</p>
         <button

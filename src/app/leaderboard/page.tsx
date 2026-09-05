@@ -49,7 +49,7 @@ export default async function LeaderboardPage({
       <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
         <div>
           {/* range switcher — the weekly / monthly / all-time control */}
-          <div className="mb-5 inline-flex rounded-lg border border-ink-900/12 bg-paper-100 p-1">
+          <div className="mb-5 inline-flex rounded-xl border border-ink-900/12 bg-paper-100 p-1">
             {RANGES.map((r) => (
               <Link
                 key={r.key}

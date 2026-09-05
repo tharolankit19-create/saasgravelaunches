@@ -97,7 +97,7 @@ export function MetaTagGenerator() {
       {/* output + preview */}
       <div className="grid gap-4">
         {/* google preview */}
-        <div className="rounded-xl border border-ink-900/10 bg-paper-100 p-4">
+        <div className="rounded-2xl border border-ink-900/10 bg-paper-100 p-4">
           <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.12em] text-ink-400">Google preview</p>
           <p className="truncate text-[13px] text-ink-500">{host}</p>
           <p className="truncate text-[18px] leading-tight text-[#1a0dab]">{title}</p>
@@ -105,7 +105,7 @@ export function MetaTagGenerator() {
         </div>
 
         {/* code */}
-        <div className="relative rounded-xl border border-ink-900/10 bg-ink-900 p-4">
+        <div className="relative rounded-2xl border border-ink-900/10 bg-ink-900 p-4">
           <button
             onClick={copy}
             className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-medium text-white transition hover:bg-white/20"

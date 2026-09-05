@@ -85,7 +85,7 @@ export default async function OrderStatusPage({ params }: { params: { token: str
             href={paymentLinkForOrder(order.tier, order.public_token, `${SITE}/order/${order.public_token}`)}
             target="_blank"
             rel="noopener"
-            className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-ink-900 text-[15px] font-medium text-paper-100 transition hover:bg-ember-500"
+            className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-ink-900 text-[15px] font-medium text-paper-100 transition hover:bg-ember-500"
           >
             Pay ${tier.dollars} securely <ExternalLink className="h-4 w-4" />
           </a>
@@ -182,7 +182,7 @@ export default async function OrderStatusPage({ params }: { params: { token: str
           href={order.report_url}
           target="_blank"
           rel="noopener"
-          className="mt-6 flex items-center justify-between gap-3 rounded-xl border border-moss-500/40 bg-moss-500/5 p-5 transition hover:border-moss-500/70"
+          className="mt-6 flex items-center justify-between gap-3 rounded-2xl border border-moss-500/40 bg-moss-500/5 p-5 transition hover:border-moss-500/70"
         >
           <span className="flex items-center gap-3">
             <FileText className="h-5 w-5 text-moss-600" />
@@ -196,7 +196,7 @@ export default async function OrderStatusPage({ params }: { params: { token: str
       )}
 
       {/* ── what you gave us ── */}
-      <div className="mt-8 rounded-xl border border-ink-900/12 bg-paper-100 p-5">
+      <div className="mt-8 rounded-2xl border border-ink-900/12 bg-paper-100 p-5">
         <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-400">Your details</p>
         <dl className="mt-3 grid gap-2 text-[13px] sm:grid-cols-2">
           <Detail label="Product" value={order.product_name} />
